@@ -1,19 +1,44 @@
 #!/usr/bin/python
 
-import getopt, sys, os
+### This program is free software; you can redistribute it and/or modify
+### it under the terms of the GNU Library General Public License as published by
+### the Free Software Foundation; version 2 only
+###
+### This program is distributed in the hope that it will be useful,
+### but WITHOUT ANY WARRANTY; without even the implied warranty of
+### MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+### GNU Library General Public License for more details.
+###
+### You should have received a copy of the GNU Library General Public License
+### along with this program; if not, write to the Free Software
+### Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+### Copyright 2007 Dag Wieers <dag@wieers.com>
 
-if os.path.isfile('/usr/lib/openoffice.org2.0/program/pyuno.so'):
-    sys.path.append('/usr/lib/openoffice.org2.0/program/')
-else:
-    print >>sys.stderr, "Error: Cannot find the pyuno.so library."
-    print >>sys.stderr, "Please locate this library and send feedback to <tools@lists.rpmforge.net>."
-    sys.exit(1)
+import getopt, sys, os, distutils.sysconfig
+
+try:
+    import uno
+except:
+    extrapaths = ('/usr/lib/openoffice.org2.0/program/',)
+    for path in extrapaths:
+        if os.path.isfile(os.path.join(path, 'pyuno.so')):
+            sys.path.append(path)
+            break
+    else:
+        print >>sys.stderr, "Error: Cannot find the pyuno.so library."
+        print >>sys.stderr, "Please locate this library and send feedback to <tools@lists.rpmforge.net>."
+        sys.exit(1)
 
 import uno, unohelper
 from com.sun.star.beans import PropertyValue
 from com.sun.star.uno import Exception as UnoException
 from com.sun.star.io import IOException, XOutputStream
 from com.sun.star.connection import NoConnectException
+
+__version__ = "$Revision$"
+# $Source$
+
+VERSION = '0.1svn'
 
 class Fmt:
     def __init__(self, name, extension, filter, summary):
@@ -56,6 +81,7 @@ outputmap.add('doc', 'doc', 'MS Word 97', 'Microsoft Word 97/2000/XP')
 outputmap.add('doc95', 'doc', 'MS Word 95', 'Microsoft Word 95')
 outputmap.add('docbook', 'xml', 'DocBook 5.0', 'DocBook')
 outputmap.add('html', 'html', 'HTML (StarWriter)', 'HTML')
+outputmap.add('odt', 'odt', 'Open Document Text', 'Open Document Text')
 outputmap.add('ooxml', 'xml', 'MS Word 2003 XML', 'Microsoft Office Open XML')
 outputmap.add('pdf', 'pdf', 'writer_pdf_Export', 'Portable Document Format')
 outputmap.add('rtf', 'rtf', 'Rich Text Format', 'Rich Text Format')
@@ -64,6 +90,16 @@ outputmap.add('sdw4', 'sdw', 'StarWriter 4.0', 'StarWriter 4.0')
 outputmap.add('sdw3', 'sdw', 'StarWriter 3.0', 'StarWriter 3.0')
 outputmap.add('sxw', 'sxw', 'Open Office.org 1.0', 'Open Office.org 1.0 Text Document')
 outputmap.add('txt', 'txt', 'Text (Encoded)', 'Plain text')
+
+def version():
+    print 'unoconv %s' % VERSION
+    print 'Written by Dag Wieers <dag@wieers.com>'
+    print 'Homepage at http://dag.wieers.com/home-made/unoconv/'
+    print
+    print 'platform %s/%s' % (os.name, sys.platform)
+    print 'python %s' % sys.version
+    print
+    print 'build revision $Rev$'
 
 def usage():
     print >>sys.stderr, 'usage: unoconv [options] <fmt> file1 file2'
@@ -86,8 +122,8 @@ port = '2002'
 connection = "uno:socket,host=%s,port=%s;urp;StarOffice.ComponentContext" % (server, port)
 
 try:
-    opts, args = getopt.getopt (args, 'c:e:f:hs',
-                ['connection:', 'extension:', 'format:', 'help', 'stdout'] )
+    opts, args = getopt.getopt (args, 'c:e:f:hsv',
+                ['connection:', 'extension:', 'format:', 'help', 'stdout', 'version'] )
 except getopt.error, exc:
     print >>sys.stderr, 'unoconv: %s, try unoconv -h for a list of all the options' % str(exc)
     sys.exit(1)
@@ -102,6 +138,9 @@ for opt, arg in opts:
         format = arg
     elif opt in ['-s', '--stdout']:
         stdout = True
+    elif opt in ['-v', '--version']:
+        version()
+        sys.exit(1)
 
 if not args:
     print >>sys.stderr, 'You have to provide a file to convert.'
@@ -141,6 +180,7 @@ try:
     
     for path in args:
         try:
+            doc = None
             filename = unohelper.absolutize(cwd, unohelper.systemPathToFileUrl(path))
             doc = desktop.loadComponentFromURL( filename , "_blank", 0, inProps )
     
@@ -166,7 +206,7 @@ try:
                 doc.dispose()
  
 except NoConnectException, e:
-    print >>sys.stderr, "Error: Could not find an existing connection to Open Office."
+    print >>sys.stderr, "Error: Could not find an existing connection to Open Office at %s:%s." % (server, port)
     print >>sys.stderr, "Please start an oowriter instance by doing:\n    oowriter \"-accept=socket,host=%s,port=%s;urp;\"" % (server, port)
     sys.exit(1)
 

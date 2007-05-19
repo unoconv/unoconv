@@ -17,12 +17,15 @@ Source: http://dag.wieers.com/home-made/unoconv/unoconv-%{version}.tar.bz2
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root
 
 BuildArch: noarch
-BuildRequires: python-devel, openoffice-core
-Requires: python >= 2.0
+BuildRequires: python >= 2.0
+Requires: python >= 2.0, openoffice-core, openoffic-pyuno
 
 %description
 unoconv converts any document format that OpenOffice can import, to any
 document format that OpenOffice can export.
+
+unoconv uses the OpenOffice's UNO bindings for non-interactive conversion
+of documents
 
 %prep
 %setup
@@ -38,7 +41,7 @@ document format that OpenOffice can export.
 
 %files
 %defattr(-, root, root, 0755)
-%doc AUTHORS ChangeLog COPYING README THANKS TODO WISHLIST
+%doc AUTHORS ChangeLog COPYING README TODO WISHLIST
 %{_bindir}/unoconv
 
 %changelog
