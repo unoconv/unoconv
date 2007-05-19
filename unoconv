@@ -1,0 +1,177 @@
+#!/usr/bin/python
+
+import getopt, sys, os
+
+if os.path.isfile('/usr/lib/openoffice.org2.0/program/pyuno.so'):
+    sys.path.append('/usr/lib/openoffice.org2.0/program/')
+else:
+    print >>sys.stderr, "Error: Cannot find the pyuno.so library."
+    print >>sys.stderr, "Please locate this library and send feedback to <tools@lists.rpmforge.net>."
+    sys.exit(1)
+
+import uno, unohelper
+from com.sun.star.beans import PropertyValue
+from com.sun.star.uno import Exception as UnoException
+from com.sun.star.io import IOException, XOutputStream
+from com.sun.star.connection import NoConnectException
+
+class Fmt:
+    def __init__(self, name, extension, filter, summary):
+        self.name = name
+        self.extension = extension
+        self.filter = filter
+        self.summary = summary
+
+class FmtList:
+    def __init__(self):
+        self.list = []
+    def add(self, name, extension, filter, summary):
+        self.list.append(Fmt(name, extension, filter, summary))
+    def byextension(self, extension):
+        for fmt in self.list:
+            if extension == fmt.extension:
+                return fmt
+    def byname(self, name):
+        for fmt in self.list:
+            if name == fmt.name:
+                return fmt
+    def search(self, keyword):
+        pass
+    def display(self):
+        for fmt in self.list:
+            print >>sys.stderr, "  %-8s - %s (.%s)" % (fmt.name, fmt.summary, fmt.extension)
+
+class OutputStream( unohelper.Base, XOutputStream ):
+    def __init__( self ):
+        self.closed = 0
+    def closeOutput(self):
+        self.closed = 1
+    def writeBytes( self, seq ):
+        sys.stdout.write( seq.value )
+    def flush( self ):
+        pass
+
+outputmap = FmtList()
+outputmap.add('doc', 'doc', 'MS Word 97', 'Microsoft Word 97/2000/XP')
+outputmap.add('doc95', 'doc', 'MS Word 95', 'Microsoft Word 95')
+outputmap.add('docbook', 'xml', 'DocBook 5.0', 'DocBook')
+outputmap.add('html', 'html', 'HTML (StarWriter)', 'HTML')
+outputmap.add('ooxml', 'xml', 'MS Word 2003 XML', 'Microsoft Office Open XML')
+outputmap.add('pdf', 'pdf', 'writer_pdf_Export', 'Portable Document Format')
+outputmap.add('rtf', 'rtf', 'Rich Text Format', 'Rich Text Format')
+outputmap.add('sdw', 'sdw', 'StarWriter 5.0', 'StarWriter 5.0')
+outputmap.add('sdw4', 'sdw', 'StarWriter 4.0', 'StarWriter 4.0')
+outputmap.add('sdw3', 'sdw', 'StarWriter 3.0', 'StarWriter 3.0')
+outputmap.add('sxw', 'sxw', 'Open Office.org 1.0', 'Open Office.org 1.0 Text Document')
+outputmap.add('txt', 'txt', 'Text (Encoded)', 'Plain text')
+
+def usage():
+    print >>sys.stderr, 'usage: unoconv [options] <fmt> file1 file2'
+
+def help():
+    print >>sys.stderr, '''Convert from and to any format supported by OpenOffice
+
+unoconv options:
+  -c, --connection=<conn>  use a custom connection string
+  -e, --extension=ext      specify custom extension
+  -f, --format=format      specify the format to convert to
+  -s, --stdout             write output to stdout
+'''
+
+args = sys.argv[1:]
+stdout = False
+format = 'pdf'
+server = 'localhost'
+port = '2002'
+connection = "uno:socket,host=%s,port=%s;urp;StarOffice.ComponentContext" % (server, port)
+
+try:
+    opts, args = getopt.getopt (args, 'c:e:f:hs',
+                ['connection:', 'extension:', 'format:', 'help', 'stdout'] )
+except getopt.error, exc:
+    print >>sys.stderr, 'unoconv: %s, try unoconv -h for a list of all the options' % str(exc)
+    sys.exit(1)
+
+for opt, arg in opts:
+    if opt in ['-h', '--help']:
+        help()
+        sys.exit(1)
+    elif opt in ['-c', '--connection']:
+        connection = arg
+    elif opt in ['-f', '--format']:
+        format = arg
+    elif opt in ['-s', '--stdout']:
+        stdout = True
+
+if not args:
+    print >>sys.stderr, 'You have to provide a file to convert.'
+    sys.exit(1)
+
+if format == 'list':
+    print >>sys.stderr, 'The following list of formats are currently available:'
+    print >>sys.stderr
+    outputmap.display()
+    print >>sys.stderr
+    sys.exit(1)
+
+outputfmt = outputmap.byname(format)
+if not outputfmt:
+    print >>sys.stderr, 'Format is not known to unoconv.'
+    sys.exit(1)
+
+rc = 0
+
+try:
+    context = uno.getComponentContext()
+    svcmgr = context.ServiceManager
+
+    resolver = svcmgr.createInstanceWithContext("com.sun.star.bridge.UnoUrlResolver", context)
+    unocontext = resolver.resolve(connection)
+    unosvcmgr = unocontext.ServiceManager
+
+    desktop = unosvcmgr.createInstanceWithContext("com.sun.star.frame.Desktop", unocontext)
+    cwd = unohelper.systemPathToFileUrl( os.getcwd() )
+
+    inProps = PropertyValue( "Hidden" , 0 , True, 0 ),
+    outProps = (
+                PropertyValue( "FilterName" , 0, outputfmt.filter , 0 ),
+                PropertyValue( "Overwrite" , 0, True , 0 ),
+                PropertyValue( "OutputStream", 0, OutputStream(), 0)
+               )
+    
+    for path in args:
+        try:
+            filename = unohelper.absolutize(cwd, unohelper.systemPathToFileUrl(path))
+            doc = desktop.loadComponentFromURL( filename , "_blank", 0, inProps )
+    
+            if not doc:
+                raise UnoException( "Couldn't open stream for unknown reason", None )
+    
+            if not stdout:
+                (dest, ext) = os.path.splitext(path)
+                dest = dest + "." + outputfmt.extension
+                destUrl = unohelper.absolutize( cwd, unohelper.systemPathToFileUrl(dest) )
+                sys.stderr.write(destUrl + "\n")
+                doc.storeToURL(destUrl, outProps)
+            else:
+                doc.storeToURL("private:stream", outProps)
+
+        except IOException, e:
+            print >>sys.stderr, "Error during conversion: %s" % e.Message
+            sys.exit(1)
+        except UnoException, e:
+            print >>sys.stderr, "Error (%s) during conversion: %s" % (repr(e.__class__), e.Message)
+            rc = 1
+            if doc:
+                doc.dispose()
+ 
+except NoConnectException, e:
+    print >>sys.stderr, "Error: Could not find an existing connection to Open Office."
+    print >>sys.stderr, "Please start an oowriter instance by doing:\n    oowriter \"-accept=socket,host=%s,port=%s;urp;\"" % (server, port)
+    sys.exit(1)
+
+except UnoException, e:
+    print >>sys.stderr, "Error (%s) : %s" % (repr(e.__class__), e.Message)
+    sys.exit(1)
+
+sys.exit(rc)
