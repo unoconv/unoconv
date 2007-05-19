@@ -12,4 +12,4 @@ all: clean bib doc6 doc95 doc docbook html ooxml pdb pdf psw rtf latex sdw3 sdw4
 #	docbook2pdf -d curriculum-vitae.dsl#print curriculum-vitae-dag-wieers.xml
 
 clean: 
-	rm -f *.{doc,html,pdb,pdf,rtf,xml}
+	rm -f *.{bib,doc,html,pdb,pdf,psw,rtf,ltx,sdw,sxw,txt,xml}
