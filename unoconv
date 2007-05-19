@@ -77,19 +77,26 @@ class OutputStream( unohelper.Base, XOutputStream ):
         pass
 
 outputmap = FmtList()
+outputmap.add('bib', 'bib', 'BibTeX_Writer', 'BibTeX')
 outputmap.add('doc', 'doc', 'MS Word 97', 'Microsoft Word 97/2000/XP')
+outputmap.add('doc6', 'doc', 'MS WinWord 6.0', 'Microsoft Word 6.0')
 outputmap.add('doc95', 'doc', 'MS Word 95', 'Microsoft Word 95')
-outputmap.add('docbook', 'xml', 'DocBook 5.0', 'DocBook')
-outputmap.add('html', 'html', 'HTML (StarWriter)', 'HTML')
+outputmap.add('docbook', 'xml', 'DocBook File', 'DocBook')
+outputmap.add('html', 'html', 'HTML (StarWriter)', 'HTML Document (OpenOffice.org Writer)')
 outputmap.add('odt', 'odt', 'Open Document Text', 'Open Document Text')
 outputmap.add('ooxml', 'xml', 'MS Word 2003 XML', 'Microsoft Office Open XML')
-outputmap.add('pdf', 'pdf', 'writer_pdf_Export', 'Portable Document Format')
+outputmap.add('pdb', 'pdb', 'AportisDoc Palm DB', 'AportisDoc (Palm)')
+outputmap.add('pdf', 'pdf', 'writer_pdf_Export', 'PDF - Portable Document Format')
+outputmap.add('psw', 'psw', 'PocketWord File', 'Pocket Word')
 outputmap.add('rtf', 'rtf', 'Rich Text Format', 'Rich Text Format')
+outputmap.add('latex', 'ltx', 'LaTeX_Writer', 'LaTeX 2e')
 outputmap.add('sdw', 'sdw', 'StarWriter 5.0', 'StarWriter 5.0')
 outputmap.add('sdw4', 'sdw', 'StarWriter 4.0', 'StarWriter 4.0')
 outputmap.add('sdw3', 'sdw', 'StarWriter 3.0', 'StarWriter 3.0')
-outputmap.add('sxw', 'sxw', 'Open Office.org 1.0', 'Open Office.org 1.0 Text Document')
-outputmap.add('txt', 'txt', 'Text (Encoded)', 'Plain text')
+outputmap.add('sxw', 'sxw', 'StarOffice XML (Writer)', 'Open Office.org 1.0 Text Document')
+outputmap.add('text', 'txt', 'Text (encoded)', 'Text Encoded')
+outputmap.add('txt', 'txt', 'Text', 'Plain Text')
+outputmap.add('xhtml', 'html', 'XHTML Writer File', 'XHTML Document')
 
 def version():
     print 'unoconv %s' % VERSION
@@ -111,19 +118,21 @@ unoconv options:
   -c, --connection=<conn>  use a custom connection string
   -e, --extension=ext      specify custom extension
   -f, --format=format      specify the format to convert to
+  -l, --list               list the available formats to convert to
   -s, --stdout             write output to stdout
 '''
 
 args = sys.argv[1:]
 stdout = False
+showlist = False
 format = 'pdf'
 server = 'localhost'
 port = '2002'
 connection = "uno:socket,host=%s,port=%s;urp;StarOffice.ComponentContext" % (server, port)
 
 try:
-    opts, args = getopt.getopt (args, 'c:e:f:hsv',
-                ['connection:', 'extension:', 'format:', 'help', 'stdout', 'version'] )
+    opts, args = getopt.getopt (args, 'c:e:f:hlsv',
+                ['connection:', 'extension:', 'format:', 'help', 'list', 'stdout', 'version'] )
 except getopt.error, exc:
     print >>sys.stderr, 'unoconv: %s, try unoconv -h for a list of all the options' % str(exc)
     sys.exit(1)
@@ -136,17 +145,15 @@ for opt, arg in opts:
         connection = arg
     elif opt in ['-f', '--format']:
         format = arg
+    elif opt in ['-l', '--list']:
+        showlist = True
     elif opt in ['-s', '--stdout']:
         stdout = True
     elif opt in ['-v', '--version']:
         version()
         sys.exit(1)
 
-if not args:
-    print >>sys.stderr, 'You have to provide a file to convert.'
-    sys.exit(1)
-
-if format == 'list':
+if showlist or format == 'list':
     print >>sys.stderr, 'The following list of formats are currently available:'
     print >>sys.stderr
     outputmap.display()
@@ -154,6 +161,10 @@ if format == 'list':
     sys.exit(1)
 
 outputfmt = outputmap.byname(format)
+if not args:
+    print >>sys.stderr, 'You have to provide a file to convert.'
+    sys.exit(1)
+
 if not outputfmt:
     print >>sys.stderr, 'Format is not known to unoconv.'
     sys.exit(1)
