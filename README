@@ -1,3 +1,13 @@
+unoconv converts any document format that OpenOffice can import, to any
+document format that OpenOffice can export.
+
+unoconv uses the OpenOffice's UNO bindings for non-interactive conversion
+of documents.
+
+Before using unoconv you need to start an OpenOffice instance that listens
+on a specific port by doing:
+
+    ooffice -headless "-accept=socket,host=localhost,port=2002;urp;"
 
 ---
 Please send me improvements to this document.

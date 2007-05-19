@@ -19,7 +19,7 @@ install:
 docs:
 	make -C docs
 
-dist:
+dist: clean
 	find . ! -path '*/.svn*' | pax -d -w -x ustar -s ',^.,$(name)-$(version),' | bzip2 >../$(name)-$(version).tar.bz2
 
 rpm: dist
@@ -30,3 +30,4 @@ srpm: dist
 
 clean:
 	rm -f README*.html
+	make -C tests clean

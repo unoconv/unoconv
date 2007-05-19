@@ -18,14 +18,14 @@ BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root
 
 BuildArch: noarch
 BuildRequires: python >= 2.0
-Requires: python >= 2.0, openoffice-core, openoffic-pyuno
+Requires: python >= 2.0, openoffice.org-core, openoffice.org-pyuno
 
 %description
 unoconv converts any document format that OpenOffice can import, to any
 document format that OpenOffice can export.
 
 unoconv uses the OpenOffice's UNO bindings for non-interactive conversion
-of documents
+of documents.
 
 %prep
 %setup
@@ -41,7 +41,7 @@ of documents
 
 %files
 %defattr(-, root, root, 0755)
-%doc AUTHORS ChangeLog COPYING README TODO WISHLIST
+%doc AUTHORS ChangeLog COPYING README TODO WISHLIST docs/ tests/
 %{_bindir}/unoconv
 
 %changelog

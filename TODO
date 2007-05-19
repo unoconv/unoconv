@@ -14,5 +14,4 @@ contact me as well. :) Send an email to: Dag Wieers <dag@wieers.com>
 - Added support for spreadsheet, presentation and graphic formats
 
 ### Usability
-- Find a way to connect to OpenOffice without needing to start it
-- Start OpenOffice to assist conversion
+- Start OpenOffice automatically to assist conversion and then stop

@@ -38,7 +38,7 @@ from com.sun.star.connection import NoConnectException
 __version__ = "$Revision$"
 # $Source$
 
-VERSION = '0.1svn'
+VERSION = '0.1'
 
 class Fmt:
     def __init__(self, name, extension, filter, summary):
@@ -170,6 +170,7 @@ if not outputfmt:
     sys.exit(1)
 
 rc = 0
+doc = None
 
 try:
     context = uno.getComponentContext()
@@ -182,7 +183,7 @@ try:
     desktop = unosvcmgr.createInstanceWithContext("com.sun.star.frame.Desktop", unocontext)
     cwd = unohelper.systemPathToFileUrl( os.getcwd() )
 
-    inProps = PropertyValue( "Hidden" , 0 , True, 0 ),
+    inProps = PropertyValue( "Hidden" , 0 , True, 0 )
     outProps = (
                 PropertyValue( "FilterName" , 0, outputfmt.filter , 0 ),
                 PropertyValue( "Overwrite" , 0, True , 0 ),
@@ -191,7 +192,7 @@ try:
     
     for path in args:
         try:
-            doc = None
+
             filename = unohelper.absolutize(cwd, unohelper.systemPathToFileUrl(path))
             doc = desktop.loadComponentFromURL( filename , "_blank", 0, inProps )
     
@@ -200,9 +201,9 @@ try:
     
             if not stdout:
                 (dest, ext) = os.path.splitext(path)
-                dest = dest + "." + outputfmt.extension
+                dest = dest + '.' + outputfmt.extension
                 destUrl = unohelper.absolutize( cwd, unohelper.systemPathToFileUrl(dest) )
-                sys.stderr.write(destUrl + "\n")
+                print >>sys.stderr, destUrl
                 doc.storeToURL(destUrl, outProps)
             else:
                 doc.storeToURL("private:stream", outProps)
@@ -218,7 +219,7 @@ try:
  
 except NoConnectException, e:
     print >>sys.stderr, "Error: Could not find an existing connection to Open Office at %s:%s." % (server, port)
-    print >>sys.stderr, "Please start an oowriter instance by doing:\n    oowriter \"-accept=socket,host=%s,port=%s;urp;\"" % (server, port)
+    print >>sys.stderr, "Please start an ooffice instance by doing:\n    ooffice -headless -accept=\"socket,host=%s,port=%s;urp;\"" % (server, port)
     sys.exit(1)
 
 except UnoException, e:
