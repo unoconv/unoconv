@@ -1,0 +1,124 @@
+### This is a current list of formats known by Openoffice:
+
+### Calc
+Open Document Spreadsheet|ods|Calc8
+OpenOffice.org 1.0 Spreadsheet Template|stc|calc_StarOffice_XML_Calc_Template
+OpenOffice.org 1.0 Spreadsheet|sxc|StarOffice XML (Calc)
+Data Interchange Format|dif|DIF
+Microsoft Excel 97/2000/XP Template|xlt|MS Excel 97 Vorlage/Template
+HTML Document (OpenOffice.org Calc)|html|HTML (StarCalc)
+Microsoft Excel 5.0|xls|MS Excel 5.0/95
+Microsoft Excel 95|xls|MS Excel 95
+StarCalc 4.0|sdc|StarCalc 4.0
+Microsoft Excel 97/2000/XP|xls|MS Excel 97
+OpenDocument Spreadsheet Template|ots|calc8_template
+Text CSV|csv|Text - txt - csv (StarCalc)
+StarCalc 3.0 Template|vor|StarCalc 3.0 Vorlage/Template
+StarCalc 4.0 Template|vor|StarCalc 4.0 Vorlage/Template
+StarCalc 5.0 Template|vor|StarCalc 5.0 Vorlage/Template
+Pocket Excel|pxl|Pocket Excel
+Microsoft Excel 95 Template|xlt|MS Excel 95 Vorlage/Template
+dBase|dbf|dBase
+Microsoft Excel 2003 XML|xml|MS Excel 2003 XML
+XHTML|xml|XHTML Calc File
+Microsoft Excel 5.0 Template|xlt|MS Excel 5.0/95 Vorlage/Template
+StarCalc 3.0|sdc|StarCalc 3.0
+StarCalc 5.0|sdc|StarCalc 5.0
+PDF - Portable Document Format|pdf|calc_pdf_Export
+SYLK|slk|SYLK
+
+### Draw
+Open Document Drawing|odd|Draw8
+PNG - Portable Network Graphic|png|draw_png_Export
+JPEG - Joint Photographic Experts Group|jpg|draw_jpg_Export
+PPM - Portable Pixelmap|ppm|draw_ppm_Export
+WMF - Windows Metafile|wmf|draw_wmf_Export
+PGM - Portable Graymap|pgm|draw_pgm_Export
+TIFF - Tagged Image File Format|tiff|draw_tif_Export
+PBM - Portable Bitmap|pbm|draw_pbm_Export
+EMF - Enhanced Metafile|emf|draw_emf_Export
+XPM - X PixMap|xpm|draw_xpm_Export
+OpenDocument Drawing Template|otg|draw8_template
+BMP - Windows Bitmap|bmp|draw_bmp_Export
+Macromedia Flash (SWF)|swf|draw_flash_Export
+OpenOffice.org 1.0 Drawing|sxd|StarOffice XML (Draw)
+PDF - Portable Document Format|pdf|draw_pdf_Export
+GIF - Graphics Interchange Format|gif|draw_gif_Export
+RAS - Sun Raster Image|ras|draw_ras_Export
+StarDraw 3.0 Template|vor|StarDraw 3.0 Vorlage
+StarDraw 5.0 Template|vor|StarDraw 5.0 Vorlage
+HTML Document (OpenOffice.org Draw)|html|draw_html_Export
+StarDraw 3.0|sxd|StarDraw 3.0
+MET - OS/2 Metafile|met|draw_met_Export
+StarDraw 5.0|sxd|StarDraw 5.0
+XHTML|xml|XHTML Draw File
+EPS - Encapsulated PostScript|eps|draw_eps_Export
+SVG - Scalable Vector Graphics|svg|draw_svg_Export
+OpenOffice.org 1.0 Drawing Template|std|draw_StarOffice_XML_Draw_Template
+SVM - StarView Metafile|svm|draw_svm_Export
+
+### Impress
+Open Document Presentation|odp|Impress8
+StarDraw 3.0 Template (OpenOffice.org Impress)|vor|StarDraw 3.0 Vorlage (StarImpress)
+StarDraw 5.0 Template (OpenOffice.org Impress)|vor|StarDraw 5.0 Vorlage (StarImpress)
+Microsoft PowerPoint 97/2000/XP Template|pot|MS PowerPoint 97 Vorlage
+OpenOffice.org 1.0 Presentation Template|sti|impress_StarOffice_XML_Impress_Template
+StarImpress 5.0|sdd|StarImpress 5.0
+StarDraw 5.0 (OpenOffice.org Impress)|sda|StarDraw 5.0 (StarImpress)
+BMP - Windows Bitmap|bmp|impress_bmp_Export
+EMF - Enhanced Metafile|emf|impress_emf_Export
+EPS - Encapsulated PostScript|eps|impress_eps_Export
+GIF - Graphics Interchange Format|gif|impress_gif_Export
+JPEG - Joint Photographic Experts Group|jpg|impress_jpg_Export
+MET - OS/2 Metafile|met|impress_met_Export
+PBM - Portable Bitmap|pbm|impress_pbm_Export
+PCT - Mac Pict|pct|impress_pct_Export
+PDF - Portable Document Format|pdf|impress_pdf_Export
+PGM - Portable Graymap|pgm|impress_pgm_Export
+PNG - Portable Network Graphic|png|impress_png_Export
+PPM - Portable Pixelmap|ppm|impress_ppm_Export
+RAS - Sun Raster Image|ras|impress_ras_Export
+SVG - Scalable Vector Graphics|svg|impress_svg_Export
+SVM - StarView Metafile|svm|impress_svm_Export
+TIFF - Tagged Image File Format|tiff|impress_tif_Export
+WMF - Windows Metafile|wmf|impress_wmf_Export
+XPM - X PixMap|xpm|impress_xpm_Export
+PWP - PlaceWare|pwp|placeware_Export
+OpenOffice.org 1.0 Drawing (OpenOffice.org Impress)|odg|OpenOffice.org 1.0 Drawing (OpenOffice.org Impress)
+XHTML|xml|XHTML Impress File
+Macromedia Flash (SWF)|swf|impress_flash_Export
+Microsoft PowerPoint 97/2000/XP|ppt|MS PowerPoint 97
+StarImpress 4.0|sdd|StarImpress 4.0
+OpenDocument Presentation Template|stp|impress8_template
+StarImpress 4.0 Template|vor|StarImpress 4.0 Vorlage
+StarImpress 5.0 Template|vor|StarImpress 5.0 Vorlage
+OpenOffice.org 1.0 Presentation|sxi|StarOffice XML (Impress)
+StarDraw 3.0 (OpenOffice.org Impress)|sdd|StarDraw 3.0 (StarImpress)
+HTML Document (OpenOffice.org Impress)|html|impress_html_Export
+
+### Writer
+Open Document Text|odt|Writer8
+OpenOffice.org 1.0 Text Document|sxw|StarOffice XML (Writer)
+StarWriter 4.0|sdw|StarWriter 4.0
+HTML Document (OpenOffice.org Writer)|html|HTML (StarWriter)
+StarWriter 3.0 Template|vor|StarWriter 3.0 Vorlage/Template
+StarWriter 4.0 Template|vor|StarWriter 4.0 Vorlage/Template
+StarWriter 5.0 Template|vor|StarWriter 5.0 Vorlage/Template
+OpenOffice.org 1.0 Text Document Template|stw|writer_StarOffice_XML_Writer_Template
+Microsoft Word 2003 XML|xml|MS Word 2003 XML
+Pocket Word|psw|PocketWord File
+Rich Text Format|rtf|Rich Text Format
+PDF - Portable Document Format|pdf|writer_pdf_Export
+StarWriter 3.0|sdw|StarWriter 3.0
+OpenDocument Text Template|ott|writer8_template
+AportisDoc (Palm)|pdb|AportisDoc Palm DB
+BibTeX|bib|BibTeX_Writer
+StarWriter 5.0|sdw|StarWriter 5.0
+Microsoft Word 6.0|doc|MS WinWord 6.0
+Text Encoded|txt|Text (encoded)
+Microsoft Word 95|doc|MS Word 95
+Microsoft Word 97/2000/XP|doc|MS Word 97
+LaTeX 2e|ltx|LaTeX_Writer
+XHTML|html|XHTML Writer File
+Text|txt|Text
+DocBook|xml|DocBook File" 
