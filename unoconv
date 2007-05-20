@@ -40,7 +40,7 @@ from com.sun.star.script import CannotConvertException
 __version__ = "$Revision$"
 # $Source$
 
-VERSION = '0.1svn'
+VERSION = '0.2'
 
 class Fmt:
     def __init__(self, doctype, name, extension, summary, filter):
@@ -72,9 +72,12 @@ class FmtList:
             if fmt.name == name and fmt.doctype == doctype:
                 return (fmt, )
     def display(self, doctype):
+        print >>sys.stderr, 'The following list of %s formats are currently available:' % doctype
+        print >>sys.stderr
         for fmt in self.list:
             if fmt.doctype == doctype:
                 print >>sys.stderr, "  %-8s - %s [.%s]" % (fmt.name, fmt.summary, fmt.extension)
+        print >>sys.stderr
 
 class OutputStream( unohelper.Base, XOutputStream ):
     def __init__( self ):
@@ -86,6 +89,7 @@ class OutputStream( unohelper.Base, XOutputStream ):
     def flush( self ):
         pass
 
+doctypes = ('document', 'graphics', 'presentation', 'spreadsheet')
 fmts = FmtList()
 
 ### Document / Writer
@@ -230,11 +234,11 @@ def help():
     print >>sys.stderr, '''Convert from and to any format supported by OpenOffice
 
 unoconv options:
-  -c, --connection=<conn>  use a custom connection string
-  -f, --format=format      specify the output format
+  -b, --backend=format     specify the output format
+  -c, --connection=string  use a custom connection string
+  -d, --doctype=type       specify document type (document, graphics, presentation, spreadsheet)
   -l, --list               list the available output formats
   -s, --stdout             write output to stdout
-  -t, --type=doctype       specify document type (document, spreadsheet, presentation, graphics)
 '''
 
 args = sys.argv[1:]
@@ -248,8 +252,8 @@ port = '2002'
 connection = "uno:socket,host=%s,port=%s;urp;StarOffice.ComponentContext" % (server, port)
 
 try:
-    opts, args = getopt.getopt (args, 'c:e:f:hlst:v',
-                ['connection=', 'extension=', 'format=', 'help', 'list', 'stdout', 'type=', 'verbose', 'version'] )
+    opts, args = getopt.getopt (args, 'b:c:d:hl:st:v',
+                ['backend=', 'connection=', 'doctype=', 'help', 'list', 'stdout', 'verbose', 'version'] )
 except getopt.error, exc:
     print >>sys.stderr, 'unoconv: %s, try unoconv -h for a list of all the options' % str(exc)
     sys.exit(1)
@@ -258,44 +262,21 @@ for opt, arg in opts:
     if opt in ['-h', '--help']:
         help()
         sys.exit(1)
+    elif opt in ['-b', '--backend']:
+        format = arg
     elif opt in ['-c', '--connection']:
         connection = arg
-    elif opt in ['-f', '--format']:
-        format = arg
+    elif opt in ['-d', '--doctype']:
+        doctype = arg
     elif opt in ['-l', '--list']:
         showlist = True
     elif opt in ['-s', '--stdout']:
         stdout = True
-    elif opt in ['-t', '--type']:
-        doctype = arg
     elif opt in ['-v', '--verbose']:
         verbose = verbose + 1
     elif opt in ['--version']:
         version()
         sys.exit(1)
-
-if not format:
-    format = 'pdf'
-    doctype = 'document'
-
-if showlist or format == 'list':
-    print >>sys.stderr, 'The following list of document formats are currently available:'
-    print >>sys.stderr
-    fmts.display('document')
-    print >>sys.stderr
-    print >>sys.stderr, 'The following list of graphics formats are currently available:'
-    print >>sys.stderr
-    fmts.display('graphics')
-    print >>sys.stderr
-    print >>sys.stderr, 'The following list of presentation formats are currently available:'
-    print >>sys.stderr
-    fmts.display('presentation')
-    print >>sys.stderr
-    print >>sys.stderr, 'The following list of spreadsheet formats are currently available:'
-    print >>sys.stderr
-    fmts.display('spreadsheet')
-    print >>sys.stderr
-    sys.exit(1)
 
 if verbose >= 3:
     print 'Verbosity set to level %d' % (verbose - 1)
@@ -309,6 +290,18 @@ if doctype:
         doctype = 'presentation'
     elif doctype.startswith('s'):
         doctype = 'spreadsheet'
+
+if showlist or format == 'list':
+    if doctype:
+        fmts.display(doctype)
+    else:
+        for t in doctypes:
+            fmts.display(t)
+    sys.exit(1)
+
+if not format:
+    format = 'pdf'
+    doctype = 'document'
 
 if not args:
     print >>sys.stderr, 'unoconv: you have to provide a filename as argument'
@@ -372,7 +365,7 @@ try:
             doc = desktop.loadComponentFromURL( inputurl , "_blank", 0, inputprops )
     
             if not doc:
-                raise UnoException("Couldn't open stream for unknown reason", None)
+                raise UnoException("File could not be loaded by OpenOffice", None)
     
             if not stdout:
                 (outputfn, ext) = os.path.splitext(inputfn)
@@ -386,14 +379,15 @@ try:
 
         except IOException, e:
             print >>sys.stderr, "unoconv: error during conversion: %s" % e.Message
-            print >>sys.stderr, "The provided document cannot be convert to `%s'." % format
+            print >>sys.stderr, "The provided document cannot be exported to %s [%s]." % (outputfmt.summary, outputfmt.extension)
             sys.exit(1)
 
         except CannotConvertException, e:
             print >>sys.stderr, "unoconv: convert error: %s" % e.Message
 
         except UnoException, e:
-            print >>sys.stderr, "unoconv: error (%s) during conversion: %s" % (repr(e.__class__), e.Message)
+            print >>sys.stderr, "unoconv: error during conversion: %s" % e.Message
+            print >>sys.stderr, "The provided document cannot be imported."
             rc = 1
             if doc:
                 doc.dispose()

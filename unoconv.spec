@@ -8,7 +8,7 @@
 
 Summary: Tool to convert between any document format supported by OpenOffice
 Name: unoconv
-Version: 0.1svn
+Version: 0.2
 Release: 1
 License: GPL
 Group: System Environment/Base
@@ -57,8 +57,8 @@ and many more...
 %{_bindir}/unoconv
 
 %changelog
-* Sun May 20 2007 Dag Wieers <dag@wieers.com> - 0.1svn-1
-- Updated to release 0.1svn.
+* Sun May 20 2007 Dag Wieers <dag@wieers.com> - 0.2-1
+- Updated to release 0.2.
 
 * Sat May 19 2007 Dag Wieers <dag@wieers.com> - 0.1-1
 - Initial package. (using DAR)

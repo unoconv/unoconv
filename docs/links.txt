@@ -1,0 +1,12 @@
+
++ Framework/Article/Filter/FilterList OOo 2 1
+  http://wiki.services.openoffice.org/wiki/Framework/Article/Filter/FilterList_OOo_2_1
+
++ UDK: UNO Development Kit
+  http://udk.openoffice.org/
+
++ Python-UNO bridge
+  http://udk.openoffice.org/python/python-bridge.html
+
++ OpenOffice.org developer manual
+  http://api.openoffice.org/DevelopersGuide/DevelopersGuide.html
