@@ -42,8 +42,8 @@ __version__ = "$Revision$"
 VERSION = '0.1svn'
 
 class Fmt:
-    def __init__(self, type, name, extension, summary, filter):
-        self.type = type
+    def __init__(self, doctype, name, extension, summary, filter):
+        self.doctype = doctype
         self.name = name
         self.extension = extension
         self.summary = summary
@@ -52,21 +52,27 @@ class Fmt:
 class FmtList:
     def __init__(self):
         self.list = []
-    def add(self, type, name, extension, summary, filter):
-        self.list.append(Fmt(type, name, extension, summary, filter))
+    def add(self, doctype, name, extension, summary, filter):
+        self.list.append(Fmt(doctype, name, extension, summary, filter))
     def byname(self, name):
         ret = []
         for fmt in self.list:
             if fmt.name == name:
                 ret.append(fmt)
         return ret
-    def bytypename(self, type, name):
+    def byextension(self, extension):
+        ret = []
         for fmt in self.list:
-            if fmt.name == name and fmt.type == type:
+            if fmt.extension == extension:
+                ret.append(fmt)
+        return ret
+    def bydoctype(self, doctype, name):
+        for fmt in self.list:
+            if fmt.name == name and fmt.doctype == doctype:
                 return (fmt, )
-    def display(self, type):
+    def display(self, doctype):
         for fmt in self.list:
-            if fmt.type == type:
+            if fmt.doctype == doctype:
                 print >>sys.stderr, "  %-8s - %s [.%s]" % (fmt.name, fmt.summary, fmt.extension)
 
 class OutputStream( unohelper.Base, XOutputStream ):
@@ -227,7 +233,7 @@ unoconv options:
   -f, --format=format      specify the output format
   -l, --list               list the available output formats
   -s, --stdout             write output to stdout
-  -t, --type=type          specify document type (document, spreadsheet, presentation, graphics)
+  -t, --type=doctype       specify document type (document, spreadsheet, presentation, graphics)
 '''
 
 args = sys.argv[1:]
@@ -235,7 +241,7 @@ stdout = False
 showlist = False
 format = None
 verbose = 0
-type = None
+doctype = None
 server = 'localhost'
 port = '2002'
 connection = "uno:socket,host=%s,port=%s;urp;StarOffice.ComponentContext" % (server, port)
@@ -260,7 +266,7 @@ for opt, arg in opts:
     elif opt in ['-s', '--stdout']:
         stdout = True
     elif opt in ['-t', '--type']:
-        type = arg
+        doctype = arg
     elif opt in ['-v', '--verbose']:
         verbose = verbose + 1
     elif opt in ['--version']:
@@ -269,7 +275,7 @@ for opt, arg in opts:
 
 if not format:
     format = 'pdf'
-    type = 'document'
+    doctype = 'document'
 
 if showlist or format == 'list':
     print >>sys.stderr, 'The following list of document formats are currently available:'
@@ -293,38 +299,39 @@ if showlist or format == 'list':
 if verbose >= 3:
     print 'Verbosity set to level %d' % (verbose - 1)
 
-if type:
-    if type.startswith('d'):
-        type = 'document'
-    elif type.startswith('g'):
-        type = 'graphics'
-    elif type.startswith('p'):
-        type = 'presentation'
-    elif type.startswith('s'):
-        type = 'spreadsheet'
+if doctype:
+    if doctype.startswith('d'):
+        doctype = 'document'
+    elif doctype.startswith('g'):
+        doctype = 'graphics'
+    elif doctype.startswith('p'):
+        doctype = 'presentation'
+    elif doctype.startswith('s'):
+        doctype = 'spreadsheet'
 
 if not args:
     print >>sys.stderr, 'unoconv: you have to provide a filename as argument'
     print >>sys.stderr, 'Try `unoconv -h\' for more information.'
     sys.exit(1)
 
-if type:
-    outputfmt = fmts.bytypename(type, format)
+if doctype:
+    outputfmt = fmts.bydoctype(doctype, format)
 else:
     outputfmt = fmts.byname(format)
+    if not outputfmt:
+        outputfmt = fmts.byextension(format)
 
 if not outputfmt:
-    print >>sys.stderr, 'Format is not known to unoconv.'
+    print >>sys.stderr, 'unoconv: format `%s\' is not known to unoconv.' % format
     sys.exit(1)
 elif len(outputfmt) > 1:
-    print >>sys.stderr, 'Format %s is part of multiple types %s, please specify the correct type.' % (format, [fmt.type for fmt in outputfmt])
-    sys.exit(1)
+    print >>sys.stderr, 'unoconv: format `%s\' is part of multiple doctypes %s, selecting `%s\'.' % (format, [fmt.doctype for fmt in outputfmt], outputfmt[0].doctype)
 
 outputfmt = outputfmt[0]
 if verbose > 0:
     print >>sys.stderr, 'Selected format: %s [.%s]' % (outputfmt.summary, outputfmt.extension)
     print >>sys.stderr, 'Selected filter: %s' % (outputfmt.filter)
-    print >>sys.stderr, 'Used doctype:', outputfmt.type
+    print >>sys.stderr, 'Used doctype:', outputfmt.doctype
 
 rc = 0
 doc = None
@@ -369,15 +376,16 @@ try:
             if not stdout:
                 (outputfn, ext) = os.path.splitext(inputfn)
                 outputfn = outputfn + '.' + outputfmt.extension
-                if verbose > 0:
-                    print >>sys.stderr, 'Output file:', outputfn
                 outputurl = unohelper.absolutize( cwd, unohelper.systemPathToFileUrl(outputfn) )
                 doc.storeToURL(outputurl, outputprops)
+                if verbose > 0:
+                    print >>sys.stderr, 'Output file:', outputfn
             else:
                 doc.storeToURL("private:stream", outputprops)
 
         except IOException, e:
             print >>sys.stderr, "unoconv: error during conversion: %s" % e.Message
+            print >>sys.stderr, "The provided document cannot be convert to `%s'." % format
             sys.exit(1)
 
         except CannotConvertException, e:

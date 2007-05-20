@@ -5,6 +5,7 @@
 - Added Gentoo oofice path '/usr/lib/openoffice/program/' (Peter Draho)
 - Show proper error when file does not exist (Peter Draho)
 - Make long options work :)
+- If format is not recognized, scan by extension
 
 * 0.1 - released 19/05/2007
 - Initial release
