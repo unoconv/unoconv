@@ -19,7 +19,7 @@ import getopt, sys, os, distutils.sysconfig
 try:
     import uno
 except:
-    extrapaths = ('/usr/lib/openoffice.org2.0/program/',)
+    extrapaths = ('/usr/lib/openoffice/program/', '/usr/lib/openoffice.org2.0/program/')
     for path in extrapaths:
         if os.path.isfile(os.path.join(path, 'pyuno.so')):
             sys.path.append(path)
@@ -242,7 +242,7 @@ connection = "uno:socket,host=%s,port=%s;urp;StarOffice.ComponentContext" % (ser
 
 try:
     opts, args = getopt.getopt (args, 'c:e:f:hlst:v',
-                ['connection:', 'extension:', 'format:', 'help', 'list', 'stdout', 'type:', 'verbose', 'version'] )
+                ['connection=', 'extension=', 'format=', 'help', 'list', 'stdout', 'type=', 'verbose', 'version'] )
 except getopt.error, exc:
     print >>sys.stderr, 'unoconv: %s, try unoconv -h for a list of all the options' % str(exc)
     sys.exit(1)
@@ -304,7 +304,8 @@ if type:
         type = 'spreadsheet'
 
 if not args:
-    print >>sys.stderr, 'You have to provide a file to convert.'
+    print >>sys.stderr, 'unoconv: you have to provide a filename as argument'
+    print >>sys.stderr, 'Try `unoconv -h\' for more information.'
     sys.exit(1)
 
 if type:
@@ -322,8 +323,8 @@ elif len(outputfmt) > 1:
 outputfmt = outputfmt[0]
 if verbose > 0:
     print >>sys.stderr, 'Selected format: %s [.%s]' % (outputfmt.summary, outputfmt.extension)
-    print >>sys.stderr, 'OpenOffice filter: %s' % (outputfmt.filter)
-    print >>sys.stderr, 'Select file type:', outputfmt.type
+    print >>sys.stderr, 'Selected filter: %s' % (outputfmt.filter)
+    print >>sys.stderr, 'Used doctype:', outputfmt.type
 
 rc = 0
 doc = None
@@ -354,6 +355,11 @@ try:
             if verbose > 0:
                 print >>sys.stderr, 'Input file:', inputfn
 
+            if not os.path.exists(inputfn):
+                print >>sys.stderr, 'unoconv: file `%s\' does not exist.' % inputfn
+                rc = 1
+                continue
+
             inputurl = unohelper.absolutize(cwd, unohelper.systemPathToFileUrl(inputfn))
             doc = desktop.loadComponentFromURL( inputurl , "_blank", 0, inputprops )
     
@@ -371,25 +377,25 @@ try:
                 doc.storeToURL("private:stream", outputprops)
 
         except IOException, e:
-            print >>sys.stderr, "Error during conversion: %s" % e.Message
+            print >>sys.stderr, "unoconv: error during conversion: %s" % e.Message
             sys.exit(1)
 
         except CannotConvertException, e:
-            print >>sys.stderr, "Convert error: %s" % e.Message
+            print >>sys.stderr, "unoconv: convert error: %s" % e.Message
 
         except UnoException, e:
-            print >>sys.stderr, "Error (%s) during conversion: %s" % (repr(e.__class__), e.Message)
+            print >>sys.stderr, "unoconv: error (%s) during conversion: %s" % (repr(e.__class__), e.Message)
             rc = 1
             if doc:
                 doc.dispose()
  
 except NoConnectException, e:
-    print >>sys.stderr, "Error: Could not find an existing connection to Open Office at %s:%s." % (server, port)
+    print >>sys.stderr, "unoconv: could not find an existing connection to Open Office at %s:%s." % (server, port)
     print >>sys.stderr, "Please start an ooffice instance by doing:\n    ooffice -headless -accept=\"socket,host=%s,port=%s;urp;\"" % (server, port)
     sys.exit(1)
 
 except UnoException, e:
-    print >>sys.stderr, "Error (%s) : %s" % (repr(e.__class__), e.Message)
+    print >>sys.stderr, "unoconv: error (%s) : %s" % (repr(e.__class__), e.Message)
     sys.exit(1)
 
 sys.exit(rc)
