@@ -1,4 +1,4 @@
-all: clean bib doc6 doc95 doc docbook gif html jpg ooxml pdb pdf psw rtf latex sdw3 sdw4 sdw sxw text txt xhtml
+all: clean bib doc6 doc95 doc docbook html ooxml pdb pdf psw rtf latex sdw3 sdw4 sdw sxw text txt xhtml
 
 #xml: curriculum-vitae-dag-wieers.txt
 #	asciidoc -b docbook -d article curriculum-vitae-dag-wieers.txt
@@ -8,7 +8,7 @@ all: clean bib doc6 doc95 doc docbook gif html jpg ooxml pdb pdf psw rtf latex s
 #	docbook2odf --params generate.meta=0 curriculum-vitae-dag-wieers.xml
 
 %:
-	-unoconv -f $@ curriculum-vitae-dag-wieers.odt
+	-unoconv -f $@ curriculum-vitae-example.odt
 #	-unoconv -f $@ dag.gif
 #	docbook2pdf -d curriculum-vitae.dsl#print curriculum-vitae-dag-wieers.xml
 

@@ -4,7 +4,7 @@
 
 %{?dist: %{expand: %%define %dist 1}}
 
-%{el4:%define _with_openoffice.org2 1}
+%{?el4:%define _with_openoffice.org2 1}
 
 Summary: Tool to convert between any document format supported by OpenOffice
 Name: unoconv
