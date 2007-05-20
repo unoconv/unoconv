@@ -2,9 +2,9 @@
 # Authority: dag
 # Upstream: Dag Wieers <dag$wieers,com>
 
-Summary: Convert any document to any document supported by OpenOffice
+Summary: Tool to convert between any document format supported by OpenOffice
 Name: unoconv
-Version: 0.1
+Version: 0.1svn
 Release: 1
 License: GPL
 Group: System Environment/Base
@@ -21,11 +21,17 @@ BuildRequires: python >= 2.0
 Requires: python >= 2.0, openoffice.org-core, openoffice.org-pyuno
 
 %description
-unoconv converts any document format that OpenOffice can import, to any
-document format that OpenOffice can export.
+unoconv converts between any document format that OpenOffice understands.
+It uses OpenOffice's UNO bindings for non-interactive conversion of
+documents.
 
-unoconv uses the OpenOffice's UNO bindings for non-interactive conversion
-of documents.
+Supported document formats include: Open Document Text (.odt),
+Open Document Draw (.odd), Open Document Presentation (.odp),
+Open Document calc (.odc), MS Word (.doc), MS PowerPoint (.pps/.ppt),
+MS Excel (.xls), MS Office Open/OOXML (.xml),
+Portable Document Format (.pdf), DocBook (.xml), LaTeX (.ltx),
+HTML, XHTML, RTF, Docbook (.xml), GIF, PNG, JPG, SVG, BMP, EPS
+and many more...
 
 %prep
 %setup
@@ -45,5 +51,8 @@ of documents.
 %{_bindir}/unoconv
 
 %changelog
+* Sun May 20 2007 Dag Wieers <dag@wieers.com> - 0.1svn-1
+- Updated to release 0.1svn.
+
 * Sat May 19 2007 Dag Wieers <dag@wieers.com> - 0.1-1
 - Initial package. (using DAR)

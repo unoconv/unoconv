@@ -34,37 +34,40 @@ from com.sun.star.beans import PropertyValue
 from com.sun.star.uno import Exception as UnoException
 from com.sun.star.io import IOException, XOutputStream
 from com.sun.star.connection import NoConnectException
+from com.sun.star.script import CannotConvertException
 
 __version__ = "$Revision$"
 # $Source$
 
-VERSION = '0.1'
+VERSION = '0.1svn'
 
 class Fmt:
-    def __init__(self, name, extension, filter, summary):
+    def __init__(self, type, name, extension, summary, filter):
+        self.type = type
         self.name = name
         self.extension = extension
-        self.filter = filter
         self.summary = summary
+        self.filter = filter
 
 class FmtList:
     def __init__(self):
         self.list = []
-    def add(self, name, extension, filter, summary):
-        self.list.append(Fmt(name, extension, filter, summary))
-    def byextension(self, extension):
-        for fmt in self.list:
-            if extension == fmt.extension:
-                return fmt
+    def add(self, type, name, extension, summary, filter):
+        self.list.append(Fmt(type, name, extension, summary, filter))
     def byname(self, name):
+        ret = []
         for fmt in self.list:
-            if name == fmt.name:
-                return fmt
-    def search(self, keyword):
-        pass
-    def display(self):
+            if fmt.name == name:
+                ret.append(fmt)
+        return ret
+    def bytypename(self, type, name):
         for fmt in self.list:
-            print >>sys.stderr, "  %-8s - %s (.%s)" % (fmt.name, fmt.summary, fmt.extension)
+            if fmt.name == name and fmt.type == type:
+                return (fmt, )
+    def display(self, type):
+        for fmt in self.list:
+            if fmt.type == type:
+                print >>sys.stderr, "  %-8s - %s [.%s]" % (fmt.name, fmt.summary, fmt.extension)
 
 class OutputStream( unohelper.Base, XOutputStream ):
     def __init__( self ):
@@ -76,32 +79,132 @@ class OutputStream( unohelper.Base, XOutputStream ):
     def flush( self ):
         pass
 
-outputmap = FmtList()
-outputmap.add('bib', 'bib', 'BibTeX_Writer', 'BibTeX')
-outputmap.add('doc', 'doc', 'MS Word 97', 'Microsoft Word 97/2000/XP')
-outputmap.add('doc6', 'doc', 'MS WinWord 6.0', 'Microsoft Word 6.0')
-outputmap.add('doc95', 'doc', 'MS Word 95', 'Microsoft Word 95')
-outputmap.add('docbook', 'xml', 'DocBook File', 'DocBook')
-outputmap.add('html', 'html', 'HTML (StarWriter)', 'HTML Document (OpenOffice.org Writer)')
-outputmap.add('odt', 'odt', 'writer8', 'Open Document Text')
-outputmap.add('ott', 'ott', 'writer8_template', 'Open Document Text')
-outputmap.add('ooxml', 'xml', 'MS Word 2003 XML', 'Microsoft Office Open XML')
-outputmap.add('pdb', 'pdb', 'AportisDoc Palm DB', 'AportisDoc (Palm)')
-outputmap.add('pdf', 'pdf', 'writer_pdf_Export', 'PDF - Portable Document Format')
-outputmap.add('psw', 'psw', 'PocketWord File', 'Pocket Word')
-outputmap.add('rtf', 'rtf', 'Rich Text Format', 'Rich Text Format')
-outputmap.add('latex', 'ltx', 'LaTeX_Writer', 'LaTeX 2e')
-outputmap.add('sdw', 'sdw', 'StarWriter 5.0', 'StarWriter 5.0')
-outputmap.add('sdw4', 'sdw', 'StarWriter 4.0', 'StarWriter 4.0')
-outputmap.add('sdw3', 'sdw', 'StarWriter 3.0', 'StarWriter 3.0')
-outputmap.add('stw', 'stw', 'writer_StarOffice_XML_Writer_Template', 'Open Office.org 1.0 Text Document Template')
-outputmap.add('sxw', 'sxw', 'StarOffice XML (Writer)', 'Open Office.org 1.0 Text Document')
-outputmap.add('text', 'txt', 'Text (encoded)', 'Text Encoded')
-outputmap.add('txt', 'txt', 'Text', 'Plain Text')
-outputmap.add('vor', 'vor', 'StarWriter 5.0 Vorlage/Template', 'StarWriter 5.0 Template')
-outputmap.add('vor4', 'vor', 'StarWriter 4.0 Vorlage/Template', 'StarWriter 4.0 Template')
-outputmap.add('vor3', 'vor', 'StarWriter 3.0 Vorlage/Template', 'StarWriter 3.0 Template')
-outputmap.add('xhtml', 'html', 'XHTML Writer File', 'XHTML Document')
+fmts = FmtList()
+
+### Document / Writer
+fmts.add('document', 'bib', 'bib', 'BibTeX', 'BibTeX_Writer')
+fmts.add('document', 'doc', 'doc', 'Microsoft Word 97/2000/XP', 'MS Word 97')
+fmts.add('document', 'doc6', 'doc', 'Microsoft Word 6.0', 'MS WinWord 6.0')
+fmts.add('document', 'doc95', 'doc', 'Microsoft Word 95', 'MS Word 95')
+fmts.add('document', 'docbook', 'xml', 'DocBook', 'DocBook File')
+fmts.add('document', 'html', 'html', 'HTML Document (OpenOffice.org Writer)', 'HTML (StarWriter)')
+fmts.add('document', 'odt', 'odt', 'Open Document Text', 'writer8')
+fmts.add('document', 'ott', 'ott', 'Open Document Text', 'writer8_template')
+fmts.add('document', 'ooxml', 'xml', 'Microsoft Office Open XML', 'MS Word 2003 XML')
+fmts.add('document', 'pdb', 'pdb', 'AportisDoc (Palm)', 'AportisDoc Palm DB')
+fmts.add('document', 'pdf', 'pdf', 'Portable Document Format', 'writer_pdf_Export')
+fmts.add('document', 'psw', 'psw', 'Pocket Word', 'PocketWord File')
+fmts.add('document', 'rtf', 'rtf', 'Rich Text Format', 'Rich Text Format')
+fmts.add('document', 'latex', 'ltx', 'LaTeX 2e', 'LaTeX_Writer')
+fmts.add('document', 'sdw', 'sdw', 'StarWriter 5.0', 'StarWriter 5.0')
+fmts.add('document', 'sdw4', 'sdw', 'StarWriter 4.0', 'StarWriter 4.0')
+fmts.add('document', 'sdw3', 'sdw', 'StarWriter 3.0', 'StarWriter 3.0')
+fmts.add('document', 'stw', 'stw', 'Open Office.org 1.0 Text Document Template', 'writer_StarOffice_XML_Writer_Template')
+fmts.add('document', 'sxw', 'sxw', 'Open Office.org 1.0 Text Document', 'StarOffice XML (Writer)')
+fmts.add('document', 'text', 'txt', 'Text Encoded', 'Text (encoded)')
+fmts.add('document', 'txt', 'txt', 'Plain Text', 'Text')
+fmts.add('document', 'vor', 'vor', 'StarWriter 5.0 Template', 'StarWriter 5.0 Vorlage/Template')
+fmts.add('document', 'vor4', 'vor', 'StarWriter 4.0 Template', 'StarWriter 4.0 Vorlage/Template')
+fmts.add('document', 'vor3', 'vor', 'StarWriter 3.0 Template', 'StarWriter 3.0 Vorlage/Template')
+fmts.add('document', 'xhtml', 'html', 'XHTML Document', 'XHTML Writer File')
+
+### Spreadsheet
+fmts.add('spreadsheet', 'csv', 'csv', 'Text CSV', 'Text - txt - csv (StarCalc)')
+fmts.add('spreadsheet', 'dbf', 'dbf', 'dBase', 'dBase')
+fmts.add('spreadsheet', 'dif', 'dif', 'Data Interchange Format', 'DIF')
+fmts.add('spreadsheet', 'html', 'html', 'HTML Document (OpenOffice.org Calc)', 'HTML (StarCalc)')
+fmts.add('spreadsheet', 'ods', 'ods', 'Open Document Spreadsheet', 'calc8')
+fmts.add('spreadsheet', 'ooxml', 'xml', 'Microsoft Excel 2003 XML', 'MS Excel 2003 XML')
+fmts.add('spreadsheet', 'pdf', 'pdf', 'Portable Document Format', 'calc_pdf_Export')
+fmts.add('spreadsheet', 'pts', 'pts', 'OpenDocument Spreadsheet Template', 'calc8_template')
+fmts.add('spreadsheet', 'pxl', 'pxl', 'Pocket Excel', 'Pocket Excel')
+fmts.add('spreadsheet', 'sdc', 'sdc', 'StarCalc 5.0', 'StarCalc 5.0')
+fmts.add('spreadsheet', 'sdc4', 'sdc', 'StarCalc 4.0', 'StarCalc 4.0')
+fmts.add('spreadsheet', 'sdc3', 'sdc', 'StarCalc 3.0', 'StarCalc 3.0')
+fmts.add('spreadsheet', 'slk', 'slk', 'SYLK', 'SYLK')
+fmts.add('spreadsheet', 'stc', 'stc', 'OpenOffice.org 1.0 Spreadsheet Template', 'calc_StarOffice_XML_Calc_Template')
+fmts.add('spreadsheet', 'sxc', 'sxc', 'OpenOffice.org 1.0 Spreadsheet', 'StarOffice XML (Calc)')
+fmts.add('spreadsheet', 'vor3', 'vor', 'StarCalc 3.0 Template', 'StarCalc 3.0 Vorlage/Template')
+fmts.add('spreadsheet', 'vor4', 'vor', 'StarCalc 4.0 Template', 'StarCalc 4.0 Vorlage/Template')
+fmts.add('spreadsheet', 'vor', 'vor', 'StarCalc 5.0 Template', 'StarCalc 5.0 Vorlage/Template')
+fmts.add('spreadsheet', 'xhtml', 'xhtml', 'XHTML', 'XHTML Calc File')
+fmts.add('spreadsheet', 'xls', 'xls', 'Microsoft Excel 97/2000/XP', 'MS Excel 97')
+fmts.add('spreadsheet', 'xls5', 'xls', 'Microsoft Excel 5.0', 'MS Excel 5.0/95')
+fmts.add('spreadsheet', 'xls95', 'xls', 'Microsoft Excel 95', 'MS Excel 95')
+fmts.add('spreadsheet', 'xlt', 'xlt', 'Microsoft Excel 97/2000/XP Template', 'MS Excel 97 Vorlage/Template')
+fmts.add('spreadsheet', 'xlt5', 'xlt', 'Microsoft Excel 5.0 Template', 'MS Excel 5.0/95 Vorlage/Template')
+fmts.add('spreadsheet', 'xlt95', 'xlt', 'Microsoft Excel 95 Template', 'MS Excel 95 Vorlage/Template')
+
+### Graphics
+fmts.add('graphics', 'bmp', 'bmp', 'Windows Bitmap', 'draw_bmp_Export')
+fmts.add('graphics', 'emf', 'emf', 'Enhanced Metafile', 'draw_emf_Export')
+fmts.add('graphics', 'eps', 'eps', 'Encapsulated PostScript', 'draw_eps_Export')
+fmts.add('graphics', 'gif', 'gif', 'Graphics Interchange Format', 'draw_gif_Export')
+fmts.add('graphics', 'html', 'html', 'HTML Document (OpenOffice.org Draw)', 'draw_html_Export')
+fmts.add('graphics', 'jpg', 'jpg', 'Joint Photographic Experts Group', 'draw_jpg_Export')
+fmts.add('graphics', 'met', 'met', 'OS/2 Metafile', 'draw_met_Export')
+fmts.add('graphics', 'odd', 'odd', 'OpenDocument Drawing', 'draw8')
+fmts.add('graphics', 'otg', 'otg', 'OpenDocument Drawing Template', 'draw8_template')
+fmts.add('graphics', 'pbm', 'pbm', 'Portable Bitmap', 'draw_pbm_Export')
+fmts.add('graphics', 'pct', 'pct', 'Mac Pict', 'draw_pct_Export')
+fmts.add('graphics', 'pdf', 'pdf', 'Portable Document Format', 'draw_pdf_Export')
+fmts.add('graphics', 'pgm', 'pgm', 'Portable Graymap', 'draw_pgm_Export')
+fmts.add('graphics', 'png', 'png', 'Portable Network Graphic', 'draw_png_Export')
+fmts.add('graphics', 'ppm', 'ppm', 'Portable Pixelmap', 'draw_ppm_Export')
+fmts.add('graphics', 'ras', 'ras', 'Sun Raster Image', 'draw_ras_Export')
+fmts.add('graphics', 'std', 'std', 'OpenOffice.org 1.0 Drawing Template', 'draw_StarOffice_XML_Draw_Template')
+fmts.add('graphics', 'svg', 'svg', 'Scalable Vector Graphics', 'draw_svg_Export')
+fmts.add('graphics', 'svm', 'svm', 'StarView Metafile', 'draw_svm_Export')
+fmts.add('graphics', 'swf', 'swf', 'Macromedia Flash (SWF)', 'draw_flash_Export')
+fmts.add('graphics', 'sxd', 'sxd', 'OpenOffice.org 1.0 Drawing', 'StarOffice XML (Draw)')
+fmts.add('graphics', 'sxd3', 'sxd', 'StarDraw 3.0', 'StarDraw 3.0')
+fmts.add('graphics', 'sxd5', 'sxd', 'StarDraw 5.0', 'StarDraw 5.0')
+fmts.add('graphics', 'tiff', 'tiff', 'Tagged Image File Format', 'draw_tif_Export')
+fmts.add('graphics', 'vor', 'vor', 'StarDraw 5.0 Template', 'StarDraw 5.0 Vorlage')
+fmts.add('graphics', 'vor3', 'vor', 'StarDraw 3.0 Template', 'StarDraw 3.0 Vorlage')
+fmts.add('graphics', 'wmf', 'wmf', 'Windows Metafile', 'draw_wmf_Export')
+fmts.add('graphics', 'xhtml', 'xhtml', 'XHTML', 'XHTML Draw File')
+fmts.add('graphics', 'xpm', 'xpm', 'X PixMap', 'draw_xpm_Export')
+
+### Presentation
+fmts.add('presentation', 'bmp', 'bmp', 'Windows Bitmap', 'impress_bmp_Export')
+fmts.add('presentation', 'emf', 'emf', 'Enhanced Metafile', 'impress_emf_Export')
+fmts.add('presentation', 'eps', 'eps', 'Encapsulated PostScript', 'impress_eps_Export')
+fmts.add('presentation', 'gif', 'gif', 'Graphics Interchange Format', 'impress_gif_Export')
+fmts.add('presentation', 'html', 'html', 'HTML Document (OpenOffice.org Impress)', 'impress_html_Export')
+fmts.add('presentation', 'jpg', 'jpg', 'Joint Photographic Experts Group', 'impress_jpg_Export')
+fmts.add('presentation', 'met', 'met', 'OS/2 Metafile', 'impress_met_Export')
+fmts.add('presentation', 'odd', 'odd', 'OpenDocument Drawing (Impress)', 'impress8_draw')
+fmts.add('presentation', 'odg', 'odg', 'OpenOffice.org 1.0 Drawing (OpenOffice.org Impress)', 'impress_StarOffice_XML_Draw')
+fmts.add('presentation', 'odp', 'odp', 'OpenDocument Presentation', 'impress8')
+fmts.add('presentation', 'pbm', 'pbm', 'Portable Bitmap', 'impress_pbm_Export')
+fmts.add('presentation', 'pct', 'pct', 'Mac Pict', 'impress_pct_Export')
+fmts.add('presentation', 'pdf', 'pdf', 'Portable Document Format', 'impress_pdf_Export')
+fmts.add('presentation', 'pgm', 'pgm', 'Portable Graymap', 'impress_pgm_Export')
+fmts.add('presentation', 'png', 'png', 'Portable Network Graphic', 'impress_png_Export')
+fmts.add('presentation', 'pot', 'pot', 'Microsoft PowerPoint 97/2000/XP Template', 'MS PowerPoint 97 Vorlage')
+fmts.add('presentation', 'ppm', 'ppm', 'Portable Pixelmap', 'impress_ppm_Export')
+fmts.add('presentation', 'ppt', 'ppt', 'Microsoft PowerPoint 97/2000/XP', 'MS PowerPoint 97')
+fmts.add('presentation', 'pwp', 'pwp', 'PlaceWare', 'placeware_Export')
+fmts.add('presentation', 'ras', 'ras', 'Sun Raster Image', 'impress_ras_Export')
+fmts.add('presentation', 'sda', 'sda', 'StarDraw 5.0 (OpenOffice.org Impress)', 'StarDraw 5.0 (StarImpress)')
+fmts.add('presentation', 'sdd', 'sdd', 'StarImpress 5.0', 'StarImpress 5.0')
+fmts.add('presentation', 'sdd3', 'sdd', 'StarDraw 3.0 (OpenOffice.org Impress)', 'StarDraw 3.0 (StarImpress)')
+fmts.add('presentation', 'sdd4', 'sdd', 'StarImpress 4.0', 'StarImpress 4.0')
+fmts.add('presentation', 'sti', 'sti', 'OpenOffice.org 1.0 Presentation Template', 'impress_StarOffice_XML_Impress_Template')
+fmts.add('presentation', 'stp', 'stp', 'OpenDocument Presentation Template', 'impress8_template')
+fmts.add('presentation', 'svg', 'svg', 'Scalable Vector Graphics', 'impress_svg_Export')
+fmts.add('presentation', 'svm', 'svm', 'StarView Metafile', 'impress_svm_Export')
+fmts.add('presentation', 'swf', 'swf', 'Macromedia Flash (SWF)', 'impress_flash_Export')
+fmts.add('presentation', 'sxi', 'sxi', 'OpenOffice.org 1.0 Presentation', 'StarOffice XML (Impress)')
+fmts.add('presentation', 'tiff', 'tiff', 'Tagged Image File Format', 'impress_tif_Export')
+fmts.add('presentation', 'vor', 'vor', 'StarImpress 5.0 Template', 'StarImpress 5.0 Vorlage')
+fmts.add('presentation', 'vor3', 'vor', 'StarDraw 3.0 Template (OpenOffice.org Impress)', 'StarDraw 3.0 Vorlage (StarImpress)')
+fmts.add('presentation', 'vor4', 'vor', 'StarImpress 4.0 Template', 'StarImpress 4.0 Vorlage')
+fmts.add('presentation', 'vor5', 'vor', 'StarDraw 5.0 Template (OpenOffice.org Impress)', 'StarDraw 5.0 Vorlage (StarImpress)')
+fmts.add('presentation', 'wmf', 'wmf', 'Windows Metafile', 'impress_wmf_Export')
+fmts.add('presentation', 'xhtml', 'xml', 'XHTML', 'XHTML Impress File')
+fmts.add('presentation', 'xpm', 'xpm', 'X PixMap', 'impress_xpm_Export')
 
 def version():
     print 'unoconv %s' % VERSION
@@ -121,23 +224,25 @@ def help():
 
 unoconv options:
   -c, --connection=<conn>  use a custom connection string
-  -e, --extension=ext      specify custom extension
-  -f, --format=format      specify the format to convert to
-  -l, --list               list the available formats to convert to
+  -f, --format=format      specify the output format
+  -l, --list               list the available output formats
   -s, --stdout             write output to stdout
+  -t, --type=type          specify document type (document, spreadsheet, presentation, graphics)
 '''
 
 args = sys.argv[1:]
 stdout = False
 showlist = False
-format = 'pdf'
+format = None
+verbose = 0
+type = None
 server = 'localhost'
 port = '2002'
 connection = "uno:socket,host=%s,port=%s;urp;StarOffice.ComponentContext" % (server, port)
 
 try:
-    opts, args = getopt.getopt (args, 'c:e:f:hlsv',
-                ['connection:', 'extension:', 'format:', 'help', 'list', 'stdout', 'version'] )
+    opts, args = getopt.getopt (args, 'c:e:f:hlst:v',
+                ['connection:', 'extension:', 'format:', 'help', 'list', 'stdout', 'type:', 'verbose', 'version'] )
 except getopt.error, exc:
     print >>sys.stderr, 'unoconv: %s, try unoconv -h for a list of all the options' % str(exc)
     sys.exit(1)
@@ -154,25 +259,71 @@ for opt, arg in opts:
         showlist = True
     elif opt in ['-s', '--stdout']:
         stdout = True
-    elif opt in ['-v', '--version']:
+    elif opt in ['-t', '--type']:
+        type = arg
+    elif opt in ['-v', '--verbose']:
+        verbose = verbose + 1
+    elif opt in ['--version']:
         version()
         sys.exit(1)
 
+if not format:
+    format = 'pdf'
+    type = 'document'
+
 if showlist or format == 'list':
-    print >>sys.stderr, 'The following list of formats are currently available:'
+    print >>sys.stderr, 'The following list of document formats are currently available:'
     print >>sys.stderr
-    outputmap.display()
+    fmts.display('document')
+    print >>sys.stderr
+    print >>sys.stderr, 'The following list of graphics formats are currently available:'
+    print >>sys.stderr
+    fmts.display('graphics')
+    print >>sys.stderr
+    print >>sys.stderr, 'The following list of presentation formats are currently available:'
+    print >>sys.stderr
+    fmts.display('presentation')
+    print >>sys.stderr
+    print >>sys.stderr, 'The following list of spreadsheet formats are currently available:'
+    print >>sys.stderr
+    fmts.display('spreadsheet')
     print >>sys.stderr
     sys.exit(1)
 
-outputfmt = outputmap.byname(format)
+if verbose >= 3:
+    print 'Verbosity set to level %d' % (verbose - 1)
+
+if type:
+    if type.startswith('d'):
+        type = 'document'
+    elif type.startswith('g'):
+        type = 'graphics'
+    elif type.startswith('p'):
+        type = 'presentation'
+    elif type.startswith('s'):
+        type = 'spreadsheet'
+
 if not args:
     print >>sys.stderr, 'You have to provide a file to convert.'
     sys.exit(1)
 
+if type:
+    outputfmt = fmts.bytypename(type, format)
+else:
+    outputfmt = fmts.byname(format)
+
 if not outputfmt:
     print >>sys.stderr, 'Format is not known to unoconv.'
     sys.exit(1)
+elif len(outputfmt) > 1:
+    print >>sys.stderr, 'Format %s is part of multiple types %s, please specify the correct type.' % (format, [fmt.type for fmt in outputfmt])
+    sys.exit(1)
+
+outputfmt = outputfmt[0]
+if verbose > 0:
+    print >>sys.stderr, 'Selected format: %s [.%s]' % (outputfmt.summary, outputfmt.extension)
+    print >>sys.stderr, 'OpenOffice filter: %s' % (outputfmt.filter)
+    print >>sys.stderr, 'Select file type:', outputfmt.type
 
 rc = 0
 doc = None
@@ -188,34 +339,44 @@ try:
     desktop = unosvcmgr.createInstanceWithContext("com.sun.star.frame.Desktop", unocontext)
     cwd = unohelper.systemPathToFileUrl( os.getcwd() )
 
-    inProps = PropertyValue( "Hidden" , 0 , True, 0 )
-    outProps = (
+    inputprops = (
+                PropertyValue( "Hidden" , 0 , True, 0 ),
+                )
+    outputprops = (
                 PropertyValue( "FilterName" , 0, outputfmt.filter , 0 ),
                 PropertyValue( "Overwrite" , 0, True , 0 ),
-                PropertyValue( "OutputStream", 0, OutputStream(), 0)
+                PropertyValue( "OutputStream", 0, OutputStream(), 0),
                )
     
-    for path in args:
+    for inputfn in args:
         try:
 
-            filename = unohelper.absolutize(cwd, unohelper.systemPathToFileUrl(path))
-            doc = desktop.loadComponentFromURL( filename , "_blank", 0, inProps )
+            if verbose > 0:
+                print >>sys.stderr, 'Input file:', inputfn
+
+            inputurl = unohelper.absolutize(cwd, unohelper.systemPathToFileUrl(inputfn))
+            doc = desktop.loadComponentFromURL( inputurl , "_blank", 0, inputprops )
     
             if not doc:
-                raise UnoException( "Couldn't open stream for unknown reason", None )
+                raise UnoException("Couldn't open stream for unknown reason", None)
     
             if not stdout:
-                (dest, ext) = os.path.splitext(path)
-                dest = dest + '.' + outputfmt.extension
-                destUrl = unohelper.absolutize( cwd, unohelper.systemPathToFileUrl(dest) )
-                print >>sys.stderr, destUrl
-                doc.storeToURL(destUrl, outProps)
+                (outputfn, ext) = os.path.splitext(inputfn)
+                outputfn = outputfn + '.' + outputfmt.extension
+                if verbose > 0:
+                    print >>sys.stderr, 'Output file:', outputfn
+                outputurl = unohelper.absolutize( cwd, unohelper.systemPathToFileUrl(outputfn) )
+                doc.storeToURL(outputurl, outputprops)
             else:
-                doc.storeToURL("private:stream", outProps)
+                doc.storeToURL("private:stream", outputprops)
 
         except IOException, e:
             print >>sys.stderr, "Error during conversion: %s" % e.Message
             sys.exit(1)
+
+        except CannotConvertException, e:
+            print >>sys.stderr, "Convert error: %s" % e.Message
+
         except UnoException, e:
             print >>sys.stderr, "Error (%s) during conversion: %s" % (repr(e.__class__), e.Message)
             rc = 1
