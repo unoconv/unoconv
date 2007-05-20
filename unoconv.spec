@@ -2,6 +2,10 @@
 # Authority: dag
 # Upstream: Dag Wieers <dag$wieers,com>
 
+%{?dist: %{expand: %%define %dist 1}}
+
+%{el4:%define _with_openoffice.org2 1}
+
 Summary: Tool to convert between any document format supported by OpenOffice
 Name: unoconv
 Version: 0.1svn
@@ -18,7 +22,9 @@ BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root
 
 BuildArch: noarch
 BuildRequires: python >= 2.0
-Requires: python >= 2.0, openoffice.org-core, openoffice.org-pyuno
+Requires: python >= 2.0
+%{!?_with_openoffice.org2:Requires:openoffice.org-pyuno >= 2.0}
+%{?_with_openoffice.org2:Requires:openoffice.org2-pyuno >= 2.0}
 
 %description
 unoconv converts between any document format that OpenOffice understands.

@@ -14,18 +14,19 @@
 ### Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 ### Copyright 2007 Dag Wieers <dag@wieers.com>
 
-import getopt, sys, os, distutils.sysconfig
+import getopt, sys, os, distutils.sysconfig, glob
 
 try:
     import uno
 except:
-    extrapaths = ('/usr/lib/openoffice/program/', '/usr/lib/openoffice.org2.0/program/')
+#    extrapaths = ('/usr/lib/openoffice/program/', '/usr/lib/openoffice.org2.0/program/')
+    extrapaths = glob.glob('/usr/lib*/openoffice*/program/')
     for path in extrapaths:
         if os.path.isfile(os.path.join(path, 'pyuno.so')):
             sys.path.append(path)
             break
     else:
-        print >>sys.stderr, "Error: Cannot find the pyuno.so library."
+        print >>sys.stderr, "unoconv: Cannot find the pyuno.so library."
         print >>sys.stderr, "Please locate this library and send feedback to <tools@lists.rpmforge.net>."
         sys.exit(1)
 

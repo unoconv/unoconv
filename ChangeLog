@@ -6,6 +6,7 @@
 - Show proper error when file does not exist (Peter Draho)
 - Make long options work :)
 - If format is not recognized, scan by extension
+- Use glob to find possible location of pyuno
 
 * 0.1 - released 19/05/2007
 - Initial release
