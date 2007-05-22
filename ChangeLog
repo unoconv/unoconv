@@ -1,3 +1,8 @@
+* 0.2svn - released 22/05/2007
+- Determine doctype from input filename (if not specified)
+- Created a seperate class and allow to use as a library (like DocumentConverter.py)
+- Makefile now adds symlinks for different ODF formats like eg, odt2pdf or odp2pdf
+
 * 0.2 - released 20/05/2007
 - Added support for almost 100 graphics, presentation and spreadsheet documents
 - Added -d/--doctype option to specify the document type

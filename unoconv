@@ -14,7 +14,7 @@
 ### Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 ### Copyright 2007 Dag Wieers <dag@wieers.com>
 
-import getopt, sys, os, distutils.sysconfig, glob
+import getopt, sys, os, glob
 
 try:
     import uno
@@ -32,15 +32,17 @@ except:
 
 import uno, unohelper
 from com.sun.star.beans import PropertyValue
-from com.sun.star.uno import Exception as UnoException
-from com.sun.star.io import IOException, XOutputStream
 from com.sun.star.connection import NoConnectException
+from com.sun.star.io import IOException, XOutputStream
 from com.sun.star.script import CannotConvertException
+from com.sun.star.uno import Exception as UnoException
 
 __version__ = "$Revision$"
 # $Source$
 
 VERSION = '0.2'
+
+doctypes = ('document', 'graphics', 'presentation', 'spreadsheet')
 
 class Fmt:
     def __init__(self, doctype, name, extension, summary, filter):
@@ -50,46 +52,60 @@ class Fmt:
         self.summary = summary
         self.filter = filter
 
+    def __str__(self):
+        return "%s [.%s]" % (self.summary, self.extension)
+
+    def __repr__(self):
+        return "%s/%s" % (self.name, self.doctype)
+
 class FmtList:
     def __init__(self):
         self.list = []
+
     def add(self, doctype, name, extension, summary, filter):
         self.list.append(Fmt(doctype, name, extension, summary, filter))
+
     def byname(self, name):
         ret = []
         for fmt in self.list:
             if fmt.name == name:
                 ret.append(fmt)
         return ret
+
     def byextension(self, extension):
         ret = []
         for fmt in self.list:
-            if fmt.extension == extension:
+            if '.'+fmt.extension == extension:
                 ret.append(fmt)
         return ret
+
     def bydoctype(self, doctype, name):
+        ret = []
         for fmt in self.list:
             if fmt.name == name and fmt.doctype == doctype:
-                return (fmt, )
+                ret.append(fmt)
+                return ret
+
     def display(self, doctype):
-        print >>sys.stderr, 'The following list of %s formats are currently available:' % doctype
-        print >>sys.stderr
+        print >>sys.stderr, 'The following list of %s formats are currently available:\n' % doctype
         for fmt in self.list:
             if fmt.doctype == doctype:
-                print >>sys.stderr, "  %-8s - %s [.%s]" % (fmt.name, fmt.summary, fmt.extension)
+                print >>sys.stderr, "  %-8s - %s" % (fmt.name, fmt)
         print >>sys.stderr
 
 class OutputStream( unohelper.Base, XOutputStream ):
     def __init__( self ):
         self.closed = 0
+
     def closeOutput(self):
         self.closed = 1
+
     def writeBytes( self, seq ):
         sys.stdout.write( seq.value )
+
     def flush( self ):
         pass
 
-doctypes = ('document', 'graphics', 'presentation', 'spreadsheet')
 fmts = FmtList()
 
 ### Document / Writer
@@ -217,188 +233,246 @@ fmts.add('presentation', 'wmf', 'wmf', 'Windows Metafile', 'impress_wmf_Export')
 fmts.add('presentation', 'xhtml', 'xml', 'XHTML', 'XHTML Impress File')
 fmts.add('presentation', 'xpm', 'xpm', 'X PixMap', 'impress_xpm_Export')
 
-def version():
-    print 'unoconv %s' % VERSION
-    print 'Written by Dag Wieers <dag@wieers.com>'
-    print 'Homepage at http://dag.wieers.com/home-made/unoconv/'
-    print
-    print 'platform %s/%s' % (os.name, sys.platform)
-    print 'python %s' % sys.version
-    print
-    print 'build revision $Rev$'
+class Options:
+    def __init__(self, args):
+        self.stdout = False
+        self.showlist = False
+        self.format = None
+        self.verbose = 0
+        self.doctype = None
+        self.server = 'localhost'
+        self.port = '2002'
+        self.connection = "uno:socket,host=%s,port=%s;urp;StarOffice.ComponentContext" % (self.server, self.port)
+        self.filenames = []
 
-def usage():
-    print >>sys.stderr, 'usage: unoconv [options] <fmt> file1 file2'
+        ### Get options from the commandline
+        try:
+            opts, args = getopt.getopt (args, 'b:c:d:hlp:s:t:v',
+                ['backend=', 'connection=', 'doctype=', 'help', 'list', 'port=', 'server=', 'stdout', 'verbose', 'version'] )
+        except getopt.error, exc:
+            print >>sys.stderr, 'unoconv: %s, try unoconv -h for a list of all the options' % str(exc)
+            sys.exit(255)
 
-def help():
-    print >>sys.stderr, '''Convert from and to any format supported by OpenOffice
+        for opt, arg in opts:
+            if opt in ['-h', '--help']:
+                self.usage()
+                print
+                self.help()
+                sys.exit(1)
+            elif opt in ['-b', '--backend']:
+                self.format = arg
+            elif opt in ['-c', '--connection']:
+                self.connection = arg
+            elif opt in ['-d', '--doctype']:
+                self.doctype = arg
+            elif opt in ['-l', '--list']:
+                self.showlist = True
+            elif opt in ['-p', '--port']:
+                self.port = arg
+            elif opt in ['-s', '--server']:
+                self.server = arg
+            elif opt in ['--stdout']:
+                self.stdout = True
+            elif opt in ['-v', '--verbose']:
+                self.verbose = self.verbose + 1
+            elif opt in ['--version']:
+                self.version()
+                sys.exit(255)
+        
+        ### Enable verbosity
+        if self.verbose >= 3:
+            print >>sys.stderr, 'Verbosity set to level %d' % (self.verbose - 1)
+
+        self.filenames = args
+
+        if not self.showlist and self.doctype != 'list' and not self.filenames:
+            print >>sys.stderr, 'unoconv: you have to provide a filename as argument'
+            print >>sys.stderr, 'Try `unoconv -h\' for more information.'
+            sys.exit(255)
+
+        ### Make it easier for people to use a doctype (first letter is enough)
+        if self.doctype:
+            for d in doctypes:
+                if self.doctype[0] == doctype[0]:
+                    self.doctype = doctype
+
+        ### Check if the user request to see the list of formats
+        if self.showlist or self.format == 'list':
+            if self.doctype:
+                fmts.display(self.doctype)
+            else:
+                for t in doctypes:
+                    fmts.display(t)
+            sys.exit(0)
+
+        ### if no format was specified, probe it or provide it
+        if not self.format:
+            l = sys.argv[0].split('2')
+            if len(l) == 2:
+                self.format = l[1]
+            else:
+                self.format = 'pdf'
+
+    def version(self):
+        print 'unoconv %s' % VERSION
+        print 'Written by Dag Wieers <dag@wieers.com>'
+        print 'Homepage at http://dag.wieers.com/home-made/unoconv/'
+        print
+        print 'platform %s/%s' % (os.name, sys.platform)
+        print 'python %s' % sys.version
+        print
+        print 'build revision $Rev$'
+
+    def usage(self):
+        print >>sys.stderr, 'usage: unoconv [options] file [file2 ..]'
+
+    def help(self):
+        print >>sys.stderr, '''Convert from and to any format supported by OpenOffice
 
 unoconv options:
   -b, --backend=format     specify the output format
   -c, --connection=string  use a custom connection string
   -d, --doctype=type       specify document type (document, graphics, presentation, spreadsheet)
   -l, --list               list the available output formats
-  -s, --stdout             write output to stdout
+  -p, --port               specify a different port (default: 2002)
+  -s, --server             specify a different server (default: localhost)
+      --stdout             write output to stdout
 '''
 
-args = sys.argv[1:]
-stdout = False
-showlist = False
-format = None
-verbose = 0
-doctype = None
-server = 'localhost'
-port = '2002'
-connection = "uno:socket,host=%s,port=%s;urp;StarOffice.ComponentContext" % (server, port)
-
-try:
-    opts, args = getopt.getopt (args, 'b:c:d:hl:st:v',
-                ['backend=', 'connection=', 'doctype=', 'help', 'list', 'stdout', 'verbose', 'version'] )
-except getopt.error, exc:
-    print >>sys.stderr, 'unoconv: %s, try unoconv -h for a list of all the options' % str(exc)
-    sys.exit(1)
-
-for opt, arg in opts:
-    if opt in ['-h', '--help']:
-        help()
-        sys.exit(1)
-    elif opt in ['-b', '--backend']:
-        format = arg
-    elif opt in ['-c', '--connection']:
-        connection = arg
-    elif opt in ['-d', '--doctype']:
-        doctype = arg
-    elif opt in ['-l', '--list']:
-        showlist = True
-    elif opt in ['-s', '--stdout']:
-        stdout = True
-    elif opt in ['-v', '--verbose']:
-        verbose = verbose + 1
-    elif opt in ['--version']:
-        version()
-        sys.exit(1)
-
-if verbose >= 3:
-    print 'Verbosity set to level %d' % (verbose - 1)
-
-if doctype:
-    if doctype.startswith('d'):
-        doctype = 'document'
-    elif doctype.startswith('g'):
-        doctype = 'graphics'
-    elif doctype.startswith('p'):
-        doctype = 'presentation'
-    elif doctype.startswith('s'):
-        doctype = 'spreadsheet'
-
-if showlist or format == 'list':
-    if doctype:
-        fmts.display(doctype)
-    else:
-        for t in doctypes:
-            fmts.display(t)
-    sys.exit(1)
-
-if not format:
-    format = 'pdf'
-    doctype = 'document'
-
-if not args:
-    print >>sys.stderr, 'unoconv: you have to provide a filename as argument'
-    print >>sys.stderr, 'Try `unoconv -h\' for more information.'
-    sys.exit(1)
-
-if doctype:
-    outputfmt = fmts.bydoctype(doctype, format)
-else:
-    outputfmt = fmts.byname(format)
-    if not outputfmt:
-        outputfmt = fmts.byextension(format)
-
-if not outputfmt:
-    print >>sys.stderr, 'unoconv: format `%s\' is not known to unoconv.' % format
-    sys.exit(1)
-elif len(outputfmt) > 1:
-    print >>sys.stderr, 'unoconv: format `%s\' is part of multiple doctypes %s, selecting `%s\'.' % (format, [fmt.doctype for fmt in outputfmt], outputfmt[0].doctype)
-
-outputfmt = outputfmt[0]
-if verbose > 0:
-    print >>sys.stderr, 'Selected format: %s [.%s]' % (outputfmt.summary, outputfmt.extension)
-    print >>sys.stderr, 'Selected filter: %s' % (outputfmt.filter)
-    print >>sys.stderr, 'Used doctype:', outputfmt.doctype
-
-rc = 0
-doc = None
-
-try:
-    context = uno.getComponentContext()
-    svcmgr = context.ServiceManager
-
-    resolver = svcmgr.createInstanceWithContext("com.sun.star.bridge.UnoUrlResolver", context)
-    unocontext = resolver.resolve(connection)
-    unosvcmgr = unocontext.ServiceManager
-
-    desktop = unosvcmgr.createInstanceWithContext("com.sun.star.frame.Desktop", unocontext)
-    cwd = unohelper.systemPathToFileUrl( os.getcwd() )
-
-    inputprops = (
-                PropertyValue( "Hidden" , 0 , True, 0 ),
-                )
-    outputprops = (
-                PropertyValue( "FilterName" , 0, outputfmt.filter , 0 ),
-                PropertyValue( "Overwrite" , 0, True , 0 ),
-                PropertyValue( "OutputStream", 0, OutputStream(), 0),
-               )
+class Convertor:
+    def __init__(self):
+        context = uno.getComponentContext()
+        resolver = context.ServiceManager.createInstanceWithContext("com.sun.star.bridge.UnoUrlResolver", context)
+        unocontext = resolver.resolve(op.connection)
+        unosvcmgr = unocontext.ServiceManager
     
-    for inputfn in args:
+        self.desktop = unosvcmgr.createInstanceWithContext("com.sun.star.frame.Desktop", unocontext)
+        self.cwd = unohelper.systemPathToFileUrl( os.getcwd() )
+
+    def getformat(self, inputfn):
+        doctype = None
+
+        ### Get the output format from mapping
+        if op.doctype:
+            outputfmt = fmts.bydoctype(op.doctype, op.format)
+        else:
+            outputfmt = fmts.byname(op.format)
+    
+            if not outputfmt:
+                outputfmt = fmts.byextension('.'+op.format)
+
+        ### If no doctype given, check list of acceptable formats for input file ext doctype
+        ### FIXME: This should go into the for-loop to match each individual input filename
+        if outputfmt:
+            inputext = os.path.splitext(inputfn)[1]
+            inputfmt = fmts.byextension(inputext)
+            if inputfmt:
+                for fmt in outputfmt:
+                    if inputfmt[0].doctype == fmt.doctype:
+                        doctype = inputfmt[0].doctype
+                        outputfmt = fmt
+                        break
+                else:
+                    outputfmt = outputfmt[0]
+    #       print >>sys.stderr, 'unoconv: format `%s\' is part of multiple doctypes %s, selecting `%s\'.' % (format, [fmt.doctype for fmt in outputfmt], outputfmt[0].doctype)
+            else:
+                outputfmt = outputfmt[0]
+
+        ### No format found, throw error
+        if not outputfmt:
+            if doctype:
+                print >>sys.stderr, 'unoconv: format [%s/%s] is not known to unoconv.' % (op.format, op.doctype)
+            else:
+                print >>sys.stderr, 'unoconv: format [%s] is not known to unoconv.' % op.format
+            sys.exit(1)
+
+        return outputfmt
+        
+    def convert(self, inputfn):
+        doc = None
+        outputfmt = self.getformat(inputfn)
+    
+        if op.verbose > 0:
+            print >>sys.stderr, 'Input file:', inputfn
+    
+        if not os.path.exists(inputfn):
+            print >>sys.stderr, 'unoconv: file `%s\' does not exist.' % inputfn
+            exitcode = 1
+            return
+
         try:
+            ### Load inputfile
+            inputprops = ( PropertyValue( "Hidden" , 0 , True, 0 ), )
 
-            if verbose > 0:
-                print >>sys.stderr, 'Input file:', inputfn
-
-            if not os.path.exists(inputfn):
-                print >>sys.stderr, 'unoconv: file `%s\' does not exist.' % inputfn
-                rc = 1
-                continue
-
-            inputurl = unohelper.absolutize(cwd, unohelper.systemPathToFileUrl(inputfn))
-            doc = desktop.loadComponentFromURL( inputurl , "_blank", 0, inputprops )
+            inputurl = unohelper.absolutize(self.cwd, unohelper.systemPathToFileUrl(inputfn))
+            doc = self.desktop.loadComponentFromURL( inputurl , "_blank", 0, inputprops )
     
             if not doc:
                 raise UnoException("File could not be loaded by OpenOffice", None)
-    
-            if not stdout:
+
+            if op.verbose > 0:
+                print >>sys.stderr, 'Selected output format: %s' % outputfmt
+                print >>sys.stderr, 'Selected ooffice filter: %s' % outputfmt.filter
+                print >>sys.stderr, 'Used doctype:', outputfmt.doctype
+
+            ### Write outputfile
+            outputprops = (
+                    PropertyValue( "FilterName" , 0, outputfmt.filter , 0 ),
+                    PropertyValue( "Overwrite" , 0, True , 0 ),
+                    PropertyValue( "OutputStream", 0, OutputStream(), 0),
+                   )
+
+            if not op.stdout:
                 (outputfn, ext) = os.path.splitext(inputfn)
                 outputfn = outputfn + '.' + outputfmt.extension
-                outputurl = unohelper.absolutize( cwd, unohelper.systemPathToFileUrl(outputfn) )
+                outputurl = unohelper.absolutize( self.cwd, unohelper.systemPathToFileUrl(outputfn) )
                 doc.storeToURL(outputurl, outputprops)
-                if verbose > 0:
+                if op.verbose > 0:
                     print >>sys.stderr, 'Output file:', outputfn
             else:
                 doc.storeToURL("private:stream", outputprops)
 
-        except IOException, e:
-            print >>sys.stderr, "unoconv: error during conversion: %s" % e.Message
-            print >>sys.stderr, "The provided document cannot be exported to %s [%s]." % (outputfmt.summary, outputfmt.extension)
-            sys.exit(1)
-
-        except CannotConvertException, e:
-            print >>sys.stderr, "unoconv: convert error: %s" % e.Message
+        except SystemError, e:
+            print >>sys.stderr, "unoconv: error during conversion: %s" % e
+            print >>sys.stderr, "The provided document cannot be imported."
+            exitcode = 1
 
         except UnoException, e:
             print >>sys.stderr, "unoconv: error during conversion: %s" % e.Message
             print >>sys.stderr, "The provided document cannot be imported."
-            rc = 1
-            if doc:
-                doc.dispose()
- 
-except NoConnectException, e:
-    print >>sys.stderr, "unoconv: could not find an existing connection to Open Office at %s:%s." % (server, port)
-    print >>sys.stderr, "Please start an ooffice instance by doing:\n    ooffice -headless -accept=\"socket,host=%s,port=%s;urp;\"" % (server, port)
-    sys.exit(1)
+            exitcode = 1
+#           if doc:
+#               doc.dispose()
 
-except UnoException, e:
-    print >>sys.stderr, "unoconv: error (%s) : %s" % (repr(e.__class__), e.Message)
-    sys.exit(1)
+        except IOException, e:
+            print >>sys.stderr, "unoconv: error during conversion: %s" % e.Message
+            print >>sys.stderr, "The provided document cannot be exported to %s." % outputfmt
+            exitcode = 1
+    
+        except CannotConvertException, e:
+            print >>sys.stderr, "unoconv: convert error: %s" % e.Message
+            exitcode = 1
 
-sys.exit(rc)
+def main():
+    try:
+        convertor = Convertor()
+        
+        ### FIXME: outputfmt should be created inside class
+        for inputfn in op.filenames:
+            convertor.convert(inputfn)
+     
+    except NoConnectException, e:
+        print >>sys.stderr, "unoconv: could not find an existing connection to Open Office at %s:%s." % (op.server, op.port)
+        print >>sys.stderr, "Please start an ooffice instance by doing:\n    ooffice -headless -accept=\"socket,host=%s,port=%s;urp;\"" % (op.server, op.port)
+        exitcode = 1
+    
+### Main entrance
+if __name__ == '__main__':
+    exitcode = 0
+
+    op = Options(sys.argv[1:])
+    try:
+        main()
+    except KeyboardInterrupt, e:
+        die(6, 'Exiting on user request')
+    sys.exit(exitcode)

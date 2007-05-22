@@ -10,11 +10,18 @@ datadir = $(prefix)/share
 mandir = $(datadir)/man
 localstatedir = /var
 
+bins = doc2odt odt2doc doc2ooxml ooxml2doc odp2pdf odp2ppt ppt2odp ods2pdf odt2bib odt2docbook odt2html odt2lt odt2ooxml ooxml2odt odt2pdf odt2sdw sdw2odt /odt2sxw sxw2odt odt2txt odt2xhtml odt2xml odt2rtf
+
 all:
 	@echo "There is nothing to be build. Try install !"
 
 install:
 	install -Dp -m0755 unoconv $(DESTDIR)$(bindir)/unoconv
+
+install-links: $(bins)
+
+$(filter %,$(bins)):
+	ln -sf unoconv $(DESTDIR)$(bindir)/$@
 
 docs:
 	make -C docs

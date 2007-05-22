@@ -9,5 +9,20 @@ on a specific port by doing:
 
     ooffice -headless "-accept=socket,host=localhost,port=2002;urp;"
 
+
+Other tools that are useful:
+
+ + Text based document generation
+   http://www.methods.co.nz/asciidoc/
+
+ + DocBook to OpenDocument XSLT
+   http://open.comsultia.com/docbook2odf/
+
+ + Simple (and stupid) converter from OpenDocument Text to plain text
+   http://stosberg.net/odt2txt/
+
+ + Another python tool to aid in converting files using UNO
+   http://www.artofsolving.com/files/DocumentConverter.py
+
 ---
 Please send me improvements to this document.
