@@ -20,13 +20,13 @@ try:
     import uno
 except:
 #    extrapaths = ('/usr/lib/openoffice/program/', '/usr/lib/openoffice.org2.0/program/')
-    extrapaths = glob.glob('/usr/lib*/openoffice*/program/')
+    extrapaths = glob.glob('/usr/lib*/openoffice*/program/') + [ '/Applications/NeoOffice.app/Contents/program', ]
     for path in extrapaths:
         if os.path.isfile(os.path.join(path, 'pyuno.so')):
             sys.path.append(path)
             break
     else:
-        print >>sys.stderr, "unoconv: Cannot find the pyuno.so library."
+        print >>sys.stderr, "unoconv: Cannot find the pyuno.so library in sys.path."
         print >>sys.stderr, "Please locate this library and send feedback to <tools@lists.rpmforge.net>."
         sys.exit(1)
 
@@ -292,7 +292,7 @@ class Options:
 
         ### Make it easier for people to use a doctype (first letter is enough)
         if self.doctype:
-            for d in doctypes:
+            for doctype in doctypes:
                 if self.doctype[0] == doctype[0]:
                     self.doctype = doctype
 
