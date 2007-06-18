@@ -40,7 +40,7 @@ from com.sun.star.uno import Exception as UnoException
 __version__ = "$Revision$"
 # $Source$
 
-VERSION = '0.2'
+VERSION = '0.2svn'
 
 doctypes = ('document', 'graphics', 'presentation', 'spreadsheet')
 
@@ -242,7 +242,7 @@ class Options:
         self.doctype = None
         self.server = 'localhost'
         self.port = '2002'
-        self.connection = "uno:socket,host=%s,port=%s;urp;StarOffice.ComponentContext" % (self.server, self.port)
+        self.connection = "socket,host=%s,port=%s;urp;StarOffice.ComponentContext" % (self.server, self.port)
         self.filenames = []
 
         ### Get options from the commandline
@@ -343,7 +343,7 @@ class Convertor:
     def __init__(self):
         context = uno.getComponentContext()
         resolver = context.ServiceManager.createInstanceWithContext("com.sun.star.bridge.UnoUrlResolver", context)
-        unocontext = resolver.resolve(op.connection)
+        unocontext = resolver.resolve("uno:%s" % op.connection)
         unosvcmgr = unocontext.ServiceManager
     
         self.desktop = unosvcmgr.createInstanceWithContext("com.sun.star.frame.Desktop", unocontext)
@@ -463,7 +463,11 @@ def main():
      
     except NoConnectException, e:
         print >>sys.stderr, "unoconv: could not find an existing connection to Open Office at %s:%s." % (op.server, op.port)
-        print >>sys.stderr, "Please start an ooffice instance by doing:\n    ooffice -headless -accept=\"socket,host=%s,port=%s;urp;\"" % (op.server, op.port)
+        print >>sys.stderr
+        if op.connection:
+            print >>sys.stderr, "Please start an ooffice instance on server '%s' by doing:\n\n    ooffice -headless -accept=\"%s\"" % (op.server, op.connection)
+        else:
+            print >>sys.stderr, "Please start an ooffice instance on server '%s' by doing:\n\n    ooffice -headless -accept=\"socket,host=localhost,port=%s;urp;\"" % (op.server, op.port)
         exitcode = 1
     
 ### Main entrance
