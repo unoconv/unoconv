@@ -3,6 +3,7 @@
 - Created a seperate class and allow to use as a library (like DocumentConverter.py)
 - Makefile now adds symlinks for different ODF formats like eg, odt2pdf or odp2pdf
 - Added MacOSX NeoOffice path '/Applications/NeoOffice.app/Contents/program/' (Peter Stevens)
+- Added OpenSUSE 10 OpenOffice path '/usr/lib*/ooo*/program/' (Leo Eraly)
 
 * 0.2 - released 20/05/2007
 - Added support for almost 100 graphics, presentation and spreadsheet documents
