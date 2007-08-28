@@ -353,12 +353,12 @@ class Convertor:
 #            print >>sys.stderr, "Warning: failed to connect, trying to launch OpenOffice."
             try:
                 oopid = os.spawnvp(os.P_NOWAIT, "ooffice", ["ooffice", "-headless", "-accept=%s" % op.connection]);
-                time.sleep(1)
+                time.sleep(2)
                 unocontext = resolver.resolve("uno:%s" % op.connection)
             except OSError:
 #                print >>sys.stderr, "Warning: failed to connect, trying to launch StarOffice."
                 oopid = os.spawnvp(os.P_NOWAIT, "soffice", ["soffice", "-headless", "-accept=%s" % op.connection]);
-                time.sleep(1)
+                time.sleep(2)
                 unocontext = resolver.resolve("uno:%s" % op.connection)
 
         unosvcmgr = unocontext.ServiceManager
@@ -451,12 +451,12 @@ class Convertor:
 
         except SystemError, e:
             print >>sys.stderr, "unoconv: error during conversion: %s" % e
-            print >>sys.stderr, "The provided document cannot be imported."
+            print >>sys.stderr, "The provided document cannot be converted to the desired format."
             exitcode = 1
 
         except UnoException, e:
             print >>sys.stderr, "unoconv: error during conversion: %s" % e.Message
-            print >>sys.stderr, "The provided document cannot be imported."
+            print >>sys.stderr, "The provided document cannot be converted to the desired format."
             exitcode = 1
 #           if doc:
 #               doc.dispose()
