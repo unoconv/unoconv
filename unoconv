@@ -346,32 +346,35 @@ class Convertor:
     def __init__(self):
         global oopid
 
-        context = uno.getComponentContext()
-        resolver = context.ServiceManager.createInstanceWithContext("com.sun.star.bridge.UnoUrlResolver", context)
+        self.context = uno.getComponentContext()
+        resolver = self.context.ServiceManager.createInstanceWithContext("com.sun.star.bridge.UnoUrlResolver", self.context)
 
         try:
             unocontext = resolver.resolve("uno:%s" % op.connection)
         except NoConnectException, e:
             try:
-                print >>sys.stderr, "Warning: failed to connect, trying to launch ooffice."
+                print >>sys.stderr, "Warning: failed to connect, trying to launch soffice.bin."
 #                oopid = os.spawnvp(os.P_NOWAIT, "ooffice", ["ooffice", "-headless", "-accept=%s" % op.connection]);
 #                oopid = os.spawnvp(os.P_NOWAIT, "ooffice", ["ooffice", "-nologo", "-nodefault", "-accept=%s" % op.connection]);
                 oopid = os.spawnvp(os.P_NOWAIT, "soffice.bin", ["soffice.bin", "-nologo", "-nodefault", "-accept=%s" % op.connection]);
                 if not oopid: raise
-                time.sleep(1)
+                time.sleep(2)
                 unocontext = resolver.resolve("uno:%s" % op.connection)
             except:
                 print >>sys.stderr, "Warning: failed to connect, trying to launch soffice."
 #                oopid = os.spawnvp(os.P_NOWAIT, "soffice", ["soffice", "-headless", "-accept=%s" % op.connection]);
                 oopid = os.spawnvp(os.P_NOWAIT, "soffice", ["soffice", "-nologo", "-nodefault", "-accept=%s" % op.connection]);
                 if not oopid: raise
-                time.sleep(1)
+                time.sleep(2)
                 unocontext = resolver.resolve("uno:%s" % op.connection)
 
         unosvcmgr = unocontext.ServiceManager
 
         self.desktop = unosvcmgr.createInstanceWithContext("com.sun.star.frame.Desktop", unocontext)
         self.cwd = unohelper.systemPathToFileUrl( os.getcwd() )
+
+    def __del__(self):
+        self.context.dispose()
 
     def getformat(self, inputfn):
         doctype = None
@@ -430,7 +433,7 @@ class Convertor:
 
             inputurl = unohelper.absolutize(self.cwd, unohelper.systemPathToFileUrl(inputfn))
             doc = self.desktop.loadComponentFromURL( inputurl , "_blank", 0, inputprops )
-    
+
             if not doc:
                 raise UnoException("File could not be loaded by OpenOffice", None)
 
@@ -456,6 +459,8 @@ class Convertor:
             else:
                 doc.storeToURL("private:stream", outputprops)
 
+            doc.dispose()
+
         except SystemError, e:
             print >>sys.stderr, "unoconv: error during conversion: %s" % e
             print >>sys.stderr, "The provided document cannot be converted to the desired format."
@@ -465,8 +470,6 @@ class Convertor:
             print >>sys.stderr, "unoconv: error during conversion: %s" % e.Message
             print >>sys.stderr, "The provided document cannot be converted to the desired format."
             exitcode = 1
-#           if doc:
-#               doc.dispose()
 
         except IOException, e:
             print >>sys.stderr, "unoconv: error during conversion: %s" % e.Message
@@ -497,9 +500,9 @@ def main():
         print >>sys.stderr, "unoconv: could not find an existing connection to Open Office at %s:%s." % (op.server, op.port)
         print >>sys.stderr
         if op.connection:
-            print >>sys.stderr, "Please start an ooffice instance on server '%s' by doing:\n\n    ooffice -headless -accept=\"%s\"" % (op.server, op.connection)
+            print >>sys.stderr, "Please start an ooffice instance on server '%s' by doing:\n\n    ooffice -nologo -nodefault -accept=\"%s\"" % (op.server, op.connection)
         else:
-            print >>sys.stderr, "Please start an ooffice instance on server '%s' by doing:\n\n    ooffice -headless -accept=\"socket,host=localhost,port=%s;urp;\"" % (op.server, op.port)
+            print >>sys.stderr, "Please start an ooffice instance on server '%s' by doing:\n\n    ooffice -nologo -nodefault -accept=\"socket,host=localhost,port=%s;urp;\"" % (op.server, op.port)
         exitcode = 1
     except OSError:
         print >>sys.stderr, "Warning: failed to launch OpenOffice. Aborting."
