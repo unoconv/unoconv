@@ -8,7 +8,9 @@ all: clean bib doc6 doc95 doc docbook html ooxml pdb pdf psw rtf latex sdw3 sdw4
 #	docbook2odf --params generate.meta=0 curriculum-vitae-dag-wieers.xml
 
 %:
-	-unoconv -b $@ document-example.odt
+	-killall ooffice soffice.bin
+	-../unoconv -b $@ document-example.odt
+	@ps aux | grep office
 #	-unoconv -f $@ dag.gif
 #	docbook2pdf -d curriculum-vitae.dsl#print curriculum-vitae-dag-wieers.xml
 
