@@ -90,11 +90,11 @@ class FmtList:
                 return ret
 
     def display(self, doctype):
-        print >>sys.stderr, 'The following list of %s formats are currently available:\n' % doctype
+        print >>sys.stderr, "The following list of %s formats are currently available:\n" % doctype
         for fmt in self.list:
             if fmt.doctype == doctype:
                 print >>sys.stderr, "  %-8s - %s" % (fmt.name, fmt)
-        print >>sys.stderr
+	print >>sys.stderr
 
 class OutputStream( unohelper.Base, XOutputStream ):
     def __init__( self ):
@@ -240,18 +240,19 @@ class Options:
     def __init__(self, args):
         self.stdout = False
         self.showlist = False
+        self.listener = False
         self.format = None
         self.verbose = 0
         self.doctype = None
         self.server = 'localhost'
         self.port = '2002'
-        self.connection = "socket,host=%s,port=%s;urp;StarOffice.ComponentContext" % (self.server, self.port)
+        self.connection = None
         self.filenames = []
 
         ### Get options from the commandline
         try:
-            opts, args = getopt.getopt (args, 'b:c:d:hlp:s:t:v',
-                ['backend=', 'connection=', 'doctype=', 'help', 'list', 'port=', 'server=', 'stdout', 'verbose', 'version'] )
+            opts, args = getopt.getopt (args, 'b:c:d:hLlp:s:t:v',
+                ['backend=', 'connection=', 'doctype=', 'help', 'listener', 'list', 'port=', 'server=', 'stdout', 'verbose', 'version'] )
         except getopt.error, exc:
             print 'unoconv: %s, try unoconv -h for a list of all the options' % str(exc)
             sys.exit(255)
@@ -268,7 +269,9 @@ class Options:
                 self.connection = arg
             elif opt in ['-d', '--doctype']:
                 self.doctype = arg
-            elif opt in ['-l', '--list']:
+            elif opt in ['-l', '--listener']:
+                self.listener = True
+            elif opt in ['-L', '--list']:
                 self.showlist = True
             elif opt in ['-p', '--port']:
                 self.port = arg
@@ -288,10 +291,14 @@ class Options:
 
         self.filenames = args
 
-        if not self.showlist and self.doctype != 'list' and not self.filenames:
+        if not self.listener and not self.showlist and self.doctype != 'list' and not self.filenames:
             print >>sys.stderr, 'unoconv: you have to provide a filename as argument'
             print >>sys.stderr, 'Try `unoconv -h\' for more information.'
             sys.exit(255)
+
+        ### Set connection string
+        if not self.connection:
+            self.connection = "socket,host=%s,port=%s;urp;StarOffice.ComponentContext" % (self.server, self.port)
 
         ### Make it easier for people to use a doctype (first letter is enough)
         if self.doctype:
@@ -306,7 +313,7 @@ class Options:
             else:
                 for t in doctypes:
                     fmts.display(t)
-            die(0)
+            sys.exit(0)
 
         ### if no format was specified, probe it or provide it
         if not self.format:
@@ -353,19 +360,19 @@ class Convertor:
             unocontext = resolver.resolve("uno:%s" % op.connection)
         except NoConnectException, e:
             try:
-                print >>sys.stderr, "Warning: failed to connect, trying to launch soffice.bin."
+                error(1, "Warning: failed to connect, trying to launch soffice.bin.")
 #                oopid = os.spawnvp(os.P_NOWAIT, "ooffice", ["ooffice", "-headless", "-accept=%s" % op.connection]);
 #                oopid = os.spawnvp(os.P_NOWAIT, "ooffice", ["ooffice", "-nologo", "-nodefault", "-accept=%s" % op.connection]);
                 oopid = os.spawnvp(os.P_NOWAIT, "soffice.bin", ["soffice.bin", "-nologo", "-nodefault", "-accept=%s" % op.connection]);
                 if not oopid: raise
-                time.sleep(2)
+                time.sleep(1)
                 unocontext = resolver.resolve("uno:%s" % op.connection)
             except:
-                print >>sys.stderr, "Warning: failed to connect, trying to launch soffice."
+                error(1, "Warning: failed to connect, trying to launch soffice.")
 #                oopid = os.spawnvp(os.P_NOWAIT, "soffice", ["soffice", "-headless", "-accept=%s" % op.connection]);
                 oopid = os.spawnvp(os.P_NOWAIT, "soffice", ["soffice", "-nologo", "-nodefault", "-accept=%s" % op.connection]);
                 if not oopid: raise
-                time.sleep(2)
+                time.sleep(1)
                 unocontext = resolver.resolve("uno:%s" % op.connection)
 
         unosvcmgr = unocontext.ServiceManager
@@ -408,7 +415,7 @@ class Convertor:
         ### No format found, throw error
         if not outputfmt:
             if doctype:
-                print >>sys.stderr, 'unoconv: format [%s/%s] is not known to unoconv.' % (op.format, op.doctype)
+                print >>sys.stderr, 'unoconv: format [%s/%s] is not known to unoconv.' % (op.doctype, op.format)
             else:
                 print >>sys.stderr, 'unoconv: format [%s] is not known to unoconv.' % op.format
             die(1)
@@ -437,10 +444,9 @@ class Convertor:
             if not doc:
                 raise UnoException("File could not be loaded by OpenOffice", None)
 
-            if op.verbose > 0:
-                print >>sys.stderr, 'Selected output format: %s' % outputfmt
-                print >>sys.stderr, 'Selected ooffice filter: %s' % outputfmt.filter
-                print >>sys.stderr, 'Used doctype:', outputfmt.doctype
+            info(1, "Selected output format: %s" % outputfmt)
+            info(1, "Selected ooffice filter: %s" % outputfmt.filter)
+            info(1, "Used doctype: %s" % outputfmt.doctype)
 
             ### Write outputfile
             outputprops = (
@@ -454,58 +460,87 @@ class Convertor:
                 outputfn = outputfn + '.' + outputfmt.extension
                 outputurl = unohelper.absolutize( self.cwd, unohelper.systemPathToFileUrl(outputfn) )
                 doc.storeToURL(outputurl, outputprops)
-                if op.verbose > 0:
-                    print >>sys.stderr, 'Output file:', outputfn
+                info(1, "Output file: %s" % outputfn)
             else:
                 doc.storeToURL("private:stream", outputprops)
 
             doc.dispose()
 
         except SystemError, e:
-            print >>sys.stderr, "unoconv: error during conversion: %s" % e
-            print >>sys.stderr, "The provided document cannot be converted to the desired format."
+            error(0, "unoconv: error during conversion: %s" % e)
+            error(0, "The provided document cannot be converted to the desired format.")
             exitcode = 1
 
         except UnoException, e:
-            print >>sys.stderr, "unoconv: error during conversion: %s" % e.Message
-            print >>sys.stderr, "The provided document cannot be converted to the desired format."
+            error(0, "unoconv: error during conversion: %s" % e.Message)
+            error(0, "The provided document cannot be converted to the desired format.")
             exitcode = 1
 
         except IOException, e:
-            print >>sys.stderr, "unoconv: error during conversion: %s" % e.Message
-            print >>sys.stderr, "The provided document cannot be exported to %s." % outputfmt
+            error(0, "unoconv: error during conversion: %s" % e.Message)
+            error(0, "The provided document cannot be exported to %s." % outputfmt)
             exitcode = 1
 
         except CannotConvertException, e:
-            print >>sys.stderr, "unoconv: convert error: %s" % e.Message
+            error(0, "unoconv: convert error: %s" % e.Message)
             exitcode = 1
 
-def die(rc, str=None):
-    global oopid
-    if op and not op.stdout and str:
+class Listener:
+    def __init__(self):
+        error(1, "Started listener on %s:%s" % (op.server, op.port))
+        try:
+            os.execvp("soffice.bin", ["soffice.bin", "-nologo", "-nodefault", "-accept=%s" % op.connection]);
+        except:
+            try:
+                os.execvp("soffice", ["soffice", "-nologo", "-nodefault", "-accept=%s" % op.connection]);
+            except:
+                pass
+        error(0, "Failed to start listener on %s:%s" % (op.server, op.port))
+
+def error(level, str):
+    "Output error message"
+    if level <= op.verbose:
         print >>sys.stderr, "Error: %s" % str
+
+def info(level, str):
+    "Output info message"
+    if not op.stdout and level <= op.verbose:
+        print >>sys.stdout, str
+
+def die(ret, str=None):
+    "Print error and exit with errorcode"
+    global oopid
+    if str:
+        error(0, str)
     if oopid:
-#        print 'Taking down OpenOffice with pid %s' % oopid
+        error(2, 'Taking down OpenOffice with pid %s' % oopid)
+#        os.setpgid(oopid, 0)
+#        os.killpg(os.getpgid(oopid), 15)
         os.kill(oopid, 15)
-    sys.exit(rc)
+        error(2, 'Waiting for OpenOffice with pid %s to disappear' % oopid)
+        os.waitpid(oopid, os.WUNTRACED)
+    sys.exit(ret)
 
 def main():
     try:
-        convertor = Convertor()
+        if op.listener:
+            listener = Listener()
+        else:
+            convertor = Convertor()
 
         for inputfn in op.filenames:
             convertor.convert(inputfn)
 
     except NoConnectException, e:
-        print >>sys.stderr, "unoconv: could not find an existing connection to Open Office at %s:%s." % (op.server, op.port)
-        print >>sys.stderr
+        error(0, "unoconv: could not find an existing connection to Open Office at %s:%s." % (op.server, op.port))
         if op.connection:
-            print >>sys.stderr, "Please start an ooffice instance on server '%s' by doing:\n\n    ooffice -nologo -nodefault -accept=\"%s\"" % (op.server, op.connection)
+            error(0, "Please start an OpenOffice instance on server '%s' by doing:\n\n    unoconv --listener --server %s --port %s\n\nor alternatively:\n\n    ooffice -nologo -nodefault -accept=\"%s\"" % (op.server, op.server, op.port, op.connection))
         else:
-            print >>sys.stderr, "Please start an ooffice instance on server '%s' by doing:\n\n    ooffice -nologo -nodefault -accept=\"socket,host=localhost,port=%s;urp;\"" % (op.server, op.port)
+            error(0, "Please start an OpenOffice instance on server '%s' by doing:\n\n    unoconv --listener --server %s --port %s\n\nor alternatively:\n\n    ooffice -nologo -nodefault -accept=\"socket,host=%s,port=%s;urp;\"" % (op.server, op.server, op.port, op.server, op.port))
+            error(0, "Please start an ooffice instance on server '%s' by doing:\n\n    ooffice -nologo -nodefault -accept=\"socket,host=localhost,port=%s;urp;\"" % (op.server, op.port))
         exitcode = 1
     except OSError:
-        print >>sys.stderr, "Warning: failed to launch OpenOffice. Aborting."
+        error(0, "Warning: failed to launch OpenOffice. Aborting.")
 
 ### Main entrance
 if __name__ == '__main__':

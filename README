@@ -4,11 +4,18 @@ document format that OpenOffice can export.
 unoconv uses the OpenOffice's UNO bindings for non-interactive conversion
 of documents.
 
-Before using unoconv you need to start an OpenOffice instance that listens
-on a specific port by doing:
+unoconv tries to start an oofice instance that it then uses and
+destroys. However the success rate of starting and stopping this
+ooffice instance depends on some outside factors.
 
-    ooffice -headless "-accept=socket,host=localhost,port=2002;urp;"
+You can always start an instance yourself at the default port 2002 and
+then use unoconv until you're finished using it and then stop it.
 
+    ooffice -nologo -nodefault "-accept=socket,host=localhost,port=2002;urp;" &
+    unoconv -b pdf *.odt
+    unoconv -b doc *.odt
+    unoconv -b html *.odt
+    kill -15 %-
 
 Other tools that are useful:
 
