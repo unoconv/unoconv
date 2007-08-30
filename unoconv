@@ -361,16 +361,13 @@ class Convertor:
         except NoConnectException, e:
             try:
                 error(1, "Warning: failed to connect, trying to launch soffice.bin.")
-#                oopid = os.spawnvp(os.P_NOWAIT, "ooffice", ["ooffice", "-headless", "-accept=%s" % op.connection]);
-#                oopid = os.spawnvp(os.P_NOWAIT, "ooffice", ["ooffice", "-nologo", "-nodefault", "-accept=%s" % op.connection]);
-                oopid = os.spawnvp(os.P_NOWAIT, "soffice.bin", ["soffice.bin", "-nologo", "-nodefault", "-accept=%s" % op.connection]);
+                oopid = os.spawnvp(os.P_NOWAIT, "soffice.bin", ["soffice.bin", "-nologo", "-nodefault", "-headless", "-accept=%s" % op.connection]);
                 if not oopid: raise
                 time.sleep(1)
                 unocontext = resolver.resolve("uno:%s" % op.connection)
             except:
                 error(1, "Warning: failed to connect, trying to launch soffice.")
-#                oopid = os.spawnvp(os.P_NOWAIT, "soffice", ["soffice", "-headless", "-accept=%s" % op.connection]);
-                oopid = os.spawnvp(os.P_NOWAIT, "soffice", ["soffice", "-nologo", "-nodefault", "-accept=%s" % op.connection]);
+                oopid = os.spawnvp(os.P_NOWAIT, "soffice", ["soffice", "-nologo", "-nodefault", "-headless", "-accept=%s" % op.connection]);
                 if not oopid: raise
                 time.sleep(1)
                 unocontext = resolver.resolve("uno:%s" % op.connection)
