@@ -1,0 +1,135 @@
+.\" ** You probably do not want to edit this file directly **
+.\" It was generated using the DocBook XSL Stylesheets (version 1.69.1).
+.\" Instead of manually editing it, you probably should edit the DocBook XML
+.\" source for it and then use the DocBook XSL Stylesheets to regenerate it.
+.TH "UNOCONV" "1" "08/30/2007" "" ""
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.SH "NAME"
+unoconv \- convert any document from and to any OpenOffice supported format
+.SH "SYNOPSIS"
+unoconv \-\-listener [\-\-server srv] [\-\-port prt]
+.sp
+unoconv \-b pdf [options] file [file2 ..]
+.sp
+.SH "DESCRIPTION"
+unoconv is a command line utility that can convert any file format that OpenOffice can import, to any file format that OpenOffice is capable of exporting.
+.sp
+unoconv uses the OpenOffice's UNO bindings for non\-interactive conversion of documents and therefor needs an OpenOffice instance to communicate with. Therefore if it cannot find one, it will start its own instance for temporary usage. If desired, one can start a \(lqlistener\(rq instance to use for subsequent connections or even for remote connections.
+.sp
+.SH "OPTIONS"
+.TP
+\-b, \-\-backend
+Specify the format to convert to
+.TP
+\-d, \-\-doctype
+Specify the doctype of the backend format
+.TP
+\-c, \-\-connection
+Connection string
+.TP
+\-s, \-\-server
+Server to listen on (as listener) or to connect to (as client)
+.TP
+\-p, \-\-port
+Port to listen on (as listener) or to connect to (as client)
+.TP
+\-l, \-\-listener
+Start unoconv as listener for unoconv clients to connect to
+.TP
+\-\-list
+List possible input/output formats
+.TP
+\-\-stdout
+Print output file to stdout
+.TP
+\-v, \-\-verbose
+Be more and more verbose
+.SH "ARGUMENTS"
+You can provide one or more \fBfiles\fR as arguments to convert each of them to the specified \fBbackend format\fR.
+.sp
+.SH "USAGE"
+You can use unoconv in standalone mode, this means that in absence of an OpenOffice listener, it will starts its own:
+.sp
+.sp
+.nf
+unoconv \-b pdf some\-document.odt
+.fi
+One can use unoconv as a listener (by default localhost:2002) to let other unoconv instances connect to it:
+.sp
+.sp
+.nf
+unoconv \-\-listener &
+unoconv \-b pdf some\-document.odt
+unoconv \-b doc other\-document.odt
+unoconv \-b jpg some\-image.png
+unoconv \-b xsl some\-spreadsheet.csv
+kill \-15 %\-
+.fi
+This also works on a remote host:
+.sp
+.sp
+.nf
+unoconv \-\-listener \-\-server 1.2.3.4 \-\-port 4567
+.fi
+and then connect another system to convert documents:
+.sp
+.sp
+.nf
+unoconv \-\-server 1.2.3.4 \-\-port 4567
+.fi
+.SH "BUGS"
+unoconv uses the UNO bindings to connect to OpenOffice, in absence of a usable socket, it will start its own OpenOffice instance with the correct parameters. However, OpenOffice requires a working DISPLAY (even with \-headless option) and therefor you cannot run it in a true console, you need X.
+.sp
+.sp
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+\fBNote\fR
+Please see the TODO file for known bugs and future plans.
+.sp
+.SH "SEE ALSO"
+.sp
+.nf
+convert(1), file(1), odt2txt
+.fi
+.SH "REFERENCES"
+.TP 3
+\(bu
+[1]\&\fIText based document generation\fR
+.TP
+\(bu
+[2]\&\fIDocBook to OpenDocument XSLT\fR
+.TP
+\(bu
+[3]\&\fISimple (and stupid) converter from OpenDocument Text to plain text\fR
+.TP
+\(bu
+[4]\&\fIAnother python tool to aid in converting files using UNO\fR
+.SH "AUTHOR"
+Written by Dag Wieers [5]\&\fIdag@wieers.com\fR
+.sp
+Homepage at [6]\&\fIhttp://dag.wieers.com/home\-made/unoconv/\fR
+.sp
+.SH "REFERENCES"
+.TP 3
+1.\ Text based document generation
+\%http://www.methods.co.nz/asciidoc/
+.TP 3
+2.\ DocBook to OpenDocument XSLT
+\%http://open.comsultia.com/docbook2odf/
+.TP 3
+3.\ Simple (and stupid) converter from OpenDocument Text to plain text
+\%http://stosberg.net/odt2txt/
+.TP 3
+4.\ Another python tool to aid in converting files using UNO
+\%http://www.artofsolving.com/opensource/pyodconverter
+.TP 3
+5.\ dag@wieers.com
+\%mailto:dag@wieers.com
+.TP 3
+6.\ http://dag.wieers.com/home\-made/unoconv/
+\%http://dag.wieers.com/home\-made/unoconv/
