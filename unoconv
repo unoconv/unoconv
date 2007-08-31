@@ -41,7 +41,7 @@ from com.sun.star.uno import Exception as UnoException
 __version__ = "$Revision$"
 # $Source$
 
-VERSION = '0.2svn'
+VERSION = '0.3'
 
 doctypes = ('document', 'graphics', 'presentation', 'spreadsheet')
 
@@ -94,7 +94,7 @@ class FmtList:
         for fmt in self.list:
             if fmt.doctype == doctype:
                 print >>sys.stderr, "  %-8s - %s" % (fmt.name, fmt)
-	print >>sys.stderr
+        print >>sys.stderr
 
 class OutputStream( unohelper.Base, XOutputStream ):
     def __init__( self ):
@@ -251,8 +251,8 @@ class Options:
 
         ### Get options from the commandline
         try:
-            opts, args = getopt.getopt (args, 'b:c:d:hLlp:s:t:v',
-                ['backend=', 'connection=', 'doctype=', 'help', 'listener', 'list', 'port=', 'server=', 'stdout', 'verbose', 'version'] )
+            opts, args = getopt.getopt (args, 'c:d:f:hLlp:s:t:v',
+                ['connection=', 'doctype=', 'format=', 'help', 'list', 'listener', 'port=', 'server=', 'stdout', 'verbose', 'version'] )
         except getopt.error, exc:
             print 'unoconv: %s, try unoconv -h for a list of all the options' % str(exc)
             sys.exit(255)
@@ -263,12 +263,12 @@ class Options:
                 print
                 self.help()
                 sys.exit(1)
-            elif opt in ['-b', '--backend']:
-                self.format = arg
             elif opt in ['-c', '--connection']:
                 self.connection = arg
             elif opt in ['-d', '--doctype']:
                 self.doctype = arg
+            elif opt in ['-f', '--format']:
+                self.format = arg
             elif opt in ['-l', '--listener']:
                 self.listener = True
             elif opt in ['-L', '--list']:
@@ -303,7 +303,7 @@ class Options:
         ### Make it easier for people to use a doctype (first letter is enough)
         if self.doctype:
             for doctype in doctypes:
-                if self.doctype[0] == doctype[0]:
+                if doctype.startswith(self.doctype):
                     self.doctype = doctype
 
         ### Check if the user request to see the list of formats
@@ -315,7 +315,7 @@ class Options:
                     fmts.display(t)
             sys.exit(0)
 
-        ### if no format was specified, probe it or provide it
+        ### If no format was specified, probe it or provide it
         if not self.format:
             l = sys.argv[0].split('2')
             if len(l) == 2:
@@ -340,12 +340,16 @@ class Options:
         print >>sys.stderr, '''Convert from and to any format supported by OpenOffice
 
 unoconv options:
-  -b, --backend=format     specify the output format
   -c, --connection=string  use a custom connection string
-  -d, --doctype=type       specify document type (document, graphics, presentation, spreadsheet)
-  -l, --list               list the available output formats
-  -p, --port               specify a different port (default: 2002)
-  -s, --server             specify a different server (default: localhost)
+  -d, --doctype=type       specify document type
+                           (document, graphics, presentation, spreadsheet)
+  -f, --format=format      specify the output format
+      --list               list the available output formats
+  -l, --listener           start a listener to use by unoconv clients
+  -p, --port               specify the port (default: 2002) 
+                           to be used by client or listener
+  -s, --server             specify the server address (default: localhost)
+                           to be used by client or listener
       --stdout             write output to stdout
 '''
 
@@ -353,27 +357,31 @@ class Convertor:
     def __init__(self):
         global oopid
 
+        ### Do the OpenOffice component dance
         self.context = uno.getComponentContext()
         resolver = self.context.ServiceManager.createInstanceWithContext("com.sun.star.bridge.UnoUrlResolver", self.context)
 
+        ### Test for an existing connection
         try:
             unocontext = resolver.resolve("uno:%s" % op.connection)
-        except NoConnectException, e:
-            try:
-                error(1, "Warning: failed to connect, trying to launch soffice.bin.")
-                oopid = os.spawnvp(os.P_NOWAIT, "soffice.bin", ["soffice.bin", "-nologo", "-nodefault", "-headless", "-accept=%s" % op.connection]);
-                if not oopid: raise
-                time.sleep(1)
-                unocontext = resolver.resolve("uno:%s" % op.connection)
-            except:
-                error(1, "Warning: failed to connect, trying to launch soffice.")
-                oopid = os.spawnvp(os.P_NOWAIT, "soffice", ["soffice", "-nologo", "-nodefault", "-headless", "-accept=%s" % op.connection]);
-                if not oopid: raise
-                time.sleep(1)
-                unocontext = resolver.resolve("uno:%s" % op.connection)
+#       except NoConnectException, e:
+        except Exception, e:
+            error(2, "Existing listener not found.\n%s" % e)
 
+            ### Test if we can use an Openoffice *binary* in our (modified) path
+            for bin in ('boffice', 'soffice.bin', 'soffice', ):
+                error(2, "Trying to launch %s as our own listener." % bin)
+                try:
+                    oopid = os.spawnvp(os.P_NOWAIT, bin, [bin, "-nologo", "-nodefault", "-accept=%s" % op.connection]);
+                    time.sleep(1)
+                    unocontext = resolver.resolve("uno:%s" % op.connection)
+                    break
+                except Exception, e:
+                    error(3, "Launch of %s failed.\n%s" % (bin, e))
+                    continue
+
+        ### And some more OpenOffice magic
         unosvcmgr = unocontext.ServiceManager
-
         self.desktop = unosvcmgr.createInstanceWithContext("com.sun.star.frame.Desktop", unocontext)
         self.cwd = unohelper.systemPathToFileUrl( os.getcwd() )
 
@@ -484,20 +492,21 @@ class Convertor:
 
 class Listener:
     def __init__(self):
-        error(1, "Started listener on %s:%s" % (op.server, op.port))
-        try:
-            os.execvp("soffice.bin", ["soffice.bin", "-nologo", "-nodefault", "-accept=%s" % op.connection]);
-        except:
+        info(1, "Start listener on %s:%s" % (op.server, op.port))
+        for bin in ('soffice.bin', 'soffice', ):
+            error(2, "Warning: trying to launch %s." % bin)
             try:
-                os.execvp("soffice", ["soffice", "-nologo", "-nodefault", "-accept=%s" % op.connection]);
+                os.execvp(bin, [bin, "-nologo", "-nodefault", "-accept=%s" % op.connection]);
             except:
-                pass
-        error(0, "Failed to start listener on %s:%s" % (op.server, op.port))
+                continue
+        else:
+            die(254, "Failed to start listener on %s:%s" % (op.server, op.port))
+        die(253, "Existing listener found, aborting.")
 
 def error(level, str):
     "Output error message"
     if level <= op.verbose:
-        print >>sys.stderr, "Error: %s" % str
+        print >>sys.stderr, str
 
 def info(level, str):
     "Output info message"
@@ -508,7 +517,7 @@ def die(ret, str=None):
     "Print error and exit with errorcode"
     global oopid
     if str:
-        error(0, str)
+        error(0, 'Error: %s' % str)
     if oopid:
         error(2, 'Taking down OpenOffice with pid %s' % oopid)
 #        os.setpgid(oopid, 0)
@@ -516,6 +525,7 @@ def die(ret, str=None):
         os.kill(oopid, 15)
         error(2, 'Waiting for OpenOffice with pid %s to disappear' % oopid)
         os.waitpid(oopid, os.WUNTRACED)
+
     sys.exit(ret)
 
 def main():

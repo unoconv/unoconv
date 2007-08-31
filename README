@@ -11,13 +11,19 @@ ooffice instance depends on some outside factors.
 You can always start an instance yourself at the default port 2002 and
 then use unoconv until you're finished using it and then stop it.
 
-    ooffice -nologo -nodefault "-accept=socket,host=localhost,port=2002;urp;" &
+    unoconv --listener &
     unoconv -b pdf *.odt
     unoconv -b doc *.odt
     unoconv -b html *.odt
     kill -15 %-
 
-Other tools that are useful:
+Also possible is to use a listener or OpenOffice instance that accepts
+conntections on another system and use it from unoconv remotely. This
+way the conversion tasks are performed on a dedicated system instead
+of on the client system.
+
+
+Other tools that are useful or similar in operation:
 
  + Text based document generation
    http://www.methods.co.nz/asciidoc/

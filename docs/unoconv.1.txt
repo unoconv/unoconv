@@ -1,0 +1,141 @@
+= unoconv(1)
+Dag Wieers <dag@wieers.com>
+v0.3, 31 august 2007
+
+
+== NAME
+unoconv - convert any document from and to any OpenOffice supported format
+
+
+== SYNOPSIS
+'unoconv' [options] file [file2 ..]
+
+'unoconv' --listener [--server server] [--port port]
+
+
+== DESCRIPTION
+unoconv is a command line utility that can convert any file format that
+OpenOffice can import, to any file format that OpenOffice is capable of
+exporting.
+
+unoconv uses the OpenOffice's UNO bindings for non-interactive conversion
+of documents and therefor needs an OpenOffice instance to communicate with.
+Therefore if it cannot find one, it will start its own instance for temporary
+usage. If desired, one can start a ``listener'' instance to use for subsequent
+connections or even for remote connections.
+
+
+== OPTIONS
+-c, --connection::
+    UNO connection string to be used by the client to connect to an
+    OpenOffice instance, or used by the listener to make OpenOffice
+    listen.
++
+    Default connection string is "socket,host=localhost,port=2002;urp;StarOffice.ComponentContext"
+
+-d, --doctype::
+    Specify the OpenOffice document type of the backend format. Possible
+    document types are: 'document', 'graphics', 'presentation',
+    'spreadsheet'.
++
+    Default document type is 'document'.
+
+-f, --format::
+    Specify the output format for the document. You can get a list of
+    possible output formats per document type by using the +--list+ option.
++
+    Default document type is 'pdf'.
+
+--list::
+    Show the possible output formats to be used with +-f+.
+
+-l, --listener::
+    Start unoconv as listener for unoconv clients to connect to.
+
+-p, --port::
+    Port to listen on (as listener) or to connect to (as client).
++
+    Default port is '2002'.
+
+-s, --server::
+    Server (address) to listen on (as listener) or to connect to (as client).
++
+    Default server is 'localhost'.
+
+--stdout::
+    Print converted output file to stdout.
+
+-v, --verbose::
+    Be more and more and more verbose.
+
+
+== ARGUMENTS
+You can provide one or more *files* as arguments to convert each of them to
+the specified *output format*.
+
+
+== EXAMPLES
+You can use unoconv in standalone mode, this means that in absence of an
+OpenOffice listener, it will starts its own:
+
+    unoconv -f pdf some-document.odt
+
+
+One can use unoconv as a listener (by default localhost:2002) to let other
+unoconv instances connect to it:
+
+    unoconv --listener &
+    unoconv -f pdf some-document.odt
+    unoconv -f doc other-document.odt
+    unoconv -f jpg some-image.png
+    unoconv -f xsl some-spreadsheet.csv
+    kill -15 %-
+
+
+This also works on a remote host:
+
+    unoconv --listener --server 1.2.3.4 --port 4567
+
+
+and then connect another system to convert documents:
+
+    unoconv --server 1.2.3.4 --port 4567
+
+
+== BUGS
+unoconv uses the UNO bindings to connect to OpenOffice, in absence of a usable
+socket, it will start its own OpenOffice instance with the correct parameters.
+However, OpenOffice requires a working +DISPLAY+ (even with +-headless+
+option) and therefor you cannot run it in a true console, you need X.
+
+[NOTE]
+Please see the TODO file for known bugs and future plans.
+
+
+== SEE ALSO
+	convert(1), file(1), odt2txt
+
+
+== REFERENCES
+unoconv is very useful together with the following tools:
+
+Asciidoc::
+    http://www.methods.co.nz/asciidoc/
+
+docbook2odf::
+    http://open.comsultia.com/docbook2odf/
+
+
+== AUTHOR
+Written by Dag Wieers, <mailto:dag@wieers.com[]>
+
+
+== RESOURCES
+Main web site: http://dag.wieers.com/home-made/unoconv/[]
+
+
+== COPYING
+Copyright \(C) 2007 Dag Wieers. Free use of this software is granted under the
+terms of the GNU General Public License (GPL).
+
+// vim: set syntax=asciidoc
