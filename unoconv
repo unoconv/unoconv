@@ -519,13 +519,15 @@ def die(ret, str=None):
     if str:
         error(0, 'Error: %s' % str)
     if oopid:
-        error(2, 'Taking down OpenOffice with pid %s' % oopid)
+        error(2, 'Taking down OpenOffice with pid %s.' % oopid)
 #        os.setpgid(oopid, 0)
 #        os.killpg(os.getpgid(oopid), 15)
-        os.kill(oopid, 15)
-        error(2, 'Waiting for OpenOffice with pid %s to disappear' % oopid)
-        os.waitpid(oopid, os.WUNTRACED)
-
+        try:
+            os.kill(oopid, 15)
+            error(2, 'Waiting for OpenOffice with pid %s to disappear.' % oopid)
+            os.waitpid(oopid, os.WUNTRACED)
+        except:
+            error(2, 'No OpenOffice with pid %s to take down' % oopid)
     sys.exit(ret)
 
 def main():
