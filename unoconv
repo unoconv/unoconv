@@ -299,6 +299,7 @@ class Options:
         ### Set connection string
         if not self.connection:
             self.connection = "socket,host=%s,port=%s;urp;StarOffice.ComponentContext" % (self.server, self.port)
+#            self.connection = "socket,host=%s,port=%s;urp;" % (self.server, self.port)
 
         ### Make it easier for people to use a doctype (first letter is enough)
         if self.doctype:
@@ -357,6 +358,7 @@ unoconv options:
 class Convertor:
     def __init__(self):
         global oopid
+        unocontext = None
 
         ### Do the OpenOffice component dance
         self.context = uno.getComponentContext()
@@ -380,6 +382,9 @@ class Convertor:
                 except Exception, e:
                     error(3, "Launch of %s failed.\n%s" % (bin, e))
                     continue
+
+            if not unocontext:
+                die(251, "Unable to connect or start own listener. Aborting.")
 
         ### And some more OpenOffice magic
         unosvcmgr = unocontext.ServiceManager
@@ -473,22 +478,22 @@ class Convertor:
             doc.dispose()
 
         except SystemError, e:
-            error(0, "unoconv: error during conversion: %s" % e)
+            error(0, "unoconv: SystemError during conversion: %s" % e)
             error(0, "The provided document cannot be converted to the desired format.")
             exitcode = 1
 
         except UnoException, e:
-            error(0, "unoconv: error during conversion: %s" % e.Message)
+            error(0, "unoconv: UnoException during conversion: %s" % e.Message)
             error(0, "The provided document cannot be converted to the desired format.")
             exitcode = 1
 
         except IOException, e:
-            error(0, "unoconv: error during conversion: %s" % e.Message)
+            error(0, "unoconv: IOException during conversion: %s" % e.Message)
             error(0, "The provided document cannot be exported to %s." % outputfmt)
             exitcode = 1
 
         except CannotConvertException, e:
-            error(0, "unoconv: convert error: %s" % e.Message)
+            error(0, "unoconv: CannotConvertException during conversion: %s" % e.Message)
             exitcode = 1
 
 class Listener:
@@ -549,6 +554,8 @@ def main():
             error(0, "Please start an OpenOffice instance on server '%s' by doing:\n\n    unoconv --listener --server %s --port %s\n\nor alternatively:\n\n    ooffice -nologo -nodefault -accept=\"socket,host=%s,port=%s;urp;\"" % (op.server, op.server, op.port, op.server, op.port))
             error(0, "Please start an ooffice instance on server '%s' by doing:\n\n    ooffice -nologo -nodefault -accept=\"socket,host=localhost,port=%s;urp;\"" % (op.server, op.port))
         exitcode = 1
+#    except UnboundLocalError:
+#        die(252, "Failed to connect to remote listener.")
     except OSError:
         error(0, "Warning: failed to launch OpenOffice. Aborting.")
 
