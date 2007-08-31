@@ -10,7 +10,7 @@ unoconv - convert any document from and to any OpenOffice supported format
 == SYNOPSIS
 'unoconv' [options] file [file2 ..]
 
-'unoconv' --listener [--server server] [--port port]
+'unoconv' --listener [--server SRV] [--port PRT] [--connections CON]
 
 
 == DESCRIPTION
@@ -46,9 +46,6 @@ connections or even for remote connections.
 +
     Default document type is 'pdf'.
 
---list::
-    Show the possible output formats to be used with +-f+.
-
 -l, --listener::
     Start unoconv as listener for unoconv clients to connect to.
 
@@ -61,6 +58,9 @@ connections or even for remote connections.
     Server (address) to listen on (as listener) or to connect to (as client).
 +
     Default server is 'localhost'.
+
+--show::
+    List the possible output formats to be used with +-f+.
 
 --stdout::
     Print converted output file to stdout.

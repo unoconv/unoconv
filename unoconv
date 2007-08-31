@@ -252,7 +252,7 @@ class Options:
         ### Get options from the commandline
         try:
             opts, args = getopt.getopt (args, 'c:d:f:hLlp:s:t:v',
-                ['connection=', 'doctype=', 'format=', 'help', 'list', 'listener', 'port=', 'server=', 'stdout', 'verbose', 'version'] )
+                ['connection=', 'doctype=', 'format=', 'help', 'listener', 'port=', 'server=', 'show', 'stdout', 'verbose', 'version'] )
         except getopt.error, exc:
             print 'unoconv: %s, try unoconv -h for a list of all the options' % str(exc)
             sys.exit(255)
@@ -271,7 +271,7 @@ class Options:
                 self.format = arg
             elif opt in ['-l', '--listener']:
                 self.listener = True
-            elif opt in ['-L', '--list']:
+            elif opt in ['--show']:
                 self.showlist = True
             elif opt in ['-p', '--port']:
                 self.port = arg
@@ -344,13 +344,14 @@ unoconv options:
   -d, --doctype=type       specify document type
                            (document, graphics, presentation, spreadsheet)
   -f, --format=format      specify the output format
-      --list               list the available output formats
   -l, --listener           start a listener to use by unoconv clients
   -p, --port               specify the port (default: 2002) 
                            to be used by client or listener
   -s, --server             specify the server address (default: localhost)
                            to be used by client or listener
+      --show               list the available output formats
       --stdout             write output to stdout
+  -v, --verbose            be more and more verbose
 '''
 
 class Convertor:
