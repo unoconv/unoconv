@@ -11,7 +11,7 @@ all: clean bib doc6 doc95 doc docbook html ooxml pdb pdf psw rtf latex sdw3 sdw4
 
 %:
 #	-killall ooffice soffice.bin
-	-../unoconv -f $@ document-example.odt
+	-../unoconv -vv -f $@ document-example.odt
 #	@ps aux | grep office
 #	-unoconv -f $@ dag.gif
 #	docbook2pdf -d curriculum-vitae.dsl#print curriculum-vitae-dag-wieers.xml

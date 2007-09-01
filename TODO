@@ -13,11 +13,3 @@ contact me as well. :) Send an email to: Dag Wieers <dag@wieers.com>
 ### Usability
 - Maybe change the commandline interface to reflect ImageMagick's convert
 - Add the list of input formats as well, and print that list too
-
-### OpenOffice execution
-- If an openoffice exists, -accept modifies the existing behaviour of
-  the running instance. In that case we need to -unaccept afterwards
-  (and not try to kill a ghost)
-- If a unoconv-listener has been started, and you start an openoffice
-  gui, the openoffice gui runs as the same process as the listeners.
-  In that case we need to -unaccept afterwards (and not kill the gui)

@@ -524,25 +524,27 @@ def die(ret, str=None):
     if str:
         error(0, 'Error: %s' % str)
 
-    ### Did we start a process and is it bound to a GUI ?
-    if oopid and not convertor.desktop.getCurrentFrame():
-#        error(2, 'Taking down OpenOffice with pid %s.' % oopid)
-        try:
-            ### FIXME: Send terminate event to perfectly good OpenOffice GUI
-            convertor.desktop.terminate()
-        except DisposedException:
-            error(2, 'OpenOffice instance successfully terminated.')
+    ### Did we start an instance ?
+    if oopid:
 
-    ### Otherwise -unaccept connection
-    elif convertor.desktop.getCurrentFrame():
-        for bin in ('soffice.bin', 'soffice', ):
+        ### If there is a GUI now attached to the instance, disable listener
+        if convertor.desktop.getCurrentFrame():
+            for bin in ('soffice.bin', 'soffice', ):
+                try:
+                    os.spawnvp(os.P_NOWAIT, bin, [bin, "-nologo", "-nodefault", "-headless", "-unaccept=%s" % op.connection]);
+                    error(2, 'OpenOffice listener successfully disabled.')
+                    break
+                except Exception, e:
+                    continue
+
+        ### If there is no GUI attached to the instance, terminate instance
+        else:
             try:
-                os.spawnvp(os.P_NOWAIT, bin, [bin, "-nologo", "-nodefault", "-unaccept=%s" % op.connection]);
-                error(2, 'OpenOffice listener successfully disabled.')
-                break
-            except Exception, e:
-                continue
+                convertor.desktop.terminate()
+            except DisposedException:
+                error(2, 'OpenOffice instance successfully terminated.')
 
+#        error(2, 'Taking down OpenOffice with pid %s.' % oopid)
 #        os.setpgid(oopid, 0)
 #        os.killpg(os.getpgid(oopid), 15)
 #        try:
