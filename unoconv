@@ -34,6 +34,7 @@ else:
 
 from com.sun.star.beans import PropertyValue
 from com.sun.star.connection import NoConnectException
+from com.sun.star.lang import DisposedException
 from com.sun.star.io import IOException, XOutputStream
 from com.sun.star.script import CannotConvertException
 from com.sun.star.uno import Exception as UnoException
@@ -41,7 +42,7 @@ from com.sun.star.uno import Exception as UnoException
 __version__ = "$Revision$"
 # $Source$
 
-VERSION = '0.3'
+VERSION = '0.3svn'
 
 doctypes = ('document', 'graphics', 'presentation', 'spreadsheet')
 
@@ -518,21 +519,42 @@ def info(level, str):
 def die(ret, str=None):
     "Print error and exit with errorcode"
     global oopid
+    global convertor
+
     if str:
         error(0, 'Error: %s' % str)
-    if oopid:
-        error(2, 'Taking down OpenOffice with pid %s.' % oopid)
+
+    ### Did we start a process and is it bound to a GUI ?
+    if oopid and not convertor.desktop.getCurrentFrame():
+#        error(2, 'Taking down OpenOffice with pid %s.' % oopid)
+        try:
+            ### FIXME: Send terminate event to perfectly good OpenOffice GUI
+            convertor.desktop.terminate()
+        except DisposedException:
+            error(2, 'OpenOffice instance successfully terminated.')
+
+    ### Otherwise -unaccept connection
+    elif convertor.desktop.getCurrentFrame():
+        for bin in ('soffice.bin', 'soffice', ):
+            try:
+                os.spawnvp(os.P_NOWAIT, bin, [bin, "-nologo", "-nodefault", "-unaccept=%s" % op.connection]);
+                error(2, 'OpenOffice listener successfully disabled.')
+                break
+            except Exception, e:
+                continue
+
 #        os.setpgid(oopid, 0)
 #        os.killpg(os.getpgid(oopid), 15)
-        try:
-            os.kill(oopid, 15)
-            error(2, 'Waiting for OpenOffice with pid %s to disappear.' % oopid)
-            os.waitpid(oopid, os.WUNTRACED)
-        except:
-            error(2, 'No OpenOffice with pid %s to take down' % oopid)
+#        try:
+#            os.kill(oopid, 15)
+#            error(2, 'Waiting for OpenOffice with pid %s to disappear.' % oopid)
+#            os.waitpid(oopid, os.WUNTRACED)
+#        except:
+#            error(2, 'No OpenOffice with pid %s to take down' % oopid)
     sys.exit(ret)
 
 def main():
+    global convertor
     try:
         if op.listener:
             listener = Listener()
@@ -554,6 +576,8 @@ def main():
 #        die(252, "Failed to connect to remote listener.")
     except OSError:
         error(0, "Warning: failed to launch OpenOffice. Aborting.")
+
+convertor = None
 
 ### Main entrance
 if __name__ == '__main__':

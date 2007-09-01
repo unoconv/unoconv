@@ -1,3 +1,6 @@
+* 0.3svn - released 01/09/2007
+- Now properly check if there is a GUI attached and terminate() or -unaccept instance
+
 * 0.3 - released 31/08/2007
 - Determine doctype from input filename (if not specified)
 - Created a seperate class and allow to use as a library (like DocumentConverter.py)
