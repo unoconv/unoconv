@@ -367,13 +367,12 @@ class Convertor:
         ### Test for an existing connection
         try:
             unocontext = resolver.resolve("uno:%s" % op.connection)
-#       except NoConnectException, e:
         except Exception, e:
             error(2, "Existing listener not found.\n%s" % e)
 
             ### Test if we can use an Openoffice *binary* in our (modified) path
-            for bin in ('boffice', 'soffice.bin', 'soffice', ):
-                error(2, "Trying to launch %s as our own listener." % bin)
+            for bin in ('soffice.bin', 'soffice', ):
+                error(2, "Trying to launch our own listener using %s." % bin)
                 try:
                     oopid = os.spawnvp(os.P_NOWAIT, bin, [bin, "-nologo", "-nodefault", "-accept=%s" % op.connection]);
                     time.sleep(1)
@@ -383,16 +382,13 @@ class Convertor:
                     error(3, "Launch of %s failed.\n%s" % (bin, e))
                     continue
 
-            if not unocontext:
-                die(251, "Unable to connect or start own listener. Aborting.")
+        if not unocontext:
+            die(251, "Unable to connect or start own listener. Aborting.")
 
         ### And some more OpenOffice magic
         unosvcmgr = unocontext.ServiceManager
         self.desktop = unosvcmgr.createInstanceWithContext("com.sun.star.frame.Desktop", unocontext)
         self.cwd = unohelper.systemPathToFileUrl( os.getcwd() )
-
-    def __del__(self):
-        self.context.dispose()
 
     def getformat(self, inputfn):
         doctype = None
@@ -455,9 +451,9 @@ class Convertor:
             if not doc:
                 raise UnoException("File could not be loaded by OpenOffice", None)
 
-            info(1, "Selected output format: %s" % outputfmt)
-            info(1, "Selected ooffice filter: %s" % outputfmt.filter)
-            info(1, "Used doctype: %s" % outputfmt.doctype)
+            error(1, "Selected output format: %s" % outputfmt)
+            error(1, "Selected ooffice filter: %s" % outputfmt.filter)
+            error(1, "Used doctype: %s" % outputfmt.doctype)
 
             ### Write outputfile
             outputprops = (
@@ -471,7 +467,7 @@ class Convertor:
                 outputfn = outputfn + '.' + outputfmt.extension
                 outputurl = unohelper.absolutize( self.cwd, unohelper.systemPathToFileUrl(outputfn) )
                 doc.storeToURL(outputurl, outputprops)
-                info(1, "Output file: %s" % outputfn)
+                error(1, "Output file: %s" % outputfn)
             else:
                 doc.storeToURL("private:stream", outputprops)
 
@@ -498,7 +494,7 @@ class Convertor:
 
 class Listener:
     def __init__(self):
-        info(1, "Start listener on %s:%s" % (op.server, op.port))
+        error(1, "Start listener on %s:%s" % (op.server, op.port))
         for bin in ('soffice.bin', 'soffice', ):
             error(2, "Warning: trying to launch %s." % bin)
             try:
