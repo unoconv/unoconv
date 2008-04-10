@@ -30,6 +30,12 @@ of on the client system.
 Remember that ooffice requires an X display, even when using it in headless
 mode (not sure what -headless means in this context though).
 
+Also beware that the pyuno python module needs to be compiled with the exact
+same version of python that you are using to load it. A lot of people that
+run into problems loading pyuno are actually using a precompiled OpenOffice
+that they downloaded somewhere and is incompatible with their python version.
+
+
 Other tools that are useful or similar in operation:
 
  + Text based document generation
