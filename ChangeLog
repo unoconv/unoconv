@@ -1,12 +1,13 @@
-* 0.3svn - released 01/09/2007
+* 0.3svn - released 10/04/2008
 - Now properly check if there is a GUI attached and terminate() or -unaccept instance
+- Added official OpenOffice path '/opt/openoffice*/program'
 
 * 0.3 - released 31/08/2007
 - Determine doctype from input filename (if not specified)
 - Created a seperate class and allow to use as a library (like DocumentConverter.py)
 - Makefile now adds symlinks for different ODF formats like eg, odt2pdf or odp2pdf
-- Added MacOSX NeoOffice path '/Applications/NeoOffice.app/Contents/program/' (Peter Stevens)
-- Added OpenSUSE 10 OpenOffice path '/usr/lib*/ooo*/program/' (Leo Eraly)
+- Added MacOSX NeoOffice path '/Applications/NeoOffice.app/Contents/program' (Peter Stevens)
+- Added OpenSUSE 10 OpenOffice path '/usr/lib*/ooo*/program' (Leo Eraly)
 - Start and stop OpenOffice automatically when needed (Matthieu Moy)
 - Added --listener option to make OpenOffice accept client requests (Matthieu Moy)
 - Changed -b option to -f option to match a2x options
@@ -16,7 +17,7 @@
 - Added support for almost 100 graphics, presentation and spreadsheet documents
 - Added -d/--doctype option to specify the document type
 - Added -v/--verbose to show more information
-- Added Gentoo oofice path '/usr/lib/openoffice/program/' (Peter Draho)
+- Added Gentoo oofice path '/usr/lib/openoffice/program' (Peter Draho)
 - Show proper error when file does not exist (Peter Draho)
 - Make long options work :)
 - If format is not recognized, scan by extension

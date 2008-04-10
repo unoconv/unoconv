@@ -17,10 +17,10 @@
 import getopt, sys, os, glob, time
 
 #extrapaths = ('/usr/lib/openoffice/program/', '/usr/lib/openoffice.org2.0/program/')
-extrapaths = glob.glob('/usr/lib*/openoffice*/program/') + glob.glob('/usr/lib*/ooo*/program') + [ '/Applications/NeoOffice.app/Contents/program', ]
+extrapaths = glob.glob('/usr/lib*/openoffice*/program') + glob.glob('/usr/lib*/ooo*/program') + glob.glob('/opt/openoffice*/program') + [ '/Applications/NeoOffice.app/Contents/program', ]
 for path in extrapaths:
     try:
-        sys.path.append(path)   
+        sys.path.append(path)
         import uno, unohelper
         os.environ['PATH'] = '%s:' % path + os.environ['PATH']
         break
