@@ -375,7 +375,7 @@ class Convertor:
             for bin in ('soffice.bin', 'soffice', ):
                 error(2, "Trying to launch our own listener using %s." % bin)
                 try:
-                    oopid = os.spawnvp(os.P_NOWAIT, bin, [bin, "-nologo", "-nodefault", "-accept=%s" % op.connection]);
+                    oopid = os.spawnvp(os.P_NOWAIT, bin, [bin, "-nologo", "-nodefault", "-headless", "-accept=%s" % op.connection]);
                     time.sleep(1)
                     unocontext = resolver.resolve("uno:%s" % op.connection)
                     break

@@ -4,14 +4,19 @@ document format that OpenOffice can export.
 unoconv uses the OpenOffice's UNO bindings for non-interactive conversion
 of documents.
 
-unoconv tries to start an oofice instance that it then uses and
-destroys. However the success rate of starting and stopping this
-ooffice instance depends on some outside factors.
+unoconv tries to start an ooffice instance (if it cannot find a running one)
+that it then uses and destroys. However the success rate of starting and
+stopping this ooffice instance depends on some outside factors.
 
-You can always start an instance yourself at the default port 2002 and
-then use unoconv until you're finished using it and then stop it.
+Since there is no feedback mechanism to see if the newly started ooffice is
+in fact ready to communicate, we don't know exactly when we can use the UNO
+api. If ooffice is not ready, you may get a random error.
+
+However, you can always start an instance yourself at the default port 2002
+and then use unoconv until you're finished using it and then stop it.
 
     unoconv --listener &
+    sleep 20
     unoconv -b pdf *.odt
     unoconv -b doc *.odt
     unoconv -b html *.odt
@@ -22,6 +27,8 @@ conntections on another system and use it from unoconv remotely. This
 way the conversion tasks are performed on a dedicated system instead
 of on the client system.
 
+Remember that ooffice requires an X display, even when using it in headless
+mode (not sure what -headless means in this context though).
 
 Other tools that are useful or similar in operation:
 
