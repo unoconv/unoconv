@@ -1,6 +1,6 @@
 ### Please modify and send me improvements
 
-all: clean bib doc6 doc95 doc docbook html ooxml pdb pdf psw rtf latex sdw3 sdw4 sdw sxw text txt xhtml
+all: clean bib doc6 doc95 doc docbook html mediawiki ooxml pdb pdf psw rtf latex sdw3 sdw4 sdw sxw text txt xhtml
 
 #xml: curriculum-vitae-dag-wieers.txt
 #	asciidoc -b docbook -d article curriculum-vitae-dag-wieers.txt

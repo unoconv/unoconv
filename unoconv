@@ -133,6 +133,7 @@ fmts.add('document', 'sdw3', 'sdw', 'StarWriter 3.0', 'StarWriter 3.0')
 fmts.add('document', 'stw', 'stw', 'Open Office.org 1.0 Text Document Template', 'writer_StarOffice_XML_Writer_Template')
 fmts.add('document', 'sxw', 'sxw', 'Open Office.org 1.0 Text Document', 'StarOffice XML (Writer)')
 fmts.add('document', 'text', 'txt', 'Text Encoded', 'Text (encoded)')
+fmts.add('document', 'mediawiki', 'txt', 'Mediawiki', 'Mediawiki')
 fmts.add('document', 'txt', 'txt', 'Plain Text', 'Text')
 fmts.add('document', 'vor', 'vor', 'StarWriter 5.0 Template', 'StarWriter 5.0 Vorlage/Template')
 fmts.add('document', 'vor4', 'vor', 'StarWriter 4.0 Template', 'StarWriter 4.0 Vorlage/Template')
@@ -280,8 +281,6 @@ class Options:
                 self.listener = True
             elif opt in ['-o', '--outputpath']:
                 self.outputpath = arg
-                if not (self.outputpath[len(self.outputpath)] == os.separator):
-                    self.outputpath = self.outputpath + os.separator
             elif opt in ['-p', '--port']:
                 self.port = arg
             elif opt in ['-s', '--server']:
@@ -483,10 +482,10 @@ class Convertor:
 
             if not op.stdout:
                 (outputfn, ext) = os.path.splitext(inputfn)
-                if not self.outputpath:
+                if not op.outputpath:
                     outputfn = outputfn + '.' + outputfmt.extension
                 else:
-                    outputfn = os.path.joint(self.outputpath, os.path.basename(outputfn) + '.' + outputfmt.extension)
+                    outputfn = os.path.join(op.outputpath, os.path.basename(outputfn) + '.' + outputfmt.extension)
                 outputurl = unohelper.absolutize( self.cwd, unohelper.systemPathToFileUrl(outputfn) )
                 doc.storeToURL(outputurl, outputprops)
                 error(1, "Output file: %s" % outputfn)

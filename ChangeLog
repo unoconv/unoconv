@@ -5,6 +5,7 @@
 - Added support for OpenOffice on Windows (Fernando Lucas Rodriguez)
 - Added -i/--pipe option to communicate with UNO pipe (Fernando Lucas Rodriguez)
 - Added -o/--outputpath option to modify the output path (Fernando Lucas Rodriguez)
+- Added support for MediaWiki output (txt)
 
 * 0.3 - released 31/08/2007
 - Determine doctype from input filename (if not specified)
