@@ -1,6 +1,7 @@
 * 0.3svn - released 10/04/2008
 - Now properly check if there is a GUI attached and terminate() or -unaccept instance
 - Added official OpenOffice path '/opt/openoffice*/program'
+- Added -S/--sleep option to influence waiting for OpenOffice to be ready (default: 2 secs)
 
 * 0.3 - released 31/08/2007
 - Determine doctype from input filename (if not specified)

@@ -34,6 +34,7 @@ Also beware that the pyuno python module needs to be compiled with the exact
 same version of python that you are using to load it. A lot of people that
 run into problems loading pyuno are actually using a precompiled OpenOffice
 that they downloaded somewhere and is incompatible with their python version.
+(Sometimes the OpenOffice comes with its own python wrapper.)
 
 
 Other tools that are useful or similar in operation:
