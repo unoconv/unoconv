@@ -17,7 +17,7 @@
 import getopt, sys, os, glob, time
 
 #extrapaths = ('/usr/lib/openoffice/program/', '/usr/lib/openoffice.org2.0/program/')
-extrapaths = glob.glob('/usr/lib*/openoffice*/program') + glob.glob('/usr/lib*/ooo*/program') + glob.glob('/opt/openoffice*/program') + [ '/Applications/NeoOffice.app/Contents/program', ]
+extrapaths = glob.glob('/usr/lib*/openoffice*/program') + glob.glob('/usr/lib*/ooo*/program') + glob.glob('/opt/openoffice*/program') + glob.glob('C:\\Program Files\\OpenOffice.org *\\program\\') + [ '/Applications/NeoOffice.app/Contents/program', '/usr/bin' ]
 for path in extrapaths:
     try:
         sys.path.append(path)
@@ -250,11 +250,14 @@ class Options:
         self.port = '2002'
         self.connection = None
         self.filenames = []
+        self.pipe = None
+        self.outputpath = None
+
 
         ### Get options from the commandline
         try:
-            opts, args = getopt.getopt (args, 'c:d:f:hLlp:s:S:t:v',
-                ['connection=', 'doctype=', 'format=', 'help', 'listener', 'port=', 'server=', 'sleep=', 'show', 'stdout', 'verbose', 'version'] )
+            opts, args = getopt.getopt (args, 'c:d:f:hi:Llo:p:s:S:t:v',
+                ['connection=', 'doctype=', 'format=', 'help', 'listener', 'outputpath=', 'pipe=', 'port=', 'server=', 'sleep=', 'show', 'stdout', 'verbose', 'version'] )
         except getopt.error, exc:
             print 'unoconv: %s, try unoconv -h for a list of all the options' % str(exc)
             sys.exit(255)
@@ -271,14 +274,20 @@ class Options:
                 self.doctype = arg
             elif opt in ['-f', '--format']:
                 self.format = arg
+            elif opt in ['-i', '--pipe']:
+                self.pipe = arg
             elif opt in ['-l', '--listener']:
                 self.listener = True
-            elif opt in ['--show']:
-                self.showlist = True
+            elif opt in ['-o', '--outputpath']:
+                self.outputpath = arg
+                if not (self.outputpath[len(self.outputpath)] == os.separator):
+                    self.outputpath = self.outputpath + os.separator
             elif opt in ['-p', '--port']:
                 self.port = arg
             elif opt in ['-s', '--server']:
                 self.server = arg
+            elif opt in ['--show']:
+                self.showlist = True
             elif opt in ['-S', '--sleep']:
                 self.sleep = int(arg)
             elif opt in ['--stdout']:
@@ -302,8 +311,11 @@ class Options:
 
         ### Set connection string
         if not self.connection:
-            self.connection = "socket,host=%s,port=%s;urp;StarOffice.ComponentContext" % (self.server, self.port)
-#            self.connection = "socket,host=%s,port=%s;urp;" % (self.server, self.port)
+            if not self.pipe:
+                self.connection = "socket,host=%s,port=%s;urp;StarOffice.ComponentContext" % (self.server, self.port)
+#               self.connection = "socket,host=%s,port=%s;urp;" % (self.server, self.port)
+            else:
+                self.connection = "pipe,name=%s;urp;StarOffice.ComponentContext" % (self.pipe)
 
         ### Make it easier for people to use a doctype (first letter is enough)
         if self.doctype:
@@ -349,8 +361,10 @@ unoconv options:
   -d, --doctype=type       specify document type
                              (document, graphics, presentation, spreadsheet)
   -f, --format=format      specify the output format
+  -i, --pipe=name          alternative method of connection using a pipe
   -l, --listener           start a listener to use by unoconv clients
-  -p, --port               specify the port (default: 2002) 
+  -o, --outputpath=name    output directory
+  -p, --port               specify the port (default: 2002)
                              to be used by client or listener
   -s, --server             specify the server address (default: localhost)
                              to be used by client or listener
@@ -469,7 +483,10 @@ class Convertor:
 
             if not op.stdout:
                 (outputfn, ext) = os.path.splitext(inputfn)
-                outputfn = outputfn + '.' + outputfmt.extension
+                if not self.outputpath:
+                    outputfn = outputfn + '.' + outputfmt.extension
+                else:
+                    outputfn = os.path.joint(self.outputpath, os.path.basename(outputfn) + '.' + outputfmt.extension)
                 outputurl = unohelper.absolutize( self.cwd, unohelper.systemPathToFileUrl(outputfn) )
                 doc.storeToURL(outputurl, outputprops)
                 error(1, "Output file: %s" % outputfn)
@@ -505,9 +522,10 @@ class Listener:
             try:
                 os.execvp(bin, [bin, "-nologo", "-nodefault", "-accept=%s" % op.connection]);
             except:
+                error(3, "Launch of %s failed.\n%s" % (bin, e))
                 continue
         else:
-            die(254, "Failed to start listener on %s:%s" % (op.server, op.port))
+            die(254, "Failed to start listener with connection %s" % (op.connection))
         die(253, "Existing listener found, aborting.")
 
 def error(level, str):
@@ -539,6 +557,7 @@ def die(ret, str=None):
                     error(2, 'OpenOffice listener successfully disabled.')
                     break
                 except Exception, e:
+                    error(3, "Launch of %s failed.\n%s" % (bin, e))
                     continue
 
         ### If there is no GUI attached to the instance, terminate instance

@@ -2,6 +2,9 @@
 - Now properly check if there is a GUI attached and terminate() or -unaccept instance
 - Added official OpenOffice path '/opt/openoffice*/program'
 - Added -S/--sleep option to influence waiting for OpenOffice to be ready (default: 2 secs)
+- Added support for OpenOffice on Windows (Fernando Lucas Rodriguez)
+- Added -i/--pipe option to communicate with UNO pipe (Fernando Lucas Rodriguez)
+- Added -o/--outputpath option to modify the output path (Fernando Lucas Rodriguez)
 
 * 0.3 - released 31/08/2007
 - Determine doctype from input filename (if not specified)
