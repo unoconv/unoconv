@@ -6,6 +6,8 @@
 - Added -i/--pipe option to communicate with UNO pipe (Fernando Lucas Rodriguez)
 - Added -o/--outputpath option to modify the output path (Fernando Lucas Rodriguez)
 - Added support for MediaWiki output (txt)
+- Added OpenOffice path to LD_LIBRARY_PATH env var
+- Added -nofirstwizard to ooffice invocations
 
 * 0.3 - released 31/08/2007
 - Determine doctype from input filename (if not specified)
