@@ -42,12 +42,18 @@ connections or even for remote connections.
 
 -f, --format::
     Specify the output format for the document. You can get a list of
-    possible output formats per document type by using the +--list+ option.
+    possible output formats per document type by using the +--show+ option.
 +
     Default document type is 'pdf'.
 
+-i, --pipe::
+    Use a pipe as an alternative connection mechanism to talk to OpenOffice.
+
 -l, --listener::
     Start unoconv as listener for unoconv clients to connect to.
+
+-o, --outputpath::
+    Directory to put converted documents.
 
 -p, --port::
     Port to listen on (as listener) or to connect to (as client).
@@ -61,6 +67,11 @@ connections or even for remote connections.
 
 --show::
     List the possible output formats to be used with +-f+.
+
+-S, --sleep::
+    When unoconv starts its own listener, wait an amount of seconds before
+    connecting to the listener. This may get rid of random errors caused
+    by the listener not being ready to accept conversion jobs.
 
 --stdout::
     Print converted output file to stdout.

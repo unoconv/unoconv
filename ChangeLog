@@ -8,6 +8,7 @@
 - Added support for MediaWiki output (txt)
 - Added OpenOffice path to LD_LIBRARY_PATH env var
 - Added -nofirstwizard to ooffice invocations
+- Improved the unoconv manpage
 
 * 0.3 - released 31/08/2007
 - Determine doctype from input filename (if not specified)

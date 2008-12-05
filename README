@@ -10,32 +10,44 @@ stopping this ooffice instance depends on some outside factors.
 
 Since there is no feedback mechanism to see if the newly started ooffice is
 in fact ready to communicate, we don't know exactly when we can use the UNO
-api. If ooffice is not ready, you may get a random error.
+api. By default unoconv waits for 3 seconds, but you can specify another
+delay with -S/--sleep. If ooffice is not ready, you may get a random error.
 
 However, you can always start an instance yourself at the default port 2002
-and then use unoconv until you're finished using it and then stop it.
+(or specify another port with -p/--port) and then use unoconv until you're
+finished using it and then stop it.
 
     unoconv --listener &
     sleep 20
-    unoconv -b pdf *.odt
-    unoconv -b doc *.odt
-    unoconv -b html *.odt
+    unoconv -f pdf *.odt
+    unoconv -f doc *.odt
+    unoconv -f html *.odt
     kill -15 %-
 
 Also possible is to use a listener or OpenOffice instance that accepts
-conntections on another system and use it from unoconv remotely. This
+connections on another system and use it from unoconv remotely. This
 way the conversion tasks are performed on a dedicated system instead
 of on the client system.
 
-Remember that ooffice requires an X display, even when using it in headless
-mode (not sure what -headless means in this context though).
+Since OpenOffice 2.3 you do not need an X display for starting ooffice.
+However you may need the openoffice.org-headless package from your
+distribution. Since OpenOffice 2.4 nothing special is needed, running
+in headless mode does not require X.
+
+For any older OpenOffice releases, remember that ooffice requires an X
+display, even when using it in headless mode. One solution is to use Xvfb
+to create a headless X display for ooffice.
+
+    http://www.oooforum.org/forum/viewtopic.phtml?t=11890
+    http://www.wonko.be/2008/01/09/running-openoffice-headless-on-debian
+    http://ward.vandewege.net/writings/200510auto_doc_conv/
+    http://www.artofsolving.com/node/10
 
 Also beware that the pyuno python module needs to be compiled with the exact
 same version of python that you are using to load it. A lot of people that
 run into problems loading pyuno are actually using a precompiled OpenOffice
 that they downloaded somewhere and is incompatible with their python version.
 (Sometimes the OpenOffice comes with its own python wrapper.)
-
 
 Other tools that are useful or similar in operation:
 

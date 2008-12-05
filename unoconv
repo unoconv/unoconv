@@ -30,7 +30,7 @@ for path in extrapaths:
         continue
 else:
     print >>sys.stderr, "unoconv: Cannot find the pyuno.so library in sys.path and known paths."
-    print >>sys.stderr, "Please locate this library and send your feedback to <tools@lists.rpmforge.net>."
+    print >>sys.stderr, "Please locate this library and send your feedback to: <tools@lists.rpmforge.net>."
     sys.exit(1)
 
 from com.sun.star.beans import PropertyValue
@@ -395,7 +395,7 @@ class Convertor:
             for bin in ('soffice.bin', 'soffice', ):
                 error(2, "Trying to launch our own listener using %s." % bin)
                 try:
-                    oopid = os.spawnvp(os.P_NOWAIT, bin, [bin, "-nologo", "-nodefault", "-headless", "-accept=%s" % op.connection]);
+                    oopid = os.spawnvp(os.P_NOWAIT, bin, [bin, "-headless", "-nologo", "-nodefault", "-norestore", "-nofirststartwizard", "-accept=%s" % op.connection]);
                     time.sleep(op.sleep)
                     unocontext = resolver.resolve("uno:%s" % op.connection)
                     break
@@ -478,8 +478,8 @@ class Convertor:
 
             ### Write outputfile
             outputprops = (
-                    PropertyValue( "FilterName" , 0, outputfmt.filter , 0 ),
-                    PropertyValue( "Overwrite" , 0, True , 0 ),
+                    PropertyValue( "FilterName" , 0, outputfmt.filter, 0 ),
+                    PropertyValue( "Overwrite" , 0, True, 0 ),
                     PropertyValue( "OutputStream", 0, OutputStream(), 0),
                    )
 
@@ -496,6 +496,7 @@ class Convertor:
                 doc.storeToURL("private:stream", outputprops)
 
             doc.dispose()
+            doc.close(True)
 
         except SystemError, e:
             error(0, "unoconv: SystemError during conversion: %s" % e)
