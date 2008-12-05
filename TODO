@@ -14,6 +14,11 @@ contact me as well. :) Send an email to: Dag Wieers <dag@wieers.com>
 - Maybe change the commandline interface to reflect ImageMagick's convert
 - Add the list of input formats as well, and print that list too
 - Preserve the original timestamp, ownership and permissions
+- Give proper error if pyuno.so exists, but could not be imported (arch incompatibilities)
+
+### Features
+- Change/force the document size during conversion
+- Change/force the document encoding during conversion (UTF-8)
 
 ### Known bugs
 - On some systems loading OpenOffice is slow and this could lead to random errors
