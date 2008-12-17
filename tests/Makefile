@@ -1,6 +1,7 @@
 ### Please modify and send me improvements
 
 all: clean bib doc6 doc95 doc docbook html mediawiki ooxml pdb pdf psw rtf latex sdw3 sdw4 sdw sxw text txt xhtml
+	@echo "== Tests finished."
 
 #xml: curriculum-vitae-dag-wieers.txt
 #	asciidoc -b docbook -d article curriculum-vitae-dag-wieers.txt
@@ -11,13 +12,16 @@ all: clean bib doc6 doc95 doc docbook html mediawiki ooxml pdb pdf psw rtf latex
 
 %:
 #	-killall ooffice soffice.bin
-	-../unoconv -vvvv -p 12345 -f $@ document-example.odt
+	@echo "- Convert document-example.odt to $@..."
+	-../unoconv -vvv -p 12345 -f $@ document-example.odt
+	@echo
 #	@ps aux | grep office
 #	-unoconv -f $@ dag.gif
 #	docbook2pdf -d curriculum-vitae.dsl#print curriculum-vitae-dag-wieers.xml
 
 clean: 
-	rm -f *.{bib,doc,html,pdb,pdf,psw,rtf,ltx,sdw,sxw,txt,xml}
-	rm -f *.{jpg,png,svg,wmf}
-	rm -f *.{xls}
-	rm -f *.{pps,ppt}
+	@echo "== Tests started. (some may fail)"
+	@rm -f *.{bib,doc,html,pdb,pdf,psw,rtf,ltx,sdw,sxw,txt,xml}
+	@rm -f *.{jpg,png,svg,wmf}
+	@rm -f *.{xls}
+	@rm -f *.{pps,ppt}

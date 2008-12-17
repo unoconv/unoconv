@@ -16,23 +16,41 @@
 
 import getopt, sys, os, glob, time
 
-extrapaths = glob.glob('/usr/lib*/openoffice*/program') + glob.glob('/usr/lib*/ooo*/program') + glob.glob('/opt/openoffice*/program') + glob.glob('C:\\Program Files\\OpenOffice.org *\\program\\') + [ '/Applications/NeoOffice.app/Contents/program', '/usr/bin' ]
-for path in extrapaths:
+global unopath
+
+### The first thing we ought to do is find a suitable OpenOffice installation
+### with a compatible pyuno library that we can import.
+extrapaths = glob.glob('/usr/lib*/openoffice*/program') + \
+             glob.glob('/usr/lib*/ooo*/program') + \
+             glob.glob('/opt/openoffice*/program') + \
+             glob.glob('C:\\Program Files\\OpenOffice.org *\\program\\') + \
+             [ '/Applications/NeoOffice.app/Contents/program', '/usr/bin' ]
+for unopath in extrapaths:
+    if os.path.exists(os.path.join(unopath, "pyuno.so")):
+        filename = "pyuno.so"
+    elif os.path.exists(os.path.join(unopath, "pyuno.dll")):
+        filename = "pyuno.dll"
+    else:
+        continue
+    sys.path.append(unopath)
     try:
-        sys.path.append(path)
         import uno, unohelper
-        os.environ['PATH'] = '%s:' % path + os.environ['PATH']
-        ### Not sure if this helps running soffice.bin on some systems ? please report
-        os.environ['LD_LIBRARY_PATH'] = '%s:' % path
         break
-    except ImportError:
-        sys.path.remove(path)
+    except ImportError, e:
+        sys.path.remove(unopath)
+        print >>sys.stderr, e
+        print >>sys.stderr, "WARNING: We found %s in %s, but could not import it." % (filename, unopath)
         continue
 else:
     print >>sys.stderr, "unoconv: Cannot find the pyuno.so library in sys.path and known paths."
-    print >>sys.stderr, "Please locate this library and send your feedback to: <tools@lists.rpmforge.net>."
+    print >>sys.stderr, "ERROR: Please locate this library and send your feedback to: <tools@lists.rpmforge.net>."
     sys.exit(1)
 
+### Export an environment that OpenOffice is pleased to work with
+os.environ['LD_LIBRARY_PATH'] = '%s' % unopath
+os.environ['PATH'] = '%s:' % unopath + os.environ['PATH']
+
+### Now that we have found a working pyuno library, let's import some classes
 from com.sun.star.beans import PropertyValue
 from com.sun.star.connection import NoConnectException
 from com.sun.star.lang import DisposedException
@@ -247,7 +265,7 @@ class Options:
         self.listener = False
         self.format = None
         self.verbose = 0
-        self.sleep = 3
+        self.timeout = 3
         self.doctype = None
         self.server = 'localhost'
         self.port = '2002'
@@ -259,8 +277,8 @@ class Options:
 
         ### Get options from the commandline
         try:
-            opts, args = getopt.getopt (args, 'c:d:f:hi:Llo:p:s:S:t:v',
-                ['connection=', 'doctype=', 'format=', 'help', 'listener', 'outputpath=', 'pipe=', 'port=', 'server=', 'sleep=', 'show', 'stdout', 'verbose', 'version'] )
+            opts, args = getopt.getopt (args, 'c:d:f:hi:Llo:p:s:T:t:v',
+                ['connection=', 'doctype=', 'format=', 'help', 'listener', 'outputpath=', 'pipe=', 'port=', 'server=', 'timeout=', 'show', 'stdout', 'verbose', 'version'] )
         except getopt.error, exc:
             print 'unoconv: %s, try unoconv -h for a list of all the options' % str(exc)
             sys.exit(255)
@@ -289,8 +307,8 @@ class Options:
                 self.server = arg
             elif opt in ['--show']:
                 self.showlist = True
-            elif opt in ['-S', '--sleep']:
-                self.sleep = int(arg)
+            elif opt in ['-T', '--timeout']:
+                self.timeout = int(arg)
             elif opt in ['--stdout']:
                 self.stdout = True
             elif opt in ['-v', '--verbose']:
@@ -367,11 +385,11 @@ unoconv options:
   -i, --pipe=name          alternative method of connection using a pipe
   -l, --listener           start a listener to use by unoconv clients
   -o, --outputpath=name    output directory
-  -p, --port               specify the port (default: 2002)
+  -p, --port=port          specify the port (default: 2002)
                              to be used by client or listener
-  -s, --server             specify the server address (default: localhost)
+  -s, --server=server      specify the server address (default: localhost)
                              to be used by client or listener
-  -S, --sleep=secs         sleep longer in case OpenOffice loads too slow
+  -T, --timeout=secs       timeout after secs if connections to OpenOffice fail
       --show               list the available output formats
       --stdout             write output to stdout
   -v, --verbose            be more and more verbose
@@ -386,23 +404,37 @@ class Convertor:
         self.context = uno.getComponentContext()
         resolver = self.context.ServiceManager.createInstanceWithContext("com.sun.star.bridge.UnoUrlResolver", self.context)
 
-        ### Test for an existing connection
+        ### Test for an existing connection (twice)
         try:
             unocontext = resolver.resolve("uno:%s" % op.connection)
-        except Exception, e:
+        except NoConnectException, e:
             error(2, "Existing listener not found.\n%s" % e)
 
             ### Test if we can use an Openoffice *binary* in our (modified) path
             for bin in ('soffice.bin', 'soffice', ):
+
                 error(2, "Trying to launch our own listener using %s." % bin)
                 try:
                     oopid = os.spawnvp(os.P_NOWAIT, bin, [bin, "-headless", "-nologo", "-nodefault", "-norestore", "-nofirststartwizard", "-accept=%s" % op.connection]);
-                    time.sleep(op.sleep)
-                    unocontext = resolver.resolve("uno:%s" % op.connection)
-                    break
-                except Exception, e:
+                except:
                     error(3, "Launch of %s failed.\n%s" % (bin, e))
                     continue
+
+                ### Try connection to it for op.timeout seconds
+                timeout = 0
+                while timeout <= op.timeout:
+                    try:
+                        unocontext = resolver.resolve("uno:%s" % op.connection)
+                        break
+                    except NoConnectException:
+                        time.sleep(0.5)
+                        timeout = timeout + 0.5
+                else:
+                    error(3, "Failed to connect to %s in %d seconds.\n%s" % (bin, op.timeout, e))
+                    continue
+                break
+            else:
+                die(250, "No proper binaries found to launch OpenOffice. Bailing out.")
 
         if not unocontext:
             die(251, "Unable to connect or start own listener. Aborting.")
@@ -466,7 +498,7 @@ class Convertor:
 
         try:
             ### Load inputfile
-            inputprops = ( PropertyValue( "Hidden" , 0 , True, 0 ), )
+            inputprops = ( PropertyValue( "Hidden", 0, True, 0 ), )
 
             inputurl = unohelper.absolutize(self.cwd, unohelper.systemPathToFileUrl(inputfn))
             doc = self.desktop.loadComponentFromURL( inputurl , "_blank", 0, inputprops )
@@ -486,10 +518,10 @@ class Convertor:
 
             ### Write outputfile
             outputprops = (
-                    PropertyValue( "FilterName" , 0, outputfmt.filter, 0 ),
-                    PropertyValue( "Overwrite" , 0, True, 0 ),
-#                    PropertyValue( "Size" , 0, "A3", 0 ),
-                    PropertyValue( "OutputStream", 0, OutputStream(), 0),
+                    PropertyValue( "FilterName", 0, outputfmt.filter, 0),
+                    PropertyValue( "Overwrite", 0, True, 0 ),
+#                    PropertyValue( "Size", 0, "A3", 0 ),
+                    PropertyValue( "OutputStream", 0, OutputStream(), 0 ),
                    )
 
             if not op.stdout:
@@ -509,22 +541,22 @@ class Convertor:
 
         except SystemError, e:
             error(0, "unoconv: SystemError during conversion: %s" % e)
-            error(0, "The provided document cannot be converted to the desired format.")
+            error(0, "ERROR: The provided document cannot be converted to the desired format.")
             exitcode = 1
 
         except UnoException, e:
-            error(0, "unoconv: UnoException during conversion: %s" % e.Message)
-            error(0, "The provided document cannot be converted to the desired format.")
-            exitcode = 1
+            error(0, "unoconv: UnoException during conversion in %s: %s" % (repr(e.__class__), e.Message))
+            error(0, "ERROR: The provided document cannot be converted to the desired format. (code: %s)" % e.ErrCode)
+            exitcode = e.ErrCode
 
         except IOException, e:
             error(0, "unoconv: IOException during conversion: %s" % e.Message)
-            error(0, "The provided document cannot be exported to %s." % outputfmt)
-            exitcode = 1
+            error(0, "ERROR: The provided document cannot be exported to %s." % outputfmt)
+            exitcode = 3
 
         except CannotConvertException, e:
             error(0, "unoconv: CannotConvertException during conversion: %s" % e.Message)
-            exitcode = 1
+            exitcode = 4
 
 class Listener:
     def __init__(self):

@@ -14,7 +14,7 @@ contact me as well. :) Send an email to: Dag Wieers <dag@wieers.com>
 - Maybe change the commandline interface to reflect ImageMagick's convert
 - Add the list of input formats as well, and print that list too
 - Preserve the original timestamp, ownership and permissions
-- Give proper error if pyuno.so exists, but could not be imported (arch incompatibilities)
+- Translate UnoExceptions into a clear explanation (like Exception 2074 or 3088 ?)
 
 ### Features
 - Change/force the document size during conversion

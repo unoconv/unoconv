@@ -1,7 +1,6 @@
 * 0.3svn - released 05/12/2008
 - Now properly check if there is a GUI attached and terminate() or -unaccept instance
 - Added official OpenOffice path '/opt/openoffice*/program'
-- Added -S/--sleep option to influence waiting for OpenOffice to be ready (default: 2 secs)
 - Added support for OpenOffice on Windows (Fernando Lucas Rodriguez)
 - Added -i/--pipe option to communicate with UNO pipe (Fernando Lucas Rodriguez)
 - Added -o/--outputpath option to modify the output path (Fernando Lucas Rodriguez)
@@ -10,7 +9,10 @@
 - Added -nofirstwizard to ooffice invocations
 - Improved the unoconv manpage
 - Added proper exitcode (Alan D. Salewski)
-- Fixed the license conflict between COPYING and header, the license is GPL, not LGPL.
+- Fixed the license conflict between COPYING and header, the license is GPL, not LGPL
+- Five a proper error when a library was found, but failed to get imported
+- Make errors somewhat more identifiable
+- Added -T/--timeout to try to connect every 0.5 second until timeout has reached default: 3 secs)
 
 * 0.3 - released 31/08/2007
 - Determine doctype from input filename (if not specified)

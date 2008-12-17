@@ -10,3 +10,6 @@
 
 + OpenOffice.org developer manual
   http://api.openoffice.org/DevelopersGuide/DevelopersGuide.html
+
++ Python and OpenOffice.org
+  http://wiki.services.openoffice.org/wiki/Python
