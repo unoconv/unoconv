@@ -13,6 +13,7 @@
 - Five a proper error when a library was found, but failed to get imported
 - Make errors somewhat more identifiable
 - Added -T/--timeout to try to connect every 0.5 second until timeout has reached default: 3 secs)
+- Fixed a typo in bydoctype() (Hugo Lopes)
 
 * 0.3 - released 31/08/2007
 - Determine doctype from input filename (if not specified)

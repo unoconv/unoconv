@@ -108,7 +108,7 @@ class FmtList:
         for fmt in self.list:
             if fmt.name == name and fmt.doctype == doctype:
                 ret.append(fmt)
-                return ret
+        return ret
 
     def display(self, doctype):
         print >>sys.stderr, "The following list of %s formats are currently available:\n" % doctype
