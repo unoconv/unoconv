@@ -21,10 +21,13 @@ global unopath
 ### The first thing we ought to do is find a suitable OpenOffice installation
 ### with a compatible pyuno library that we can import.
 extrapaths = glob.glob('/usr/lib*/openoffice*/program') + \
+             glob.glob('/usr/lib*/openoffice/basis*/program') + \
+             glob.glob('/usr/lib*/openoffice.org/basis*/program') + \
              glob.glob('/usr/lib*/ooo*/program') + \
              glob.glob('/opt/openoffice*/program') + \
              glob.glob('C:\\Program Files\\OpenOffice.org *\\program\\') + \
              [ '/Applications/NeoOffice.app/Contents/program', '/usr/bin' ]
+
 for unopath in extrapaths:
     if os.path.exists(os.path.join(unopath, "pyuno.so")):
         filename = "pyuno.so"
@@ -61,7 +64,7 @@ from com.sun.star.uno import Exception as UnoException
 __version__ = "$Revision$"
 # $Source$
 
-VERSION = '0.3svn'
+VERSION = '0.4'
 
 doctypes = ('document', 'graphics', 'presentation', 'spreadsheet')
 
@@ -412,7 +415,6 @@ class Convertor:
 
             ### Test if we can use an Openoffice *binary* in our (modified) path
             for bin in ('soffice.bin', 'soffice', ):
-
                 error(2, "Trying to launch our own listener using %s." % bin)
                 try:
                     oopid = os.spawnvp(os.P_NOWAIT, bin, [bin, "-headless", "-nologo", "-nodefault", "-norestore", "-nofirststartwizard", "-accept=%s" % op.connection]);
@@ -565,7 +567,7 @@ class Listener:
             error(2, "Warning: trying to launch %s." % bin)
             try:
                 os.execvp(bin, [bin, "-headless", "-nologo", "-nodefault", "-norestore", "-nofirststartwizard", "-accept=%s" % op.connection]);
-            except:
+            except Exception, e:
                 error(3, "Launch of %s failed.\n%s" % (bin, e))
                 continue
         else:

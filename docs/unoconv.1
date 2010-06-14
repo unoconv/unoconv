@@ -1,0 +1,159 @@
+.\" ** You probably do not want to edit this file directly **
+.\" It was generated using the DocBook XSL Stylesheets (version 1.69.1).
+.\" Instead of manually editing it, you probably should edit the DocBook XML
+.\" source for it and then use the DocBook XSL Stylesheets to regenerate it.
+.TH "UNOCONV" "1" "07/03/2008" "" ""
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.SH "NAME"
+unoconv \- convert any document from and to any OpenOffice supported format
+.SH "SYNOPSIS"
+\fIunoconv\fR [options] file [file2 ..]
+.sp
+\fIunoconv\fR \-\-listener [\-\-server SRV] [\-\-port PRT] [\-\-connections CON]
+.sp
+.SH "DESCRIPTION"
+unoconv is a command line utility that can convert any file format that OpenOffice can import, to any file format that OpenOffice is capable of exporting.
+.sp
+unoconv uses the OpenOffice's UNO bindings for non\-interactive conversion of documents and therefor needs an OpenOffice instance to communicate with. Therefore if it cannot find one, it will start its own instance for temporary usage. If desired, one can start a \(lqlistener\(rq instance to use for subsequent connections or even for remote connections.
+.sp
+.SH "OPTIONS"
+.TP
+\-c, \-\-connection
+UNO connection string to be used by the client to connect to an OpenOffice instance, or used by the listener to make OpenOffice listen.
+.sp
+.nf
+Default connection string is "socket,host=localhost,port=2002;urp;StarOffice.ComponentContext"
+.fi
+.TP
+\-d, \-\-doctype
+Specify the OpenOffice document type of the backend format. Possible document types are:
+\fIdocument\fR,
+\fIgraphics\fR,
+\fIpresentation\fR,
+\fIspreadsheet\fR.
+.sp
+.nf
+Default document type is 'document'.
+.fi
+.TP
+\-f, \-\-format
+Specify the output format for the document. You can get a list of possible output formats per document type by using the
+\-\-show
+option.
+.sp
+.nf
+Default document type is 'pdf'.
+.fi
+.TP
+\-i, \-\-pipe
+Use a pipe as an alternative connection mechanism to talk to OpenOffice.
+.TP
+\-l, \-\-listener
+Start unoconv as listener for unoconv clients to connect to.
+.TP
+\-o, \-\-outputpath
+Directory to put converted documents.
+.TP
+\-p, \-\-port
+Port to listen on (as listener) or to connect to (as client).
+.sp
+.nf
+Default port is '2002'.
+.fi
+.TP
+\-s, \-\-server
+Server (address) to listen on (as listener) or to connect to (as client).
+.sp
+.nf
+Default server is 'localhost'.
+.fi
+.TP
+\-\-show
+List the possible output formats to be used with
+\-f.
+.TP
+\-S, \-\-sleep
+When unoconv starts its own listener, wait an amount of seconds before connecting to the listener. This may get rid of random errors caused by the listener not being ready to accept conversion jobs.
+.TP
+\-\-stdout
+Print converted output file to stdout.
+.TP
+\-v, \-\-verbose
+Be more and more and more verbose.
+.SH "ARGUMENTS"
+You can provide one or more \fBfiles\fR as arguments to convert each of them to the specified \fBoutput format\fR.
+.sp
+.SH "EXAMPLES"
+You can use unoconv in standalone mode, this means that in absence of an OpenOffice listener, it will starts its own:
+.sp
+.sp
+.nf
+unoconv \-f pdf some\-document.odt
+.fi
+One can use unoconv as a listener (by default localhost:2002) to let other unoconv instances connect to it:
+.sp
+.sp
+.nf
+unoconv \-\-listener &
+unoconv \-f pdf some\-document.odt
+unoconv \-f doc other\-document.odt
+unoconv \-f jpg some\-image.png
+unoconv \-f xsl some\-spreadsheet.csv
+kill \-15 %\-
+.fi
+This also works on a remote host:
+.sp
+.sp
+.nf
+unoconv \-\-listener \-\-server 1.2.3.4 \-\-port 4567
+.fi
+and then connect another system to convert documents:
+.sp
+.sp
+.nf
+unoconv \-\-server 1.2.3.4 \-\-port 4567
+.fi
+.SH "BUGS"
+unoconv uses the UNO bindings to connect to OpenOffice, in absence of a usable socket, it will start its own OpenOffice instance with the correct parameters. However, OpenOffice requires a working DISPLAY (even with \-headless option) and therefor you cannot run it in a true console, you need X.
+.sp
+.sp
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+\fBNote\fR
+Please see the TODO file for known bugs and future plans.
+.sp
+.SH "SEE ALSO"
+.sp
+.nf
+convert(1), file(1), odt2txt
+.fi
+.SH "REFERENCES"
+unoconv is very useful together with the following tools:
+.sp
+.TP
+Asciidoc
+http://www.methods.co.nz/asciidoc/
+.TP
+docbook2odf
+http://open.comsultia.com/docbook2odf/
+.SH "AUTHOR"
+Written by Dag Wieers, <[1]\&\fIdag@wieers.com\fR>
+.sp
+.SH "RESOURCES"
+Main web site: [2]\&\fIhttp://dag.wieers.com/home\-made/unoconv/\fR
+.sp
+.SH "COPYING"
+Copyright (C) 2007 Dag Wieers. Free use of this software is granted under the terms of the GNU General Public License (GPL).
+.sp
+.SH "REFERENCES"
+.TP 3
+1.\ dag@wieers.com
+\%mailto:dag@wieers.com
+.TP 3
+2.\ http://dag.wieers.com/home\-made/unoconv/
+\%http://dag.wieers.com/home\-made/unoconv/

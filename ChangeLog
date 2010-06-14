@@ -1,4 +1,4 @@
-* 0.3svn - released 05/12/2008
+* 0.4 - released 14/06/2010
 - Now properly check if there is a GUI attached and terminate() or -unaccept instance
 - Added official OpenOffice path '/opt/openoffice*/program'
 - Added support for OpenOffice on Windows (Fernando Lucas Rodriguez)
@@ -10,7 +10,7 @@
 - Improved the unoconv manpage
 - Added proper exitcode (Alan D. Salewski)
 - Fixed the license conflict between COPYING and header, the license is GPL, not LGPL
-- Five a proper error when a library was found, but failed to get imported
+- Give a proper error when a library was found, but failed to get imported
 - Make errors somewhat more identifiable
 - Added -T/--timeout to try to connect every 0.5 second until timeout has reached default: 3 secs)
 - Fixed a typo in bydoctype() (Hugo Lopes)

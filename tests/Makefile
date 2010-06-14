@@ -13,7 +13,7 @@ all: clean bib doc6 doc95 doc docbook html mediawiki ooxml pdb pdf psw rtf latex
 %:
 #	-killall ooffice soffice.bin
 	@echo "- Convert document-example.odt to $@..."
-	-../unoconv -vvv -p 12345 -f $@ document-example.odt
+	-../unoconv -vvvv -p 12345 -f $@ document-example.odt
 	@echo
 #	@ps aux | grep office
 #	-unoconv -f $@ dag.gif
