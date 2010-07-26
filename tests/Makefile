@@ -1,6 +1,6 @@
 ### Please modify and send me improvements
 
-all: clean bib doc6 doc95 doc docbook html mediawiki ooxml pdb pdf psw rtf latex sdw3 sdw4 sdw sxw text txt xhtml
+all: clean bib doc6 doc95 doc docbook html mediawiki ooxml pdf rtf latex sdw3 sdw4 sdw sxw text txt uot xhtml
 	@echo "== Tests finished."
 
 #xml: curriculum-vitae-dag-wieers.txt
@@ -13,7 +13,7 @@ all: clean bib doc6 doc95 doc docbook html mediawiki ooxml pdb pdf psw rtf latex
 %:
 #	-killall ooffice soffice.bin
 	@echo "- Convert document-example.odt to $@..."
-	-../unoconv -vvvv -p 12345 -f $@ document-example.odt
+	-../unoconv -vvv -p 2002 -f $@ document-example.odt
 	@echo
 #	@ps aux | grep office
 #	-unoconv -f $@ dag.gif

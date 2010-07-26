@@ -1,127 +1,232 @@
-= Supported formats in unoconv =
+
 
 ### This is a current list of formats known by Openoffice:
-### from http://wiki.services.openoffice.org/wiki/Framework/Article/Filter/FilterList_OOo_2_1
+### from http://wiki.services.openoffice.org/wiki/Framework/Article/Filter/FilterList_OOo_3_0
 
-### Calc
-Open Document Spreadsheet|ods|Calc8
-OpenOffice.org 1.0 Spreadsheet Template|stc|calc_StarOffice_XML_Calc_Template
-OpenOffice.org 1.0 Spreadsheet|sxc|StarOffice XML (Calc)
-Data Interchange Format|dif|DIF
-Microsoft Excel 97/2000/XP Template|xlt|MS Excel 97 Vorlage/Template
-HTML Document (OpenOffice.org Calc)|html|HTML (StarCalc)
-Microsoft Excel 5.0|xls|MS Excel 5.0/95
-Microsoft Excel 95|xls|MS Excel 95
-StarCalc 4.0|sdc|StarCalc 4.0
-Microsoft Excel 97/2000/XP|xls|MS Excel 97
-OpenDocument Spreadsheet Template|ots|calc8_template
-Text CSV|csv|Text - txt - csv (StarCalc)
-StarCalc 3.0 Template|vor|StarCalc 3.0 Vorlage/Template
-StarCalc 4.0 Template|vor|StarCalc 4.0 Vorlage/Template
-StarCalc 5.0 Template|vor|StarCalc 5.0 Vorlage/Template
-Pocket Excel|pxl|Pocket Excel
-Microsoft Excel 95 Template|xlt|MS Excel 95 Vorlage/Template
-dBase|dbf|dBase
-Microsoft Excel 2003 XML|xml|MS Excel 2003 XML
-XHTML|xml|XHTML Calc File
-Microsoft Excel 5.0 Template|xlt|MS Excel 5.0/95 Vorlage/Template
-StarCalc 3.0|sdc|StarCalc 3.0
-StarCalc 5.0|sdc|StarCalc 5.0
-PDF - Portable Document Format|pdf|calc_pdf_Export
-SYLK|slk|SYLK
+### com.sun.star.text.TextDocument
+1|OpenOffice.org 1.0 Text Document|StarOffice XML (Writer)|X|X|-|-| IMPORT EXPORT TEMPLATE OWN ALIEN PREFERED
+2|StarWriter 4.0|StarWriter 4.0|X|X|-|-| IMPORT EXPORT TEMPLATE OWN ALIEN 3RDPARTYFILTER
+3|HTML Document (OpenOffice.org Writer)|HTML (StarWriter)|X|X|-|-| IMPORT EXPORT ALIEN ASYNCHRON
+4|StarWriter 3.0 Template|StarWriter 3.0 Vorlage/Template|X|X|-|-| IMPORT EXPORT TEMPLATE TEMPLATEPATH OWN ALIEN 3RDPARTYFILTER
+5|StarWriter 4.0 Template|StarWriter 4.0 Vorlage/Template|X|X|-|-| IMPORT EXPORT TEMPLATE TEMPLATEPATH OWN ALIEN 3RDPARTYFILTER
+6|StarWriter 5.0 Template|StarWriter 5.0 Vorlage/Template|X|X|-|-| IMPORT EXPORT TEMPLATE TEMPLATEPATH OWN ALIEN 3RDPARTYFILTER
+7|Microsoft Word 95 Template|MS Word 95 Vorlage|X|-|-|-| IMPORT TEMPLATE TEMPLATEPATH ALIEN
+8|Microsoft Word 97/2000/XP Template|MS Word 97 Vorlage|X|-|-|-| IMPORT TEMPLATE TEMPLATEPATH ALIEN
+9|OpenOffice.org 1.0 Text Document Template|writer_StarOffice_XML_Writer_Template|X|X|-|-| IMPORT EXPORT TEMPLATE TEMPLATEPATH OWN ALIEN
+10|ODF Text Document|writer8|X|X|-|-| IMPORT EXPORT TEMPLATE OWN DEFAULT PREFERED
+11|Microsoft Word 2003 XML|MS Word 2003 XML|X|X|-|-| IMPORT EXPORT ALIEN 3RDPARTYFILTER
+12|Microsoft Excel 95 (OpenOffice.org Writer)|MS Excel 95 (StarWriter)|X|-|-|X| IMPORT ALIEN NOTINFILEDIALOG NOTINCHOOSER 3RDPARTYFILTER
+13|Lotus 1-2-3 1.0 WIN (OpenOffice.org Writer)|Lotus 1-2-3 1.0 (WIN) (StarWriter)|X|-|-|X| IMPORT ALIEN NOTINFILEDIALOG NOTINCHOOSER 3RDPARTYFILTER
+14|Lotus 1-2-3 1.0 DOS (OpenOffice.org Writer)|Lotus 1-2-3 1.0 (DOS) (StarWriter)|X|-|-|X| IMPORT ALIEN NOTINFILEDIALOG NOTINCHOOSER 3RDPARTYFILTER
+15|WordPerfect Document|WordPerfect|X|-|X|-| IMPORT ALIEN USESOPTIONS 3RDPARTYFILTER PREFERED
+16|Rich Text Format|Rich Text Format|X|X|-|-| IMPORT EXPORT ALIEN PREFERED
+17|StarWriter 1.0|StarWriter 1.0|X|-|-|-| IMPORT ALIEN 3RDPARTYFILTER
+18|PDF - Portable Document Format|writer_pdf_Export|-|X|-|-| EXPORT ALIEN 3RDPARTYFILTER
+19|Microsoft Word 2007 XML Template|MS Word 2007 XML Template|X|-|-|-| IMPORT TEMPLATE TEMPLATEPATH ALIEN 3RDPARTYFILTER
+20|StarWriter 3.0|StarWriter 3.0|X|X|-|-| IMPORT EXPORT TEMPLATE OWN ALIEN 3RDPARTYFILTER
+21|ODF Text Document Template|writer8_template|X|X|-|-| IMPORT EXPORT TEMPLATE TEMPLATEPATH OWN
+22|BibTeX|BibTeX_Writer|-|X|-|-| EXPORT ALIEN 3RDPARTYFILTER
+23|StarWriter 5.0|StarWriter 5.0|X|X|-|-| IMPORT EXPORT TEMPLATE OWN ALIEN 3RDPARTYFILTER PREFERED
+24|Microsoft Word 6.0|MS WinWord 6.0|X|X|-|-| IMPORT EXPORT ALIEN
+25|StarWriter DOS|StarWriter DOS|X|-|-|-| IMPORT ALIEN 3RDPARTYFILTER
+26|Text Encoded|Text (encoded)|X|X|-|-| IMPORT EXPORT ALIEN
+27|Unified Office Format text|UOF text|X|X|-|-| IMPORT EXPORT ALIEN 3RDPARTYFILTER
+28|Microsoft Word 95|MS Word 95|X|X|-|-| IMPORT EXPORT ALIEN
+29|Microsoft Word 97/2000/XP|MS Word 97|X|X|-|-| IMPORT EXPORT ALIEN PREFERED
+30|Hangul WP 97|writer_MIZI_Hwp_97|X|-|-|-| IMPORT ALIEN 3RDPARTYFILTER
+31|LaTeX 2e|LaTeX_Writer|-|X|-|-| EXPORT ALIEN 3RDPARTYFILTER
+32|Microsoft Excel 5.0 (OpenOffice.org Writer)|MS Excel 5.0 (StarWriter)|X|-|-|X| IMPORT ALIEN NOTINFILEDIALOG NOTINCHOOSER 3RDPARTYFILTER
+33|XHTML|XHTML Writer File|-|X|-|-| EXPORT ALIEN 3RDPARTYFILTER
+34|Text|Text|X|X|-|-| IMPORT EXPORT ALIEN PREFERED
+35|Microsoft Word 2007 XML|MS Word 2007 XML|X|-|-|-| IMPORT ALIEN 3RDPARTYFILTER
+36|T602 Document|T602Document|X|-|X|-| IMPORT ALIEN USESOPTIONS 3RDPARTYFILTER PREFERED
+37|MediaWiki|MediaWiki|-|X|-|-| EXPORT ALIEN 3RDPARTYFILTER
+38|Microsoft Excel 4.0 (OpenOffice.org Writer)|MS Excel 4.0 (StarWriter)|X|-|-|X| IMPORT ALIEN NOTINFILEDIALOG NOTINCHOOSER 3RDPARTYFILTER
+39|DocBook|DocBook File|X|X|-|-| IMPORT EXPORT ALIEN 3RDPARTYFILTER
+40|Microsoft WinWord 5|MS WinWord 5|X|-|-|-| IMPORT ALIEN
+41|StarWriter 2.0|StarWriter 2.0|X|-|-|-| IMPORT TEMPLATE ALIEN 3RDPARTYFILTER
 
-### Draw
-Open Document Drawing|odd|Draw8
-PNG - Portable Network Graphic|png|draw_png_Export
-JPEG - Joint Photographic Experts Group|jpg|draw_jpg_Export
-PPM - Portable Pixelmap|ppm|draw_ppm_Export
-WMF - Windows Metafile|wmf|draw_wmf_Export
-PGM - Portable Graymap|pgm|draw_pgm_Export
-TIFF - Tagged Image File Format|tiff|draw_tif_Export
-PBM - Portable Bitmap|pbm|draw_pbm_Export
-EMF - Enhanced Metafile|emf|draw_emf_Export
-XPM - X PixMap|xpm|draw_xpm_Export
-OpenDocument Drawing Template|otg|draw8_template
-BMP - Windows Bitmap|bmp|draw_bmp_Export
-Macromedia Flash (SWF)|swf|draw_flash_Export
-OpenOffice.org 1.0 Drawing|sxd|StarOffice XML (Draw)
-PDF - Portable Document Format|pdf|draw_pdf_Export
-GIF - Graphics Interchange Format|gif|draw_gif_Export
-RAS - Sun Raster Image|ras|draw_ras_Export
-StarDraw 3.0 Template|vor|StarDraw 3.0 Vorlage
-StarDraw 5.0 Template|vor|StarDraw 5.0 Vorlage
-HTML Document (OpenOffice.org Draw)|html|draw_html_Export
-StarDraw 3.0|sxd|StarDraw 3.0
-MET - OS/2 Metafile|met|draw_met_Export
-StarDraw 5.0|sxd|StarDraw 5.0
-XHTML|xml|XHTML Draw File
-EPS - Encapsulated PostScript|eps|draw_eps_Export
-SVG - Scalable Vector Graphics|svg|draw_svg_Export
-OpenOffice.org 1.0 Drawing Template|std|draw_StarOffice_XML_Draw_Template
-SVM - StarView Metafile|svm|draw_svm_Export
+### com.sun.star.text.WebDocument
+1|Help content|writer_web_HTML_help|X|-|-|X| IMPORT INTERNAL NOTINFILEDIALOG NOTINCHOOSER ASYNCHRON READONLY
+2|HTML Document|HTML|X|X|-|-| IMPORT EXPORT ASYNCHRON PREFERED
+3|StarWriter 3.0 (OpenOffice.org Writer/Web)|StarWriter 3.0 (StarWriter/Web)|-|X|-|-| EXPORT TEMPLATE ALIEN 3RDPARTYFILTER
+4|StarWriter 4.0 (OpenOffice.org Writer/Web)|StarWriter 4.0 (StarWriter/Web)|-|X|-|-| EXPORT TEMPLATE ALIEN 3RDPARTYFILTER
+5|StarWriter 5.0 (OpenOffice.org Writer/Web)|StarWriter 5.0 (StarWriter/Web)|-|X|-|-| EXPORT TEMPLATE ALIEN 3RDPARTYFILTER
+6|StarWriter/Web 4.0 Template|StarWriter/Web 4.0 Vorlage/Template|X|X|-|-| IMPORT EXPORT TEMPLATE TEMPLATEPATH OWN ALIEN 3RDPARTYFILTER
+7|StarWriter/Web 5.0 Template|StarWriter/Web 5.0 Vorlage/Template|X|X|-|-| IMPORT EXPORT TEMPLATE TEMPLATEPATH OWN ALIEN 3RDPARTYFILTER
+8|Text (OpenOffice.org Writer/Web)|Text (StarWriter/Web)|X|X|-|-| IMPORT EXPORT ALIEN
+9|MediaWiki|MediaWiki_Web|-|X|-|-| EXPORT ALIEN 3RDPARTYFILTER
+10|PDF - Portable Document Format|writer_web_pdf_Export|-|X|-|-| EXPORT ALIEN 3RDPARTYFILTER
+11|OpenOffice.org 1.0 HTML Template|writer_web_StarOffice_XML_Writer_Web_Template|X|X|-|-| IMPORT EXPORT TEMPLATE TEMPLATEPATH OWN ALIEN
+12|OpenOffice.org Text (OpenOffice.org Writer/Web)|writerweb8_writer|-|X|-|-| EXPORT TEMPLATE
+13|HTML Document Template|writerweb8_writer_template|X|X|-|-| IMPORT EXPORT TEMPLATE TEMPLATEPATH OWN
+14|Text Encoded (OpenOffice.org Writer/Web)|Text (encoded) (StarWriter/Web)|X|X|-|-| IMPORT EXPORT ALIEN
+15|OpenOffice.org 1.0 Text Document (OpenOffice.org Writer/Web)|writer_web_StarOffice_XML_Writer|-|X|-|-| EXPORT TEMPLATE ALIEN
 
-### Impress
-Open Document Presentation|odp|Impress8
-StarDraw 3.0 Template (OpenOffice.org Impress)|vor|StarDraw 3.0 Vorlage (StarImpress)
-StarDraw 5.0 Template (OpenOffice.org Impress)|vor|StarDraw 5.0 Vorlage (StarImpress)
-Microsoft PowerPoint 97/2000/XP Template|pot|MS PowerPoint 97 Vorlage
-OpenOffice.org 1.0 Presentation Template|sti|impress_StarOffice_XML_Impress_Template
-StarImpress 5.0|sdd|StarImpress 5.0
-StarDraw 5.0 (OpenOffice.org Impress)|sda|StarDraw 5.0 (StarImpress)
-BMP - Windows Bitmap|bmp|impress_bmp_Export
-EMF - Enhanced Metafile|emf|impress_emf_Export
-EPS - Encapsulated PostScript|eps|impress_eps_Export
-GIF - Graphics Interchange Format|gif|impress_gif_Export
-JPEG - Joint Photographic Experts Group|jpg|impress_jpg_Export
-MET - OS/2 Metafile|met|impress_met_Export
-PBM - Portable Bitmap|pbm|impress_pbm_Export
-PCT - Mac Pict|pct|impress_pct_Export
-PDF - Portable Document Format|pdf|impress_pdf_Export
-PGM - Portable Graymap|pgm|impress_pgm_Export
-PNG - Portable Network Graphic|png|impress_png_Export
-PPM - Portable Pixelmap|ppm|impress_ppm_Export
-RAS - Sun Raster Image|ras|impress_ras_Export
-SVG - Scalable Vector Graphics|svg|impress_svg_Export
-SVM - StarView Metafile|svm|impress_svm_Export
-TIFF - Tagged Image File Format|tiff|impress_tif_Export
-WMF - Windows Metafile|wmf|impress_wmf_Export
-XPM - X PixMap|xpm|impress_xpm_Export
-PWP - PlaceWare|pwp|placeware_Export
-OpenOffice.org 1.0 Drawing (OpenOffice.org Impress)|odg|OpenOffice.org 1.0 Drawing (OpenOffice.org Impress)
-XHTML|xml|XHTML Impress File
-Macromedia Flash (SWF)|swf|impress_flash_Export
-Microsoft PowerPoint 97/2000/XP|ppt|MS PowerPoint 97
-StarImpress 4.0|sdd|StarImpress 4.0
-OpenDocument Presentation Template|stp|impress8_template
-StarImpress 4.0 Template|vor|StarImpress 4.0 Vorlage
-StarImpress 5.0 Template|vor|StarImpress 5.0 Vorlage
-OpenOffice.org 1.0 Presentation|sxi|StarOffice XML (Impress)
-StarDraw 3.0 (OpenOffice.org Impress)|sdd|StarDraw 3.0 (StarImpress)
-HTML Document (OpenOffice.org Impress)|html|impress_html_Export
+### com.sun.star.text.GlobalDocument
+1|OpenOffice.org 1.0 Master Document|writer_globaldocument_StarOffice_XML_Writer_GlobalDocument|X|X|-|-| IMPORT EXPORT TEMPLATE OWN ALIEN PREFERED
+2|Text Encoded (OpenOffice.org Master Document)|Text (encoded) (StarWriter/GlobalDocument)|X|X|-|-| IMPORT EXPORT ALIEN
+3|StarWriter 3.0|StarWriter 3.0 (StarWriter/GlobalDocument)|-|X|-|-| EXPORT TEMPLATE ALIEN 3RDPARTYFILTER
+4|StarWriter 4.0|StarWriter 4.0 (StarWriter/GlobalDocument)|-|X|-|-| EXPORT TEMPLATE ALIEN 3RDPARTYFILTER
+5|StarWriter 5.0|StarWriter 5.0 (StarWriter/GlobalDocument)|-|X|-|-| EXPORT TEMPLATE ALIEN 3RDPARTYFILTER
+6|HTML (Writer/Global)|writerglobal8_HTML|-|X|-|X| EXPORT ALIEN NOTINCHOOSER ASYNCHRON
+7|ODF Master Document|writerglobal8|X|X|-|-| IMPORT EXPORT TEMPLATE OWN PREFERED
+8|ODF Text Document|writerglobal8_writer|-|X|-|-| EXPORT TEMPLATE
+9|StarWriter 4.0 Master Document|StarWriter 4.0/GlobalDocument|X|X|-|-| IMPORT EXPORT TEMPLATE OWN ALIEN 3RDPARTYFILTER
+10|StarWriter 5.0 Master Document|StarWriter 5.0/GlobalDocument|X|X|-|-| IMPORT EXPORT TEMPLATE OWN ALIEN 3RDPARTYFILTER
+11|PDF - Portable Document Format|writer_globaldocument_pdf_Export|-|X|-|-| EXPORT ALIEN 3RDPARTYFILTER
+12|OpenOffice.org 1.0 Text Document|writer_globaldocument_StarOffice_XML_Writer|-|X|-|-| EXPORT TEMPLATE ALIEN
 
-### Writer
-Open Document Text|odt|Writer8
-OpenOffice.org 1.0 Text Document|sxw|StarOffice XML (Writer)
-StarWriter 4.0|sdw|StarWriter 4.0
-HTML Document (OpenOffice.org Writer)|html|HTML (StarWriter)
-StarWriter 3.0 Template|vor|StarWriter 3.0 Vorlage/Template
-StarWriter 4.0 Template|vor|StarWriter 4.0 Vorlage/Template
-StarWriter 5.0 Template|vor|StarWriter 5.0 Vorlage/Template
-OpenOffice.org 1.0 Text Document Template|stw|writer_StarOffice_XML_Writer_Template
-Microsoft Word 2003 XML|xml|MS Word 2003 XML
-Pocket Word|psw|PocketWord File
-Rich Text Format|rtf|Rich Text Format
-PDF - Portable Document Format|pdf|writer_pdf_Export
-StarWriter 3.0|sdw|StarWriter 3.0
-OpenDocument Text Template|ott|writer8_template
-AportisDoc (Palm)|pdb|AportisDoc Palm DB
-BibTeX|bib|BibTeX_Writer
-StarWriter 5.0|sdw|StarWriter 5.0
-Microsoft Word 6.0|doc|MS WinWord 6.0
-Text Encoded|txt|Text (encoded)
-Microsoft Word 95|doc|MS Word 95
-Microsoft Word 97/2000/XP|doc|MS Word 97
-LaTeX 2e|ltx|LaTeX_Writer
-XHTML|html|XHTML Writer File
-Text|txt|Text
-DocBook|xml|DocBook File" 
+### com.sun.star.sheet.SpreadsheetDocument
+1|Web Page Query (OpenOffice.org Calc)|calc_HTML_WebQuery|X|-|-|-| IMPORT ALIEN
+2|OpenOffice.org 1.0 Spreadsheet Template|calc_StarOffice_XML_Calc_Template|X|X|-|-| IMPORT EXPORT TEMPLATE TEMPLATEPATH OWN ALIEN
+3|OpenOffice.org 1.0 Spreadsheet|StarOffice XML (Calc)|X|X|-|-| IMPORT EXPORT TEMPLATE OWN ALIEN
+4|Microsoft Excel 2007 XML Template|Calc MS Excel 2007 XML Template|X|-|-|-| IMPORT TEMPLATE TEMPLATEPATH ALIEN 3RDPARTYFILTER
+5|Data Interchange Format|DIF|X|X|X|-| IMPORT EXPORT ALIEN USESOPTIONS
+6|Microsoft Excel 97/2000/XP Template|MS Excel 97 Vorlage/Template|X|X|-|-| IMPORT EXPORT TEMPLATE TEMPLATEPATH ALIEN
+7|HTML Document (OpenOffice.org Calc)|HTML (StarCalc)|X|X|-|-| IMPORT EXPORT ALIEN
+8|Microsoft Excel 5.0|MS Excel 5.0/95|X|X|-|-| IMPORT EXPORT ALIEN PREFERED
+9|Unified Office Format spreadsheet|UOF spreadsheet|X|X|-|-| IMPORT EXPORT ALIEN 3RDPARTYFILTER
+10|Microsoft Excel 95|MS Excel 95|X|X|-|-| IMPORT EXPORT ALIEN PREFERED
+11|StarCalc 4.0|StarCalc 4.0|X|X|-|-| IMPORT EXPORT TEMPLATE OWN ALIEN 3RDPARTYFILTER
+12|Microsoft Excel 97/2000/XP|MS Excel 97|X|X|-|-| IMPORT EXPORT ALIEN PREFERED
+13|Microsoft Excel 4.0 Template|MS Excel 4.0 Vorlage/Template|X|-|-|-| IMPORT TEMPLATE TEMPLATEPATH ALIEN
+14|ODF Spreadsheet Template|calc8_template|X|X|-|-| IMPORT EXPORT TEMPLATE TEMPLATEPATH OWN
+15|ODF Spreadsheet|calc8|X|X|-|-| IMPORT EXPORT TEMPLATE OWN DEFAULT
+16|Text CSV|Text - txt - csv (StarCalc)|X|X|X|-| IMPORT EXPORT ALIEN USESOPTIONS
+17|Rich Text Format (OpenOffice.org Calc)|Rich Text Format (StarCalc)|X|-|-|-| IMPORT ALIEN
+18|StarCalc 3.0 Template|StarCalc 3.0 Vorlage/Template|X|X|-|-| IMPORT EXPORT TEMPLATE TEMPLATEPATH OWN ALIEN 3RDPARTYFILTER
+19|StarCalc 4.0 Template|StarCalc 4.0 Vorlage/Template|X|X|-|-| IMPORT EXPORT TEMPLATE TEMPLATEPATH OWN ALIEN 3RDPARTYFILTER
+20|StarCalc 5.0 Template|StarCalc 5.0 Vorlage/Template|X|X|-|-| IMPORT EXPORT TEMPLATE TEMPLATEPATH OWN ALIEN 3RDPARTYFILTER
+21|Microsoft Excel 95 Template|MS Excel 95 Vorlage/Template|X|X|-|-| IMPORT EXPORT TEMPLATE TEMPLATEPATH ALIEN
+22|dBASE|dBase|X|X|X|-| IMPORT EXPORT ALIEN USESOPTIONS
+23|Microsoft Excel 2003 XML|MS Excel 2003 XML|X|X|-|-| IMPORT EXPORT ALIEN 3RDPARTYFILTER
+24|Microsoft Excel 2007 XML|Calc MS Excel 2007 XML|X|-|-|-| IMPORT ALIEN 3RDPARTYFILTER PREFERED
+25|Microsoft Excel 2007 Binary|Calc MS Excel 2007 Binary|X|-|-|-| IMPORT ALIEN 3RDPARTYFILTER PREFERED
+26|XHTML|XHTML Calc File|-|X|-|-| EXPORT ALIEN 3RDPARTYFILTER
+27|StarCalc 1.0|StarCalc 1.0|X|-|-|-| IMPORT ALIEN
+28|Microsoft Excel 5.0 Template|MS Excel 5.0/95 Vorlage/Template|X|X|-|-| IMPORT EXPORT TEMPLATE TEMPLATEPATH ALIEN
+29|StarCalc 3.0|StarCalc 3.0|X|X|-|-| IMPORT EXPORT TEMPLATE OWN ALIEN 3RDPARTYFILTER
+30|Quattro Pro 6.0|Quattro Pro 6.0|X|-|-|-| IMPORT ALIEN PREFERED
+31|StarCalc 5.0|StarCalc 5.0|X|X|-|-| IMPORT EXPORT TEMPLATE OWN ALIEN 3RDPARTYFILTER
+32|Microsoft Excel 4.0|MS Excel 4.0|X|-|-|-| IMPORT ALIEN PREFERED
+33|Lotus 1-2-3|Lotus|X|-|X|-| IMPORT ALIEN USESOPTIONS PREFERED
+34|PDF - Portable Document Format|calc_pdf_Export|-|X|-|-| EXPORT ALIEN 3RDPARTYFILTER
+35|SYLK|SYLK|X|X|-|-| IMPORT EXPORT ALIEN
+
+### com.sun.star.drawing.DrawingDocument
+1|PSD - Adobe Photoshop|PSD - Adobe Photoshop|X|-|-|-| IMPORT ALIEN
+2|PNG - Portable Network Graphic|draw_png_Export|-|X|-|-| EXPORT ALIEN SUPPORTSSELECTION
+3|JPEG - Joint Photographic Experts Group|draw_jpg_Export|-|X|-|-| EXPORT ALIEN SUPPORTSSELECTION
+4|WMF - Windows Metafile|WMF - MS Windows Metafile|X|-|-|-| IMPORT ALIEN
+5|PPM - Portable Pixelmap|draw_ppm_Export|-|X|-|-| EXPORT ALIEN SUPPORTSSELECTION
+6|ODF Drawing|draw8|X|X|-|-| IMPORT EXPORT TEMPLATE OWN DEFAULT PREFERED
+7|RAS - Sun Raster Image|RAS - Sun Rasterfile|X|-|-|-| IMPORT ALIEN
+8|WMF - Windows Metafile|draw_wmf_Export|-|X|-|-| EXPORT ALIEN SUPPORTSSELECTION
+9|XPM - X PixMap|XPM|X|-|-|-| IMPORT ALIEN
+10|SGV - StarDraw 2.0|SGV - StarDraw 2.0|X|-|-|-| IMPORT ALIEN
+11|PGM - Portable Graymap|draw_pgm_Export|-|X|-|-| EXPORT ALIEN SUPPORTSSELECTION
+12|EMF - Enhanced Metafile|EMF - MS Windows Metafile|X|-|-|-| IMPORT ALIEN
+13|TIFF - Tagged Image File Format|draw_tif_Export|-|X|-|-| EXPORT ALIEN SUPPORTSSELECTION
+14|PBM - Portable Bitmap|draw_pbm_Export|-|X|-|-| EXPORT ALIEN SUPPORTSSELECTION
+15|EMF - Enhanced Metafile|draw_emf_Export|-|X|-|-| EXPORT ALIEN SUPPORTSSELECTION
+16|SVM - StarView Metafile|SVM - StarView Metafile|X|-|-|-| IMPORT ALIEN
+17|SGF - StarWriter Graphics Format|SGF - StarOffice Writer SGF|X|-|-|-| IMPORT ALIEN
+18|JPEG - Joint Photographic Experts Group|JPG - JPEG|X|-|-|-| IMPORT ALIEN
+19|XPM - X PixMap|draw_xpm_Export|-|X|-|-| EXPORT ALIEN SUPPORTSSELECTION
+20|ODF Drawing Template|draw8_template|X|X|-|-| IMPORT EXPORT TEMPLATE TEMPLATEPATH OWN
+21|BMP - Windows Bitmap|draw_bmp_Export|-|X|-|-| EXPORT ALIEN SUPPORTSSELECTION
+22|PCD - Kodak Photo CD (384x256)|draw_PCD_Photo_CD_Base4|X|-|-|-| IMPORT ALIEN
+23|Macromedia Flash (SWF)|draw_flash_Export|-|X|-|-| EXPORT ALIEN 3RDPARTYFILTER
+24|PPM - Portable Pixelmap|PPM - Portable Pixelmap|X|-|-|-| IMPORT ALIEN
+25|DXF - AutoCAD Interchange Format|DXF - AutoCAD Interchange|X|-|-|-| IMPORT ALIEN
+26|OpenOffice.org 1.0 Drawing|StarOffice XML (Draw)|X|X|-|-| IMPORT EXPORT TEMPLATE OWN ALIEN PREFERED
+27|TIFF - Tagged Image File Format|TIF - Tag Image File|X|-|-|-| IMPORT ALIEN
+28|PDF - Portable Document Format|draw_pdf_Export|-|X|-|-| EXPORT ALIEN 3RDPARTYFILTER
+29|PCX - Zsoft Paintbrush|PCX - Zsoft Paintbrush|X|-|-|-| IMPORT ALIEN
+30|GIF - Graphics Interchange Format|draw_gif_Export|-|X|-|-| EXPORT ALIEN SUPPORTSSELECTION
+31|RAS - Sun Raster Image|draw_ras_Export|-|X|-|-| EXPORT ALIEN SUPPORTSSELECTION
+32|BMP - Windows Bitmap|BMP - MS Windows|X|-|-|-| IMPORT ALIEN
+33|EPS - Encapsulated PostScript|EPS - Encapsulated PostScript|X|-|-|-| IMPORT ALIEN
+34|XBM - X Bitmap|XBM - X-Consortium|X|-|-|-| IMPORT ALIEN
+35|StarDraw 3.0 Template|StarDraw 3.0 Vorlage|X|X|-|-| IMPORT EXPORT TEMPLATE TEMPLATEPATH OWN ALIEN 3RDPARTYFILTER
+36|StarDraw 5.0 Template|StarDraw 5.0 Vorlage|X|X|-|-| IMPORT EXPORT TEMPLATE TEMPLATEPATH OWN ALIEN 3RDPARTYFILTER PREFERED
+37|HTML Document (OpenOffice.org Draw)|draw_html_Export|-|X|-|-| EXPORT ALIEN
+38|PCD - Kodak Photo CD (192x128)|draw_PCD_Photo_CD_Base16|X|-|-|-| IMPORT ALIEN
+39|PCD - Kodak Photo CD (768x512)|draw_PCD_Photo_CD_Base|X|-|-|-| IMPORT ALIEN
+40|StarDraw 3.0|StarDraw 3.0|X|X|-|-| IMPORT EXPORT TEMPLATE OWN ALIEN 3RDPARTYFILTER
+41|PCT - Mac Pict|draw_pct_Export|-|X|-|-| EXPORT ALIEN SUPPORTSSELECTION
+42|PCT - Mac Pict|PCT - Mac Pict|X|-|-|-| IMPORT ALIEN
+43|MET - OS/2 Metafile|draw_met_Export|-|X|-|-| EXPORT ALIEN SUPPORTSSELECTION
+44|StarDraw 5.0|StarDraw 5.0|X|X|-|-| IMPORT EXPORT TEMPLATE OWN ALIEN 3RDPARTYFILTER PREFERED
+45|XHTML|XHTML Draw File|-|X|-|-| EXPORT ALIEN 3RDPARTYFILTER
+46|TGA - Truevision Targa|TGA - Truevision TARGA|X|-|-|-| IMPORT ALIEN
+47|GIF - Graphics Interchange Format|GIF - Graphics Interchange|X|-|-|-| IMPORT ALIEN
+48|EPS - Encapsulated PostScript|draw_eps_Export|-|X|-|-| EXPORT ALIEN SUPPORTSSELECTION
+49|PGM - Portable Graymap|PGM - Portable Graymap|X|-|-|-| IMPORT ALIEN
+50|SVG - Scalable Vector Graphics|draw_svg_Export|-|X|-|-| EXPORT ALIEN 3RDPARTYFILTER
+51|MET - OS/2 Metafile|MET - OS/2 Metafile|X|-|-|-| IMPORT ALIEN
+52|PNG - Portable Network Graphic|PNG - Portable Network Graphic|X|-|-|-| IMPORT ALIEN
+53|OpenOffice.org 1.0 Drawing Template|draw_StarOffice_XML_Draw_Template|X|X|-|-| IMPORT EXPORT TEMPLATE TEMPLATEPATH OWN ALIEN
+54|PBM - Portable Bitmap|PBM - Portable Bitmap|X|-|-|-| IMPORT ALIEN
+55|SVM - StarView Metafile|draw_svm_Export|-|X|-|-| EXPORT ALIEN SUPPORTSSELECTION
+
+### com.sun.star.presentation.PresentationDocument
+1|StarDraw 3.0 Template (OpenOffice.org Impress)|StarDraw 3.0 Vorlage (StarImpress)|X|X|-|X| IMPORT EXPORT TEMPLATE TEMPLATEPATH OWN ALIEN NOTINFILEDIALOG NOTINCHOOSER 3RDPARTYFILTER
+2|StarDraw 5.0 Template (OpenOffice.org Impress)|StarDraw 5.0 Vorlage (StarImpress)|X|X|-|X| IMPORT EXPORT TEMPLATE TEMPLATEPATH OWN ALIEN NOTINFILEDIALOG NOTINCHOOSER 3RDPARTYFILTER
+3|Microsoft PowerPoint 97/2000/XP Template|MS PowerPoint 97 Vorlage|X|X|-|-| IMPORT EXPORT TEMPLATE TEMPLATEPATH ALIEN
+4|Unified Office Format presentation|UOF presentation|X|X|-|-| IMPORT EXPORT ALIEN 3RDPARTYFILTER
+5|OpenOffice.org 1.0 Presentation Template|impress_StarOffice_XML_Impress_Template|X|X|-|-| IMPORT EXPORT TEMPLATE TEMPLATEPATH OWN ALIEN
+6|StarImpress 5.0|StarImpress 5.0|X|X|-|-| IMPORT EXPORT TEMPLATE OWN ALIEN 3RDPARTYFILTER PREFERED
+7|StarImpress 5.0 Packed|StarImpress 5.0 (packed)|X|-|-|-| IMPORT ALIEN 3RDPARTYFILTER PACKED
+8|StarDraw 5.0 (OpenOffice.org Impress)|StarDraw 5.0 (StarImpress)|X|X|-|-| IMPORT EXPORT TEMPLATE OWN ALIEN 3RDPARTYFILTER
+9|ODF Presentation|impress8|X|X|-|-| IMPORT EXPORT TEMPLATE OWN DEFAULT PREFERED
+10|XPM - X PixMap|impress_xpm_Export|-|X|-|-| EXPORT ALIEN SUPPORTSSELECTION
+11|WMF - Windows Metafile|impress_wmf_Export|-|X|-|-| EXPORT ALIEN SUPPORTSSELECTION
+12|TIFF - Tagged Image File Format|impress_tif_Export|-|X|-|-| EXPORT ALIEN SUPPORTSSELECTION
+13|SVM - StarView Metafile|impress_svm_Export|-|X|-|-| EXPORT ALIEN SUPPORTSSELECTION
+14|SVG - Scalable Vector Graphics|impress_svg_Export|-|X|-|-| EXPORT ALIEN 3RDPARTYFILTER
+15|BMP - Windows Bitmap|impress_bmp_Export|-|X|-|-| EXPORT ALIEN SUPPORTSSELECTION
+16|EMF - Enhanced Metafile|impress_emf_Export|-|X|-|-| EXPORT ALIEN SUPPORTSSELECTION
+17|EPS - Encapsulated PostScript|impress_eps_Export|-|X|-|-| EXPORT ALIEN SUPPORTSSELECTION
+18|GIF - Graphics Interchange Format|impress_gif_Export|-|X|-|-| EXPORT ALIEN SUPPORTSSELECTION
+19|JPEG - Joint Photographic Experts Group|impress_jpg_Export|-|X|-|-| EXPORT ALIEN SUPPORTSSELECTION
+20|MET - OS/2 Metafile|impress_met_Export|-|X|-|-| EXPORT ALIEN SUPPORTSSELECTION
+21|PBM - Portable Bitmap|impress_pbm_Export|-|X|-|-| EXPORT ALIEN SUPPORTSSELECTION
+22|PCT - Mac Pict|impress_pct_Export|-|X|-|-| EXPORT ALIEN SUPPORTSSELECTION
+23|PDF - Portable Document Format|impress_pdf_Export|-|X|-|-| EXPORT ALIEN 3RDPARTYFILTER
+24|PGM - Portable Graymap|impress_pgm_Export|-|X|-|-| EXPORT ALIEN SUPPORTSSELECTION
+25|PNG - Portable Network Graphic|impress_png_Export|-|X|-|-| EXPORT ALIEN SUPPORTSSELECTION
+26|PPM - Portable Pixelmap|impress_ppm_Export|-|X|-|-| EXPORT ALIEN SUPPORTSSELECTION
+27|RAS - Sun Raster Image|impress_ras_Export|-|X|-|-| EXPORT ALIEN SUPPORTSSELECTION
+28|Microsoft PowerPoint 2007 XML Template|Impress MS PowerPoint 2007 XML Template|X|-|-|-| IMPORT TEMPLATE TEMPLATEPATH ALIEN 3RDPARTYFILTER PREFERED
+29|ODF Drawing (Impress)|impress8_draw|X|X|-|-| IMPORT EXPORT TEMPLATE OWN
+30|PWP - PlaceWare|placeware_Export|-|X|-|-| EXPORT ALIEN 3RDPARTYFILTER
+31|OpenOffice.org 1.0 Drawing (OpenOffice.org Impress)|impress_StarOffice_XML_Draw|X|X|-|-| IMPORT EXPORT TEMPLATE OWN ALIEN
+32|Microsoft PowerPoint 2007 XML|Impress MS PowerPoint 2007 XML|X|-|-|-| IMPORT ALIEN 3RDPARTYFILTER PREFERED
+33|XHTML|XHTML Impress File|-|X|-|-| EXPORT ALIEN 3RDPARTYFILTER
+34|Macromedia Flash (SWF)|impress_flash_Export|-|X|-|-| EXPORT ALIEN 3RDPARTYFILTER
+35|CGM - Computer Graphics Metafile|CGM - Computer Graphics Metafile|X|-|-|-| IMPORT ALIEN
+36|Microsoft PowerPoint 97/2000/XP|MS PowerPoint 97|X|X|-|-| IMPORT EXPORT ALIEN
+37|StarImpress 4.0|StarImpress 4.0|X|X|-|-| IMPORT EXPORT TEMPLATE OWN ALIEN 3RDPARTYFILTER PREFERED
+38|ODF Presentation Template|impress8_template|X|X|-|-| IMPORT EXPORT TEMPLATE TEMPLATEPATH OWN
+39|StarImpress 4.0 Template|StarImpress 4.0 Vorlage|X|X|-|-| IMPORT EXPORT TEMPLATE TEMPLATEPATH OWN ALIEN 3RDPARTYFILTER
+40|StarImpress 5.0 Template|StarImpress 5.0 Vorlage|X|X|-|-| IMPORT EXPORT TEMPLATE TEMPLATEPATH OWN ALIEN 3RDPARTYFILTER
+41|OpenOffice.org 1.0 Presentation|StarOffice XML (Impress)|X|X|-|-| IMPORT EXPORT TEMPLATE OWN ALIEN PREFERED
+42|StarDraw 3.0 (OpenOffice.org Impress)|StarDraw 3.0 (StarImpress)|X|X|-|-| IMPORT EXPORT TEMPLATE OWN ALIEN 3RDPARTYFILTER
+43|HTML Document (OpenOffice.org Impress)|impress_html_Export|-|X|-|-| EXPORT ALIEN
+
+### com.sun.star.formula.FormulaProperties
+1|StarMath 3.0|StarMath 3.0|X|-|-|-| IMPORT OWN ALIEN 3RDPARTYFILTER
+2|StarMath 5.0|StarMath 5.0|X|X|-|-| IMPORT EXPORT OWN ALIEN 3RDPARTYFILTER
+3|OpenOffice.org 1.0 Formula|StarOffice XML (Math)|X|X|-|-| IMPORT EXPORT TEMPLATE OWN ALIEN
+4|MathType3.x|MathType 3.x|X|X|-|X| IMPORT EXPORT ALIEN NOTINFILEDIALOG NOTINCHOOSER
+5|StarMath 2.0|StarMath 2.0|X|-|-|-| IMPORT ALIEN
+6|StarMath 4.0|StarMath 4.0|X|-|-|-| IMPORT OWN ALIEN 3RDPARTYFILTER
+7|PDF - Portable Document Format|math_pdf_Export|-|X|-|-| EXPORT ALIEN 3RDPARTYFILTER
+8|MathML 1.01|MathML XML (Math)|X|X|-|-| IMPORT EXPORT TEMPLATE
+9|ODF Formula|math8|X|X|-|-| IMPORT EXPORT TEMPLATE OWN DEFAULT
+
+### com.sun.star.sdb.OfficeDatabaseDocument
+1|ODF Database|StarOffice XML (Base)|X|X|-|-| IMPORT EXPORT OWN DEFAULT 3RDPARTYFILTER
+
