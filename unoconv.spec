@@ -2,8 +2,6 @@
 # Authority: dag
 # Upstream: Dag Wieers <dag$wieers,com>
 
-%{?dist: %{expand: %%define %dist 1}}
-
 %{?el4:%define _with_openoffice.org2 1}
 
 Summary: Tool to convert between any document format supported by OpenOffice
@@ -54,11 +52,11 @@ and many more...
 %files
 %defattr(-, root, root, 0755)
 %doc AUTHORS ChangeLog COPYING README TODO WISHLIST docs/ tests/
-%doc %{_mandir}/unoconv.1*
+%doc %{_mandir}/man1/unoconv.1*
 %{_bindir}/unoconv
 
 %changelog
-* Mon Jun 14 2010 Dag Wieers <dag@wieers.com> - 0.4-1
+* Mon Jul 26 2010 Dag Wieers <dag@wieers.com> - 0.4-1
 - Updated to release 0.4.
 
 * Fri Aug 31 2007 Dag Wieers <dag@wieers.com> - 0.3-1

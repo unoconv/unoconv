@@ -35,7 +35,11 @@ $(filter %,$(bins)):
 ### Remove odp because size > 300kB
 dist: clean
 	$(MAKE) -C docs dist
-	svn list -R | grep -v '.odp$$' | pax -d -w -x ustar -s ',^.,$(name)-$(version),' | bzip2 >../$(name)-$(version).tar.bz2
+#	svn list -R | grep -v '.odp$$' | pax -d -w -x ustar -s ',^.,$(name)-$(version),' | bzip2 >../$(name)-$(version).tar.bz2
+	svn st -v --xml | \
+        xmlstarlet sel -t -m "/status/target/entry" -s A:T:U '@path' -i "wc-status[@revision]" -v "@path" -n | \
+        pax -d -w -x ustar -s ,^,$(name)-$(version)/, | \
+        bzip2 >../$(name)-$(version).tar.bz2
 
 rpm: dist
 	rpmbuild -tb --clean --rmsource --rmspec --define "_rpmfilename %%{NAME}-%%{VERSION}-%%{RELEASE}.%%{ARCH}.rpm" --define "_rpmdir ../" ../$(name)-$(version).tar.bz2
