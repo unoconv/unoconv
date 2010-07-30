@@ -124,7 +124,7 @@ Please see the TODO file for known bugs and future plans.
 
 
 == SEE ALSO
-	convert(1), file(1), odt2txt
+    convert(1), file(1), odt2txt
 
 
 == REFERENCES
@@ -135,6 +135,14 @@ Asciidoc::
 
 docbook2odf::
     http://open.comsultia.com/docbook2odf/
+
+A list of possible import and export formats is available from:
+
+OpenOffice 2.1::
+    http://wiki.services.openoffice.org/wiki/Framework/Article/Filter/FilterList_OOo_2_1
+
+OpenOffice 3.0::
+    http://wiki.services.openoffice.org/wiki/Framework/Article/Filter/FilterList_OOo_3_0
 
 
 == AUTHOR

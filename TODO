@@ -14,14 +14,15 @@ contact me as well. :) Send an email to: Dag Wieers <dag@wieers.com>
 - Maybe change the commandline interface to reflect ImageMagick's convert
 - Add the list of input formats as well, and print that list too
 - Preserve the original timestamp, ownership and permissions
-- Translate UnoExceptions into a clear explanation (like Exception 2074 or 3088 ?)
 
 ### Features
 - Change/force the document size during conversion
 - Change/force the document encoding during conversion (UTF-8)
 - Change/force style template (eg. when input format is ODT)
 - Allow to only convert a selection of pages/sheets
+- Add possibility to set options of filters (eg. image quality, ...)
 - Add an --stdin option to read content from stdin
 
 ### Known bugs
-- On some systems loading OpenOffice is slow and this could lead to random errors
+- On some systems loading (older) OpenOffice is slow and this could lead to random errors
+  (this is heavily influenced by version of OpenOffice and python UNO bindings)
