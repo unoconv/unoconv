@@ -16,42 +16,61 @@
 
 import getopt, sys, os, glob, time
 
-global unopath
+global convertor, oobin, oobinpath, oolibpath, oopid
 
 ### The first thing we ought to do is find a suitable OpenOffice installation
 ### with a compatible pyuno library that we can import.
-extrapaths = glob.glob('/usr/lib*/openoffice*/program') + \
-             glob.glob('/usr/lib*/openoffice/basis*/program') + \
-             glob.glob('/usr/lib*/openoffice.org/basis*/program') + \
-             glob.glob('/usr/lib*/ooo*/program') + \
-             glob.glob('/opt/openoffice*/program') + \
-             glob.glob('C:\\Program Files\\OpenOffice.org *\\program\\') + \
-             [ '/Applications/NeoOffice.app/Contents/program', '/usr/bin' ]
+extralibpaths = glob.glob('/usr/lib*/openoffice*/program') + \
+                glob.glob('/usr/lib*/openoffice/basis*/program') + \
+                glob.glob('/usr/lib*/openoffice.org/basis*/program') + \
+                glob.glob('/usr/lib*/ooo*/program') + \
+                glob.glob('/opt/openoffice*/program') + \
+                glob.glob('C:\\Program Files\\OpenOffice.org *\\program\\') + \
+                [ '/Applications/NeoOffice.app/Contents/program', '/usr/bin' ]
 
-for unopath in extrapaths:
-    if os.path.exists(os.path.join(unopath, "pyuno.so")):
+extrabinpaths = glob.glob('/usr/lib*/openoffice.org*/program')
+
+binaries = ( 'soffice.bin', 'soffice', )
+
+for oolibpath in extralibpaths:
+    if os.path.exists(os.path.join(oolibpath, "pyuno.so")):
         filename = "pyuno.so"
-    elif os.path.exists(os.path.join(unopath, "pyuno.dll")):
+    elif os.path.exists(os.path.join(oolibpath, "pyuno.dll")):
         filename = "pyuno.dll"
     else:
         continue
-    sys.path.append(unopath)
     try:
         import uno, unohelper
+        sys.path.append(oolibpath)
         break
     except ImportError, e:
-        sys.path.remove(unopath)
+        sys.path.remove(oolibpath)
         print >>sys.stderr, e
-        print >>sys.stderr, "WARNING: We found %s in %s, but could not import it." % (filename, unopath)
+        print >>sys.stderr, "WARNING: We found %s in %s, but could not import it." % (filename, oolibpath)
         continue
 else:
     print >>sys.stderr, "unoconv: Cannot find the pyuno.so library in sys.path and known paths."
     print >>sys.stderr, "ERROR: Please locate this library and send your feedback to: <tools@lists.rpmforge.net>."
     sys.exit(1)
 
+oobin = None
+for oobinpath in extralibpaths + extrabinpaths:
+    for binary in binaries:
+        bin = os.path.join(oobinpath, binary)
+        if os.path.exists(bin):
+            sys.path.append(oobinpath)
+            oobin = bin
+            break
+    if oobin:
+        break
+else:
+    print >>sys.stderr, "unoconv: Cannot find the soffice.bin binary in sys.path and known paths."
+    print >>sys.stderr, "ERROR: Please locate this binary and send your feedback to: <tools@lists.rpmforge.net>."
+    sys.exit(1)
+
 ### Export an environment that OpenOffice is pleased to work with
-os.environ['LD_LIBRARY_PATH'] = '%s' % unopath
-os.environ['PATH'] = '%s:' % unopath + os.environ['PATH']
+os.environ['LD_LIBRARY_PATH'] = '%s' % oolibpath
+os.environ['PATH'] = '%s:' % oobinpath + os.environ['PATH']
 
 ### Now that we have found a working pyuno library, let's import some classes
 from com.sun.star.beans import PropertyValue
@@ -282,25 +301,26 @@ fmts.add('presentation', 'xpm', 'xpm', 'X PixMap', 'impress_xpm_Export') ### 10
 
 class Options:
     def __init__(self, args):
-        self.stdout = False
-        self.showlist = False
-        self.listener = False
-        self.format = None
-        self.verbose = 0
-        self.timeout = 3
-        self.doctype = None
-        self.server = 'localhost'
-        self.port = '2002'
         self.connection = None
+        self.doctype = None
         self.filenames = []
-        self.pipe = None
+        self.format = None
+        self.listener = False
         self.outputpath = None
-
+        self.pipe = None
+        self.port = '2002'
+        self.server = 'localhost'
+        self.showlist = False
+        self.stdout = False
+        self.timeout = 6
+        self.verbose = 0
 
         ### Get options from the commandline
         try:
             opts, args = getopt.getopt (args, 'c:d:f:hi:Llo:p:s:T:t:v',
-                ['connection=', 'doctype=', 'format=', 'help', 'listener', 'outputpath=', 'pipe=', 'port=', 'server=', 'timeout=', 'show', 'stdout', 'verbose', 'version'] )
+                ['connection=', 'doctype=', 'format=', 'help', 'listener',
+                 'outputpath=', 'pipe=', 'port=', 'server=', 'timeout=',
+                 'show', 'stdout', 'verbose', 'version'] )
         except getopt.error, exc:
             print 'unoconv: %s, try unoconv -h for a list of all the options' % str(exc)
             sys.exit(255)
@@ -329,10 +349,10 @@ class Options:
                 self.server = arg
             elif opt in ['--show']:
                 self.showlist = True
-            elif opt in ['-T', '--timeout']:
-                self.timeout = int(arg)
             elif opt in ['--stdout']:
                 self.stdout = True
+            elif opt in ['-T', '--timeout']:
+                self.timeout = int(arg)
             elif opt in ['-v', '--verbose']:
                 self.verbose = self.verbose + 1
             elif opt in ['--version']:
@@ -419,7 +439,7 @@ unoconv options:
 
 class Convertor:
     def __init__(self):
-        global exitcode, oopid
+        global exitcode, oopid, oobin, oolibpath
         unocontext = None
 
         ### Do the OpenOffice component dance
@@ -430,33 +450,31 @@ class Convertor:
         try:
             unocontext = resolver.resolve("uno:%s" % op.connection)
         except NoConnectException, e:
-            error(2, "Existing listener not found.\n%s" % e)
+            error(3, "Existing listener not found.\n%s" % e)
 
             ### Test if we can use an Openoffice *binary* in our (modified) path
-            for bin in ('soffice', 'soffice.bin', ):
-                error(2, "Trying to launch our own listener using %s." % bin)
-                try:
-                    oopid = os.spawnvp(os.P_NOWAIT, bin, [bin, "-headless", "-invisible", "-nodefault", "-nofirststartwizard", "-nologo", "-norestore", "-accept=%s" % op.connection]);
-                    error(2, 'OpenOffice listener successfully started. (pid=%s)' % oopid)
-                except:
-                    error(3, "Launch of %s failed.\n%s" % (bin, e))
-                    continue
+            error(3, "Trying to launch our own listener using %s." % oobin)
+            try:
+                oopid = os.spawnvp(os.P_NOWAIT, oobin, [oobin, "-headless", "-invisible", "-nodefault", "-nofirststartwizard", "-nologo", "-norestore", "-accept=%s" % op.connection]);
+                error(2, 'OpenOffice listener successfully started. (pid=%s)' % oopid)
 
                 ### Try connection to it for op.timeout seconds
                 timeout = 0
                 while timeout <= op.timeout:
+                    os.kill(oopid, 0)
                     try:
                         unocontext = resolver.resolve("uno:%s" % op.connection)
                         break
                     except NoConnectException:
                         time.sleep(0.5)
-                        timeout = timeout + 0.5
+                        timeout += 0.5
+                    except:
+                        raise
                 else:
-                    error(3, "Failed to connect to %s in %d seconds.\n%s" % (bin, op.timeout, e))
-                    continue
-                break
-            else:
-                die(250, "No proper binaries found to launch OpenOffice. Bailing out.")
+                    error(3, "Failed to connect to %s in %d seconds.\n%s" % (oobin, op.timeout, e))
+            except:
+                raise
+                error(1, "Launch of %s failed.\n%s" % (oobin, e))
 
         if not unocontext:
             die(251, "Unable to connect or start own listener. Aborting.")
@@ -464,6 +482,7 @@ class Convertor:
         ### And some more OpenOffice magic
         unosvcmgr = unocontext.ServiceManager
         self.desktop = unosvcmgr.createInstanceWithContext("com.sun.star.frame.Desktop", unocontext)
+        self.config = unosvcmgr.createInstanceWithContext( "com.sun.star.configuration.ConfigurationProvider", unocontext)
         self.cwd = unohelper.systemPathToFileUrl( os.getcwd() )
 
     def getformat(self, inputfn):
@@ -520,7 +539,10 @@ class Convertor:
 
         try:
             ### Load inputfile
-            inputprops = ( PropertyValue( "Hidden", 0, True, 0 ), )
+            inputprops = (
+                PropertyValue( "Hidden", 0, True, 0 ),
+                PropertyValue( "ReadOnly", 0, True, 0 ),
+            )
 
             inputurl = unohelper.absolutize(self.cwd, unohelper.systemPathToFileUrl(inputfn))
             doc = self.desktop.loadComponentFromURL( inputurl , "_blank", 0, inputprops )
@@ -532,19 +554,40 @@ class Convertor:
 #            pageSize = Size()
 #            pageSize.Width=1480
 #            pageSize.Height=3354
-#            standard.setPropertyValue('Size', pageSize) 
+#            standard.setPropertyValue('Size', pageSize)
+#            standard.setPropertyValue('MaxImageResolution', 1200)
+#            for property in doc.getPropertySetInfo().Properties:
+#                print property
+
+#            print dir(doc.getPropertySetInfo())
+#            for property in doc.getDocumentInfo().DocumentProperties():
+#                print property
+#            print dir(doc.getDocumentInfo())
+#            print dir(doc.getDocumentInfo().DocumentProperties())
 
             error(1, "Selected output format: %s" % outputfmt)
             error(1, "Selected ooffice filter: %s" % outputfmt.filter)
             error(1, "Used doctype: %s" % outputfmt.doctype)
 
+            ### Update document indexes
+            doc.refresh()
+            indexes = doc.getDocumentIndexes()
+            for i in range(0, indexes.getCount()):
+                index = indexes.getByIndex(i)
+                index.update()
+
+            doc.updateLinks()
+
+#            outputprops = doc.getOutProperties(outputfmt.filter, OutputStream())
+
             ### Write outputfile
             outputprops = (
                     PropertyValue( "FilterName", 0, outputfmt.filter, 0),
                     PropertyValue( "Overwrite", 0, True, 0 ),
+#                    PropertyValue( "MaxImageResolution", 0, 1200, 0),
 #                    PropertyValue( "Size", 0, "A3", 0 ),
                     PropertyValue( "OutputStream", 0, OutputStream(), 0 ),
-                   )
+            )
 
             if not op.stdout:
                 (outputfn, ext) = os.path.splitext(inputfn)
@@ -583,16 +626,12 @@ class Convertor:
 class Listener:
     def __init__(self):
         error(1, "Start listener on %s:%s" % (op.server, op.port))
-        for bin in ('soffice', 'soffice.bin', ):
-            error(2, "Warning: trying to launch %s." % bin)
-            try:
-                os.execvp(bin, [bin, "-headless", "-invisible", "-nodefault", "-nologo", "-nofirststartwizard", "-norestore", "-accept=%s" % op.connection]);
-            except Exception, e:
-                error(3, "Launch of %s failed.\n%s" % (bin, e))
-                continue
+        try:
+            os.spawnvp(os.P_WAIT, oobin, [oobin, "-headless", "-invisible", "-nodefault", "-nologo", "-nofirststartwizard", "-norestore", "-accept=%s" % op.connection]);
+        except Exception, e:
+            error(3, "Launch of %s failed.\n%s" % (oobin, e))
         else:
-            die(254, "Failed to start listener with connection %s" % (op.connection))
-        die(253, "Existing listener found, aborting.")
+            die(253, "Existing listener found, aborting.")
 
 def error(level, str):
     "Output error message"
@@ -606,41 +645,45 @@ def info(level, str):
 
 def die(ret, str=None):
     "Print error and exit with errorcode"
-    global convertor, oopid
+    global convertor, oopid, oobin
 
     if str:
         error(0, 'Error: %s' % str)
 
     ### Did we start an instance ?
-    if oopid:
+    if oopid and convertor:
 
         ### If there is a GUI now attached to the instance, disable listener
         if convertor.desktop.getCurrentFrame():
-            for bin in ('soffice', 'soffice.bin', ):
-                try:
-                    os.spawnvp(os.P_NOWAIT, bin, [bin, "-headless", "-invisible", "-nodefault", "-nofirststartwizard", "-nologo", "-norestore", "-unaccept=%s" % op.connection]);
-                    error(2, 'OpenOffice listener successfully disabled.')
-                    break
-                except Exception, e:
-                    error(3, "Launch of %s failed.\n%s" % (bin, e))
-                    continue
+            try:
+                os.swpanvp(oobin, [oobin, "-headless", "-invisible", "-nodefault", "-nofirststartwizard", "-nologo", "-norestore", "-unaccept=%s" % op.connection]);
+                error(2, 'OpenOffice listener successfully disabled.')
+                os.waitpid(oopid, os.WUNTRACED)
+            except Exception, e:
+                error(3, "Terminate using %s failed.\n%s" % (oobin, e))
 
         ### If there is no GUI attached to the instance, terminate instance
         else:
             try:
                 convertor.desktop.terminate()
+                os.waitpid(oopid, os.WUNTRACED)
             except DisposedException:
                 error(2, 'OpenOffice instance successfully terminated.')
 
-#        error(2, 'Taking down OpenOffice with pid %s.' % oopid)
-#        os.setpgid(oopid, 0)
-#        os.killpg(os.getpgid(oopid), 15)
-#        try:
-#            os.kill(oopid, 15)
-#            error(2, 'Waiting for OpenOffice with pid %s to disappear.' % oopid)
-#            os.waitpid(oopid, os.WUNTRACED)
-#        except:
-#            error(2, 'No OpenOffice with pid %s to take down' % oopid)
+        ### Try to clean up OpenOffice process when stuck
+        try:
+            os.kill(oopid, 0)
+            error(2, 'Taking down OpenOffice with pid %s.' % oopid)
+            os.kill(oopid, 9)
+            error(2, 'Waiting for OpenOffice with pid %s to disappear.' % oopid)
+            os.waitpid(oopid, os.WUNTRACED)
+        except OSError:
+            ### Process already terminated
+#            error(2, 'No OpenOffice with pid %s.' % oopid)
+            pass
+        except:
+            raise
+
     sys.exit(ret)
 
 def main():
@@ -667,8 +710,6 @@ def main():
 #        die(252, "Failed to connect to remote listener.")
     except OSError:
         error(0, "Warning: failed to launch OpenOffice. Aborting.")
-
-convertor = None
 
 ### Main entrance
 if __name__ == '__main__':

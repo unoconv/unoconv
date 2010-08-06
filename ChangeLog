@@ -16,6 +16,9 @@
 - Fixed a typo in bydoctype() (Hugo Lopes)
 - Updated filter list based on OpenOffice 3.1
 - Added Unified Office Format (uot/uos/uop) support
+- Update indexes when converting (Winfried Rohr)
+- Find soffice.bin binary (once) similarly to finding uno library
+- Use soffice.bin binary instead of soffice wrapper so we can more reliable terminate the process
 
 * 0.3 - released 31/08/2007
 - Determine doctype from input filename (if not specified)
