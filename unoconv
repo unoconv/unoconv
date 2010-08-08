@@ -24,6 +24,10 @@ extrapaths = glob.glob('/usr/lib*/openoffice*/program') + \
              glob.glob('/usr/lib*/openoffice*/basis*/program') + \
              glob.glob('/usr/lib*/ooo*/program') + \
              glob.glob('/usr/lib*/ooo*/basis*/program') + \
+             glob.glob('/usr/local/openoffice*/program') + \
+             glob.glob('/usr/local/openoffice*/basis/program') + \
+             glob.glob('/usr/local/ooo*/program') + \
+             glob.glob('/usr/local/ooo*/basis/program') + \
              glob.glob('/opt/openoffice*/program') + \
              glob.glob('/opt/openoffice*/basis*/program') + \
              glob.glob('C:\\Program Files\\OpenOffice.org*\\program\\') + \
