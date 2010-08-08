@@ -2,7 +2,7 @@
 - Now properly check if there is a GUI attached and terminate() or -unaccept instance
 - Added official OpenOffice path '/opt/openoffice*/program'
 - Added support for OpenOffice on Windows (Fernando Lucas Rodriguez)
-- Added -i/--pipe option to communicate with UNO pipe (Fernando Lucas Rodriguez)
+- Added --pipe option to communicate with UNO pipe (Fernando Lucas Rodriguez)
 - Added -o/--outputpath option to modify the output path (Fernando Lucas Rodriguez)
 - Added support for MediaWiki output (txt)
 - Added OpenOffice path to LD_LIBRARY_PATH env var
@@ -19,6 +19,8 @@
 - Update indexes when converting (Winfried Rohr)
 - Find soffice.bin binary (once) similarly to finding uno library
 - Use soffice.bin binary instead of soffice wrapper so we can more reliable terminate the process
+- Added -e/--export to set export filter options (eg. PageRange, Quality, UseLosslessCompression, ...)
+- Added -i/--import to set import filter options (eg. utf8)
 
 * 0.3 - released 31/08/2007
 - Determine doctype from input filename (if not specified)

@@ -1,0 +1,24 @@
+= Import and export filters
+
+== Generic export filter options
+
+== PDF export filter options
+See also:
+ - http://specs.openoffice.org/appwide/pdf_export/PDFExportDialog.odt[PDF Export Dialog Specification]
+
+|==========================================================
+|Option name              |Default   |Values
+|CompressMode             |          |
+|ExportFormFields         |          |
+|FirstPagOnLeft           |False     |boolean
+|InitialView              |          |
+|IsSkipEmptyPages         |          |
+|MaxImageResolution       |300       |int (300 - 1200)
+|PageLayout               |0         |int (0 - 4)
+|PageRange                |any       |string (eg 1-7)
+|Quality                  |90        |int (0 - 100)
+|ReduceImageResolution    |False     |boolean
+|Selection                |          |
+|Size                     |          |
+|UseLosslessCompression   |False     |boolean
+|===========================================================

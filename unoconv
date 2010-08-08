@@ -14,25 +14,24 @@
 ### Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 ### Copyright 2007-2008 Dag Wieers <dag@wieers.com>
 
-import getopt, sys, os, glob, time
+import getopt, sys, os, glob, time, socket
 
 global convertor, oobin, oobinpath, oolibpath, oopid
 
 ### The first thing we ought to do is find a suitable OpenOffice installation
 ### with a compatible pyuno library that we can import.
-extralibpaths = glob.glob('/usr/lib*/openoffice*/program') + \
-                glob.glob('/usr/lib*/openoffice/basis*/program') + \
-                glob.glob('/usr/lib*/openoffice.org/basis*/program') + \
-                glob.glob('/usr/lib*/ooo*/program') + \
-                glob.glob('/opt/openoffice*/program') + \
-                glob.glob('C:\\Program Files\\OpenOffice.org *\\program\\') + \
-                [ '/Applications/NeoOffice.app/Contents/program', '/usr/bin' ]
-
-extrabinpaths = glob.glob('/usr/lib*/openoffice.org*/program')
+extrapaths = glob.glob('/usr/lib*/openoffice*/program') + \
+             glob.glob('/usr/lib*/openoffice*/basis*/program') + \
+             glob.glob('/usr/lib*/ooo*/program') + \
+             glob.glob('/usr/lib*/ooo*/basis*/program') + \
+             glob.glob('/opt/openoffice*/program') + \
+             glob.glob('/opt/openoffice*/basis*/program') + \
+             glob.glob('C:\\Program Files\\OpenOffice.org*\\program\\') + \
+             [ '/Applications/NeoOffice.app/Contents/program', '/usr/bin' ]
 
 binaries = ( 'soffice.bin', 'soffice', )
 
-for oolibpath in extralibpaths:
+for oolibpath in extrapaths:
     if os.path.exists(os.path.join(oolibpath, "pyuno.so")):
         filename = "pyuno.so"
     elif os.path.exists(os.path.join(oolibpath, "pyuno.dll")):
@@ -54,7 +53,7 @@ else:
     sys.exit(1)
 
 oobin = None
-for oobinpath in extralibpaths + extrabinpaths:
+for oobinpath in extrapaths:
     for binary in binaries:
         bin = os.path.join(oobinpath, binary)
         if os.path.exists(bin):
@@ -303,8 +302,10 @@ class Options:
     def __init__(self, args):
         self.connection = None
         self.doctype = None
+        self.exportfilter = []
         self.filenames = []
         self.format = None
+        self.importfilter = ""
         self.listener = False
         self.outputpath = None
         self.pipe = None
@@ -317,10 +318,11 @@ class Options:
 
         ### Get options from the commandline
         try:
-            opts, args = getopt.getopt (args, 'c:d:f:hi:Llo:p:s:T:t:v',
-                ['connection=', 'doctype=', 'format=', 'help', 'listener',
-                 'outputpath=', 'pipe=', 'port=', 'server=', 'timeout=',
-                 'show', 'stdout', 'verbose', 'version'] )
+            opts, args = getopt.getopt (args, 'c:d:e:f:hi:Llo:p:s:T:v',
+                ['connection=', 'doctype=', 'export', 'format=', 'help',
+                 'import', 'listener', 'outputpath=', 'pipe=', 'port=',
+                 'server=', 'timeout=', 'show', 'stdout', 'verbose',
+                 'version'] )
         except getopt.error, exc:
             print 'unoconv: %s, try unoconv -h for a list of all the options' % str(exc)
             sys.exit(255)
@@ -335,14 +337,28 @@ class Options:
                 self.connection = arg
             elif opt in ['-d', '--doctype']:
                 self.doctype = arg
+            elif opt in ['-e', '--export']:
+                l = arg.split('=')
+                if len(l) == 2:
+                    (name, value) = l
+                    if value in ('True', 'true'):
+                        self.exportfilter.append( PropertyValue( name, 0, True, 0 ) )
+                    elif value in ('False', 'false'):
+                        self.exportfilter.append( PropertyValue( name, 0, False, 0 ) )
+                    else:
+                        self.exportfilter.append( PropertyValue( name, 0, value, 0 ) )
+                else:
+                    print >>sys.stderr, 'Warning: Option %s cannot be parsed, ignoring.' % arg
             elif opt in ['-f', '--format']:
                 self.format = arg
-            elif opt in ['-i', '--pipe']:
-                self.pipe = arg
+            elif opt in ['-i', '--import']:
+                self.importfilter = arg
             elif opt in ['-l', '--listener']:
                 self.listener = True
             elif opt in ['-o', '--outputpath']:
                 self.outputpath = arg
+            elif opt in ['--pipe']:
+                self.pipe = arg
             elif opt in ['-p', '--port']:
                 self.port = arg
             elif opt in ['-s', '--server']:
@@ -423,10 +439,14 @@ unoconv options:
   -c, --connection=string  use a custom connection string
   -d, --doctype=type       specify document type
                              (document, graphics, presentation, spreadsheet)
+  -e, --export=name=value  set export filter options
+                             eg. -e PageRange=1-2
   -f, --format=format      specify the output format
-  -i, --pipe=name          alternative method of connection using a pipe
+  -i, --import=string      set import filter option string
+                             eg. -i utf8
   -l, --listener           start a listener to use by unoconv clients
   -o, --outputpath=name    output directory
+      --pipe=name          alternative method of connection using a pipe
   -p, --port=port          specify the port (default: 2002)
                              to be used by client or listener
   -s, --server=server      specify the server address (default: localhost)
@@ -542,6 +562,7 @@ class Convertor:
             inputprops = (
                 PropertyValue( "Hidden", 0, True, 0 ),
                 PropertyValue( "ReadOnly", 0, True, 0 ),
+                PropertyValue( "FilterOptions", 0, op.importfilter, 0 ),
             )
 
             inputurl = unohelper.absolutize(self.cwd, unohelper.systemPathToFileUrl(inputfn))
@@ -549,21 +570,6 @@ class Convertor:
 
             if not doc:
                 raise UnoException("File could not be loaded by OpenOffice", None)
-
-#            standard = doc.getStyleFamilies().getByName('PageStyles').getByName('Standard')
-#            pageSize = Size()
-#            pageSize.Width=1480
-#            pageSize.Height=3354
-#            standard.setPropertyValue('Size', pageSize)
-#            standard.setPropertyValue('MaxImageResolution', 1200)
-#            for property in doc.getPropertySetInfo().Properties:
-#                print property
-
-#            print dir(doc.getPropertySetInfo())
-#            for property in doc.getDocumentInfo().DocumentProperties():
-#                print property
-#            print dir(doc.getDocumentInfo())
-#            print dir(doc.getDocumentInfo().DocumentProperties())
 
             error(1, "Selected output format: %s" % outputfmt)
             error(1, "Selected ooffice filter: %s" % outputfmt.filter)
@@ -578,15 +584,13 @@ class Convertor:
 
             doc.updateLinks()
 
-#            outputprops = doc.getOutProperties(outputfmt.filter, OutputStream())
-
             ### Write outputfile
             outputprops = (
-                    PropertyValue( "FilterName", 0, outputfmt.filter, 0),
-                    PropertyValue( "Overwrite", 0, True, 0 ),
-#                    PropertyValue( "MaxImageResolution", 0, 1200, 0),
-#                    PropertyValue( "Size", 0, "A3", 0 ),
-                    PropertyValue( "OutputStream", 0, OutputStream(), 0 ),
+                PropertyValue( "FilterData", 0, uno.Any("[]com.sun.star.beans.PropertyValue", tuple( op.exportfilter ), ), 0 ),
+                PropertyValue( "FilterName", 0, outputfmt.filter, 0),
+#                PropertyValue( "SelectionOnly", 0, True, 0 ),
+                PropertyValue( "OutputStream", 0, OutputStream(), 0 ),
+                PropertyValue( "Overwrite", 0, True, 0 ),
             )
 
             if not op.stdout:
@@ -670,8 +674,9 @@ def die(ret, str=None):
             except DisposedException:
                 error(2, 'OpenOffice instance successfully terminated.')
 
-        ### Try to clean up OpenOffice process when stuck
+        ### OpenOffice processes may get stuck and we have to kill them
         try:
+            ### Is it still running ?
             os.kill(oopid, 0)
             error(2, 'Taking down OpenOffice with pid %s.' % oopid)
             os.kill(oopid, 9)
