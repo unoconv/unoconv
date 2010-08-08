@@ -31,26 +31,31 @@ extrapaths = glob.glob('/usr/lib*/openoffice*/program') + \
 
 binaries = ( 'soffice.bin', 'soffice', )
 
-for oolibpath in extrapaths:
-    if os.path.exists(os.path.join(oolibpath, "pyuno.so")):
-        filename = "pyuno.so"
-    elif os.path.exists(os.path.join(oolibpath, "pyuno.dll")):
-        filename = "pyuno.dll"
+try:
+    import uno, unohelper
+except ImportError:
+    for oolibpath in extrapaths:
+        if os.path.exists(os.path.join(oolibpath, "pyuno.so")):
+            filename = "pyuno.so"
+        elif os.path.exists(os.path.join(oolibpath, "pyuno.dll")):
+            filename = "pyuno.dll"
+        else:
+            continue
+        try:
+            import uno, unohelper
+            sys.path.append(oolibpath)
+            ### Export an environment that OpenOffice is pleased to work with
+            os.environ['LD_LIBRARY_PATH'] = '%s' % oolibpath
+            break
+        except ImportError, e:
+            sys.path.remove(oolibpath)
+            print >>sys.stderr, e
+            print >>sys.stderr, "WARNING: We found %s in %s, but could not import it." % (filename, oolibpath)
+            continue
     else:
-        continue
-    try:
-        import uno, unohelper
-        sys.path.append(oolibpath)
-        break
-    except ImportError, e:
-        sys.path.remove(oolibpath)
-        print >>sys.stderr, e
-        print >>sys.stderr, "WARNING: We found %s in %s, but could not import it." % (filename, oolibpath)
-        continue
-else:
-    print >>sys.stderr, "unoconv: Cannot find the pyuno.so library in sys.path and known paths."
-    print >>sys.stderr, "ERROR: Please locate this library and send your feedback to: <tools@lists.rpmforge.net>."
-    sys.exit(1)
+        print >>sys.stderr, "unoconv: Cannot find the pyuno.so library in sys.path and known paths."
+        print >>sys.stderr, "ERROR: Please locate this library and send your feedback to: <tools@lists.rpmforge.net>."
+        sys.exit(1)
 
 oobin = None
 for oobinpath in extrapaths:
@@ -68,7 +73,6 @@ else:
     sys.exit(1)
 
 ### Export an environment that OpenOffice is pleased to work with
-os.environ['LD_LIBRARY_PATH'] = '%s' % oolibpath
 os.environ['PATH'] = '%s:' % oobinpath + os.environ['PATH']
 
 ### Now that we have found a working pyuno library, let's import some classes
@@ -492,7 +496,7 @@ class Convertor:
                         raise
                 else:
                     error(3, "Failed to connect to %s in %d seconds.\n%s" % (oobin, op.timeout, e))
-            except:
+            except Exception, e:
                 raise
                 error(1, "Launch of %s failed.\n%s" % (oobin, e))
 
@@ -576,13 +580,22 @@ class Convertor:
             error(1, "Used doctype: %s" % outputfmt.doctype)
 
             ### Update document indexes
-            doc.refresh()
-            indexes = doc.getDocumentIndexes()
-            for i in range(0, indexes.getCount()):
-                index = indexes.getByIndex(i)
-                index.update()
+            try:
+                doc.refresh()
+                indexes = doc.getDocumentIndexes()
+            except AttributeError:
+                # the document doesn't implement the XRefreshable and/or
+                # XDocumentIndexesSupplier interfaces
+                pass
+            else:
+                for i in range(0, indexes.getCount()):
+                    indexes.getByIndex(i).update()
 
-            doc.updateLinks()
+            try:
+                doc.updateLinks()
+            except AttributeError:
+                # the document doesn't implement the XLinkUpdate interface
+                pass
 
             ### Write outputfile
             outputprops = (
