@@ -21,6 +21,8 @@
 - Use soffice.bin binary instead of soffice wrapper so we can more reliable terminate the process
 - Added -e/--export to set export filter options (eg. PageRange, Quality, UseLosslessCompression, ...)
 - Added -i/--import to set import filter options (eg. utf8)
+- Use subprocess module instead of os.spawnvp for better Windows compatibility
+- Added docs/filters.txt with information about import and export filters
 
 * 0.3 - released 31/08/2007
 - Determine doctype from input filename (if not specified)

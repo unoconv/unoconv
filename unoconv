@@ -14,9 +14,9 @@
 ### Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 ### Copyright 2007-2008 Dag Wieers <dag@wieers.com>
 
-import getopt, sys, os, glob, time, socket
+import getopt, sys, os, glob, time, socket, subprocess
 
-global convertor, oobin, oobinpath, oolibpath, oopid
+global convertor, oobin, oobinpath, oolibpath, ooproc
 
 ### The first thing we ought to do is find a suitable OpenOffice installation
 ### with a compatible pyuno library that we can import.
@@ -94,7 +94,7 @@ VERSION = '0.4'
 
 doctypes = ('document', 'graphics', 'presentation', 'spreadsheet')
 
-oopid = None
+ooproc = None
 exitcode = 0
 
 class Fmt:
@@ -160,6 +160,9 @@ class OutputStream( unohelper.Base, XOutputStream ):
         pass
 
 fmts = FmtList()
+
+#oFF = createUnoService( "com.sun.star.document.FilterFactory" )
+#oFilterNames = oFF.getElementNames()
 
 ### TextDocument
 fmts.add('document', 'bib', 'bib', 'BibTeX', 'BibTeX_Writer') ### 22
@@ -467,7 +470,7 @@ unoconv options:
 
 class Convertor:
     def __init__(self):
-        global exitcode, oopid, oobin, oolibpath
+        global exitcode, ooproc, oobin, oolibpath
         unocontext = None
 
         ### Do the OpenOffice component dance
@@ -483,13 +486,14 @@ class Convertor:
             ### Test if we can use an Openoffice *binary* in our (modified) path
             error(3, "Trying to launch our own listener using %s." % oobin)
             try:
-                oopid = os.spawnvp(os.P_NOWAIT, oobin, [oobin, "-headless", "-invisible", "-nodefault", "-nofirststartwizard", "-nologo", "-norestore", "-accept=%s" % op.connection]);
-                error(2, 'OpenOffice listener successfully started. (pid=%s)' % oopid)
+#                oopid = os.spawnvp(os.P_NOWAIT, oobin, [oobin, "-headless", "-invisible", "-nodefault", "-nofirststartwizard", "-nologo", "-norestore", "-accept=%s" % op.connection])
+                ooproc = subprocess.Popen([oobin, "-headless", "-invisible", "-nodefault", "-nofirststartwizard", "-nologo", "-norestore", "-accept=%s" % op.connection])
+                error(2, 'OpenOffice listener successfully started. (pid=%s)' % ooproc.pid)
 
                 ### Try connection to it for op.timeout seconds
                 timeout = 0
                 while timeout <= op.timeout:
-                    os.kill(oopid, 0)
+                    os.kill(ooproc.pid, 0)
                     try:
                         unocontext = resolver.resolve("uno:%s" % op.connection)
                         break
@@ -648,7 +652,8 @@ class Listener:
     def __init__(self):
         error(1, "Start listener on %s:%s" % (op.server, op.port))
         try:
-            os.spawnvp(os.P_WAIT, oobin, [oobin, "-headless", "-invisible", "-nodefault", "-nologo", "-nofirststartwizard", "-norestore", "-accept=%s" % op.connection]);
+#            os.spawnvp(os.P_WAIT, oobin, [oobin, "-headless", "-invisible", "-nodefault", "-nologo", "-nofirststartwizard", "-norestore", "-accept=%s" % op.connection])
+            subprocess.call([oobin, "-headless", "-invisible", "-nodefault", "-nologo", "-nofirststartwizard", "-norestore", "-accept=%s" % op.connection])
         except Exception, e:
             error(3, "Launch of %s failed.\n%s" % (oobin, e))
         else:
@@ -666,20 +671,21 @@ def info(level, str):
 
 def die(ret, str=None):
     "Print error and exit with errorcode"
-    global convertor, oopid, oobin
+    global convertor, ooproc, oobin
 
     if str:
         error(0, 'Error: %s' % str)
 
     ### Did we start an instance ?
-    if oopid and convertor:
+    if ooproc and convertor:
 
         ### If there is a GUI now attached to the instance, disable listener
         if convertor.desktop.getCurrentFrame():
             try:
-                os.swpanvp(oobin, [oobin, "-headless", "-invisible", "-nodefault", "-nofirststartwizard", "-nologo", "-norestore", "-unaccept=%s" % op.connection]);
+#                oopid = os.spawnvp(oobin, [oobin, "-headless", "-invisible", "-nodefault", "-nofirststartwizard", "-nologo", "-norestore", "-unaccept=%s" % op.connection])
+                subprocess.Popen([oobin, "-headless", "-invisible", "-nodefault", "-nofirststartwizard", "-nologo", "-norestore", "-unaccept=%s" % op.connection])
                 error(2, 'OpenOffice listener successfully disabled.')
-                os.waitpid(oopid, os.WUNTRACED)
+                os.waitpid(ooproc.pid, os.WUNTRACED)
             except Exception, e:
                 error(3, "Terminate using %s failed.\n%s" % (oobin, e))
 
@@ -687,21 +693,21 @@ def die(ret, str=None):
         else:
             try:
                 convertor.desktop.terminate()
-                os.waitpid(oopid, os.WUNTRACED)
+                os.waitpid(ooproc.pid, os.WUNTRACED)
             except DisposedException:
                 error(2, 'OpenOffice instance successfully terminated.')
 
         ### OpenOffice processes may get stuck and we have to kill them
         try:
             ### Is it still running ?
-            os.kill(oopid, 0)
-            error(2, 'Taking down OpenOffice with pid %s.' % oopid)
-            os.kill(oopid, 9)
-            error(2, 'Waiting for OpenOffice with pid %s to disappear.' % oopid)
-            os.waitpid(oopid, os.WUNTRACED)
+            os.kill(ooproc.pid, 0)
+            error(2, 'Taking down OpenOffice with pid %s.' % ooproc.pid)
+            os.kill(ooproc.pid, 9)
+            error(2, 'Waiting for OpenOffice with pid %s to disappear.' % ooproc.pid)
+            os.waitpid(ooproc.pid, os.WUNTRACED)
         except OSError:
             ### Process already terminated
-#            error(2, 'No OpenOffice with pid %s.' % oopid)
+#            error(2, 'No OpenOffice with pid %s.' % ooproc.pid)
             pass
         except:
             raise
