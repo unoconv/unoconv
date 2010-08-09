@@ -23,6 +23,7 @@
 - Added -i/--import to set import filter options (eg. utf8)
 - Use subprocess module instead of os.spawnvp for better Windows compatibility
 - Added docs/filters.txt with information about import and export filters
+- Added official OpenOffice path for MacOSX (Jeff Harmon)
 
 * 0.3 - released 31/08/2007
 - Determine doctype from input filename (if not specified)

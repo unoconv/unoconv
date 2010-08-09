@@ -25,13 +25,20 @@ extrapaths = glob.glob('/usr/lib*/openoffice*/program') + \
              glob.glob('/usr/lib*/ooo*/program') + \
              glob.glob('/usr/lib*/ooo*/basis*/program') + \
              glob.glob('/usr/local/openoffice*/program') + \
-             glob.glob('/usr/local/openoffice*/basis/program') + \
+             glob.glob('/usr/local/openoffice*/basis*/program') + \
              glob.glob('/usr/local/ooo*/program') + \
-             glob.glob('/usr/local/ooo*/basis/program') + \
+             glob.glob('/usr/local/ooo*/basis*/program') + \
              glob.glob('/opt/openoffice*/program') + \
              glob.glob('/opt/openoffice*/basis*/program') + \
-             glob.glob('C:\\Program Files\\OpenOffice.org*\\program\\') + \
-             [ '/Applications/NeoOffice.app/Contents/program', '/usr/bin' ]
+             glob.glob('C:\\Program Files\\OpenOffice.org*\\program') + [ \
+             glob.glob('C:\\Program Files\\OpenOffice.org*\\basis*\\program') + [ \
+                '/Applications/OpenOffice.org.app/Contents/program',
+                '/Applications/OpenOffice.org.app/Contents/basis-link/program',
+                '/Applications/NeoOffice.app/Contents/program',
+                '/Applications/NeoOffice.app/Contents/basis-link/program',
+                '/usr/bin',
+                '/usr/local/bin',
+             ]
 
 binaries = ( 'soffice.bin', 'soffice', )
 
@@ -486,8 +493,7 @@ class Convertor:
             ### Test if we can use an Openoffice *binary* in our (modified) path
             error(3, "Trying to launch our own listener using %s." % oobin)
             try:
-#                oopid = os.spawnvp(os.P_NOWAIT, oobin, [oobin, "-headless", "-invisible", "-nodefault", "-nofirststartwizard", "-nologo", "-norestore", "-accept=%s" % op.connection])
-                ooproc = subprocess.Popen([oobin, "-headless", "-invisible", "-nodefault", "-nofirststartwizard", "-nologo", "-norestore", "-accept=%s" % op.connection])
+                ooproc = subprocess.Popen([oobin, "-headless", "-invisible", "-nocrashreport", "-nodefault", "-nofirststartwizard", "-nologo", "-norestore", "-accept=%s" % op.connection])
                 error(2, 'OpenOffice listener successfully started. (pid=%s)' % ooproc.pid)
 
                 ### Try connection to it for op.timeout seconds
@@ -606,13 +612,16 @@ class Convertor:
                 pass
 
             ### Write outputfile
-            outputprops = (
+            outputprops = [
                 PropertyValue( "FilterData", 0, uno.Any("[]com.sun.star.beans.PropertyValue", tuple( op.exportfilter ), ), 0 ),
                 PropertyValue( "FilterName", 0, outputfmt.filter, 0),
 #                PropertyValue( "SelectionOnly", 0, True, 0 ),
                 PropertyValue( "OutputStream", 0, OutputStream(), 0 ),
                 PropertyValue( "Overwrite", 0, True, 0 ),
-            )
+            ]
+
+            if outputfmt.filter == 'Text (encoded)':
+                outputprops.append(PropertyValue( "FilterFlags", 0, "UTF8, LF", 0))
 
             if not op.stdout:
                 (outputfn, ext) = os.path.splitext(inputfn)
@@ -621,10 +630,10 @@ class Convertor:
                 else:
                     outputfn = os.path.join(op.outputpath, os.path.basename(outputfn) + '.' + outputfmt.extension)
                 outputurl = unohelper.absolutize( self.cwd, unohelper.systemPathToFileUrl(outputfn) )
-                doc.storeToURL(outputurl, outputprops)
+                doc.storeToURL(outputurl, tuple(outputprops) )
                 error(1, "Output file: %s" % outputfn)
             else:
-                doc.storeToURL("private:stream", outputprops)
+                doc.storeToURL("private:stream", tuple(outputprops) )
 
             doc.dispose()
             doc.close(True)
@@ -652,8 +661,7 @@ class Listener:
     def __init__(self):
         error(1, "Start listener on %s:%s" % (op.server, op.port))
         try:
-#            os.spawnvp(os.P_WAIT, oobin, [oobin, "-headless", "-invisible", "-nodefault", "-nologo", "-nofirststartwizard", "-norestore", "-accept=%s" % op.connection])
-            subprocess.call([oobin, "-headless", "-invisible", "-nodefault", "-nologo", "-nofirststartwizard", "-norestore", "-accept=%s" % op.connection])
+            subprocess.call([oobin, "-headless", "-invisible", "-nocrashreport", "-nodefault", "-nologo", "-nofirststartwizard", "-norestore", "-accept=%s" % op.connection])
         except Exception, e:
             error(3, "Launch of %s failed.\n%s" % (oobin, e))
         else:
@@ -682,8 +690,7 @@ def die(ret, str=None):
         ### If there is a GUI now attached to the instance, disable listener
         if convertor.desktop.getCurrentFrame():
             try:
-#                oopid = os.spawnvp(oobin, [oobin, "-headless", "-invisible", "-nodefault", "-nofirststartwizard", "-nologo", "-norestore", "-unaccept=%s" % op.connection])
-                subprocess.Popen([oobin, "-headless", "-invisible", "-nodefault", "-nofirststartwizard", "-nologo", "-norestore", "-unaccept=%s" % op.connection])
+                subprocess.Popen([oobin, "-headless", "-invisible", "-nocrashreport", "-nodefault", "-nofirststartwizard", "-nologo", "-norestore", "-unaccept=%s" % op.connection])
                 error(2, 'OpenOffice listener successfully disabled.')
                 os.waitpid(ooproc.pid, os.WUNTRACED)
             except Exception, e:

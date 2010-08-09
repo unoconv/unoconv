@@ -22,6 +22,8 @@ contact me as well. :) Send an email to: Dag Wieers <dag@wieers.com>
 - Change/force style template (eg. when input format is ODT)
 - Allow to only convert a selection of sheets in a spreadsheet
 - Add an --stdin option to read content from stdin
+- Add the option to select all (Ctrl-A) before converting (to PDF)
+  (This allows to convert only the image, and not the blank page)
 
 ### Documentation
 - Add information about import and export filter options
