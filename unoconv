@@ -53,8 +53,8 @@ except ImportError:
         else:
             continue
         try:
-            import uno, unohelper
             sys.path.append(oolibpath)
+            import uno, unohelper
             ### Export an environment that OpenOffice is pleased to work with
             os.environ['LD_LIBRARY_PATH'] = '%s' % oolibpath
             break
