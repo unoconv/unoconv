@@ -1,4 +1,4 @@
-* 0.4 - released 26/07/2010
+* 0.4 - released 28/09/2010
 - Now properly check if there is a GUI attached and terminate() or -unaccept instance
 - Added official OpenOffice path '/opt/openoffice*/program'
 - Added support for OpenOffice on Windows (Fernando Lucas Rodriguez)
@@ -24,6 +24,7 @@
 - Use subprocess module instead of os.spawnvp for better Windows compatibility
 - Added docs/filters.txt with information about import and export filters
 - Added official OpenOffice path for MacOSX (Jeff Harmon)
+- First update links, then indexes (Nicolae)
 
 * 0.3 - released 31/08/2007
 - Determine doctype from input filename (if not specified)

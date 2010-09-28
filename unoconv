@@ -593,6 +593,13 @@ class Convertor:
             error(1, "Selected ooffice filter: %s" % outputfmt.filter)
             error(1, "Used doctype: %s" % outputfmt.doctype)
 
+            ### Update document links
+            try:
+                doc.updateLinks()
+            except AttributeError:
+                # the document doesn't implement the XLinkUpdate interface
+                pass
+
             ### Update document indexes
             try:
                 doc.refresh()
@@ -604,12 +611,6 @@ class Convertor:
             else:
                 for i in range(0, indexes.getCount()):
                     indexes.getByIndex(i).update()
-
-            try:
-                doc.updateLinks()
-            except AttributeError:
-                # the document doesn't implement the XLinkUpdate interface
-                pass
 
             ### Write outputfile
             outputprops = [
