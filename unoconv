@@ -501,6 +501,7 @@ class Convertor:
                 timeout = 0
                 while timeout <= op.timeout:
                     os.kill(ooproc.pid, 0)
+#                    ooproc.poll()
                     try:
                         unocontext = resolver.resolve("uno:%s" % op.connection)
                         break
@@ -615,6 +616,7 @@ class Convertor:
 
             ### Write outputfile
             outputprops = [
+#                PropertyValue( "FilterData" , 0, ( PropertyValue( "SelectPdfVersion" , 0, 1 , uno.getConstantByName( "com.sun.star.beans.PropertyState.DIRECT_VALUE" ) ) ), uno.getConstantByName( "com.sun.star.beans.PropertyState.DIRECT_VALUE" ) ),
                 PropertyValue( "FilterData", 0, uno.Any("[]com.sun.star.beans.PropertyValue", tuple( op.exportfilter ), ), 0 ),
                 PropertyValue( "FilterName", 0, outputfmt.filter, 0),
 #                PropertyValue( "SelectionOnly", 0, True, 0 ),
@@ -694,7 +696,7 @@ def die(ret, str=None):
             try:
                 subprocess.Popen([oobin, "-headless", "-invisible", "-nocrashreport", "-nodefault", "-nofirststartwizard", "-nologo", "-norestore", "-unaccept=%s" % op.connection])
                 error(2, 'OpenOffice listener successfully disabled.')
-                os.waitpid(ooproc.pid, os.WUNTRACED)
+                ooproc.wait()
             except Exception, e:
                 error(3, "Terminate using %s failed.\n%s" % (oobin, e))
 
@@ -702,29 +704,31 @@ def die(ret, str=None):
         else:
             try:
                 convertor.desktop.terminate()
-                os.waitpid(ooproc.pid, os.WUNTRACED)
             except DisposedException:
-                error(2, 'OpenOffice instance successfully terminated.')
+                error(2, 'OpenOffice instance unsuccessfully terminated.')
+                try:
+                    ooproc.terminate()
+                except AttributeError:
+                    os.kill(ooproc.pid, 15)
+            ooproc.wait()
 
         ### OpenOffice processes may get stuck and we have to kill them
-        try:
-            ### Is it still running ?
-            os.kill(ooproc.pid, 0)
+        ### Is it still running ?
+        ooproc.poll()
+        if ooproc.returncode == None:
             error(2, 'Taking down OpenOffice with pid %s.' % ooproc.pid)
-            os.kill(ooproc.pid, 9)
+            try:
+                ooproc.kill()
+            except AttributeError:
+                os.kill(ooproc.pid, 9)
             error(2, 'Waiting for OpenOffice with pid %s to disappear.' % ooproc.pid)
-            os.waitpid(ooproc.pid, os.WUNTRACED)
-        except OSError:
-            ### Process already terminated
-#            error(2, 'No OpenOffice with pid %s.' % ooproc.pid)
-            pass
-        except:
-            raise
+            ooproc.wait()
 
     sys.exit(ret)
 
 def main():
     global convertor, exitcode
+    convertor = None
 
     try:
         if op.listener:

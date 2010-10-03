@@ -26,6 +26,7 @@
 - Added official OpenOffice path for MacOSX (Jeff Harmon)
 - First update links, then indexes (Nicolae Mihalache)
 - More improvements to OpenOffice support on Windows (Fernando Lucas Rodriguez)
+- Improve terminating OpenOffice on Windows (Fernando Lucas Rodriguez)
 
 * 0.3 - released 31/08/2007
 - Determine doctype from input filename (if not specified)
