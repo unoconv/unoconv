@@ -24,7 +24,8 @@
 - Use subprocess module instead of os.spawnvp for better Windows compatibility
 - Added docs/filters.txt with information about import and export filters
 - Added official OpenOffice path for MacOSX (Jeff Harmon)
-- First update links, then indexes (Nicolae)
+- First update links, then indexes (Nicolae Mihalache)
+- More improvements to OpenOffice support on Windows (Fernando Lucas Rodriguez)
 
 * 0.3 - released 31/08/2007
 - Determine doctype from input filename (if not specified)

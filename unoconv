@@ -12,7 +12,7 @@
 ### You should have received a copy of the GNU General Public License
 ### along with this program; if not, write to the Free Software
 ### Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-### Copyright 2007-2008 Dag Wieers <dag@wieers.com>
+### Copyright 2007-2010 Dag Wieers <dag@wieers.com>
 
 import getopt, sys, os, glob, time, socket, subprocess
 
@@ -30,17 +30,18 @@ extrapaths = glob.glob('/usr/lib*/openoffice*/program') + \
              glob.glob('/usr/local/ooo*/basis*/program') + \
              glob.glob('/opt/openoffice*/program') + \
              glob.glob('/opt/openoffice*/basis*/program') + \
+             glob.glob('/Applications/OpenOffice.org.app/Contents/program') + \
+             glob.glob('/Applications/OpenOffice.org.app/Contents/basis-link/program') + \
+             glob.glob('/Applications/NeoOffice.app/Contents/program') + \
+             glob.glob('/Applications/NeoOffice.app/Contents/basis-link/program') + \
+             glob.glob('C:\\Program Files\\OpenOffice.org*\\URE\\bin') + \
              glob.glob('C:\\Program Files\\OpenOffice.org*\\program') + \
-             glob.glob('C:\\Program Files\\OpenOffice.org*\\basis*\\program') + [
-                '/Applications/OpenOffice.org.app/Contents/program',
-                '/Applications/OpenOffice.org.app/Contents/basis-link/program',
-                '/Applications/NeoOffice.app/Contents/program',
-                '/Applications/NeoOffice.app/Contents/basis-link/program',
-                '/usr/bin',
-                '/usr/local/bin',
-             ]
+             glob.glob('C:\\Program Files\\OpenOffice.org*\\Basis*\\program') + \
+             glob.glob('/usr/bin') +
+             glob.glob('/usr/local/bin') +
+             glob.glob('/opt/bin')
 
-binaries = ( 'soffice.bin', 'soffice', )
+binaries = ( 'soffice.bin', 'soffice', 'soffice.exe' )
 
 try:
     import uno, unohelper
@@ -48,23 +49,23 @@ except ImportError:
     for oolibpath in extrapaths:
         if os.path.exists(os.path.join(oolibpath, "pyuno.so")):
             filename = "pyuno.so"
-        elif os.path.exists(os.path.join(oolibpath, "pyuno.dll")):
-            filename = "pyuno.dll"
+        elif os.path.exists(os.path.join(oolibpath, "pyuno.pyd")):
+            filename = "pyuno.pyd"
         else:
             continue
         try:
             sys.path.append(oolibpath)
             import uno, unohelper
             ### Export an environment that OpenOffice is pleased to work with
-            os.environ['LD_LIBRARY_PATH'] = '%s' % oolibpath
+            os.environ['LD_LIBRARY_PATH'] = oolibpath + os.pathsep + os.environ['LD_LIBRARY_PATH']
             break
         except ImportError, e:
             sys.path.remove(oolibpath)
             print >>sys.stderr, e
-            print >>sys.stderr, "WARNING: We found %s in %s, but could not import it." % (filename, oolibpath)
+            print >>sys.stderr, "WARNING: Found %s in %s, but could not import it." % (filename, oolibpath)
             continue
     else:
-        print >>sys.stderr, "unoconv: Cannot find the pyuno.so library in sys.path and known paths."
+        print >>sys.stderr, "unoconv: Cannot find the pyuno library in sys.path and known paths."
         print >>sys.stderr, "ERROR: Please locate this library and send your feedback to: <tools@lists.rpmforge.net>."
         sys.exit(1)
 
@@ -79,12 +80,12 @@ for oobinpath in extrapaths:
     if oobin:
         break
 else:
-    print >>sys.stderr, "unoconv: Cannot find the soffice.bin binary in sys.path and known paths."
+    print >>sys.stderr, "unoconv: Cannot find the soffice binary in sys.path and known paths."
     print >>sys.stderr, "ERROR: Please locate this binary and send your feedback to: <tools@lists.rpmforge.net>."
     sys.exit(1)
 
 ### Export an environment that OpenOffice is pleased to work with
-os.environ['PATH'] = '%s:' % oobinpath + os.environ['PATH']
+os.environ['PATH'] = oobinpath + os.pathsep + os.environ['PATH']
 
 ### Now that we have found a working pyuno library, let's import some classes
 from com.sun.star.beans import PropertyValue
@@ -135,7 +136,7 @@ class FmtList:
     def byextension(self, extension):
         ret = []
         for fmt in self.list:
-            if '.'+fmt.extension == extension:
+            if os.extsep + fmt.extension == extension:
                 ret.append(fmt)
         return ret
 
@@ -533,7 +534,7 @@ class Convertor:
             outputfmt = fmts.byname(op.format)
 
             if not outputfmt:
-                outputfmt = fmts.byextension('.'+op.format)
+                outputfmt = fmts.byextension(os.extsep + op.format)
 
         ### If no doctype given, check list of acceptable formats for input file ext doctype
         ### FIXME: This should go into the for-loop to match each individual input filename
@@ -627,9 +628,9 @@ class Convertor:
             if not op.stdout:
                 (outputfn, ext) = os.path.splitext(inputfn)
                 if not op.outputpath:
-                    outputfn = outputfn + '.' + outputfmt.extension
+                    outputfn = outputfn + os.extsep + outputfmt.extension
                 else:
-                    outputfn = os.path.join(op.outputpath, os.path.basename(outputfn) + '.' + outputfmt.extension)
+                    outputfn = os.path.join(op.outputpath, os.path.basename(outputfn) + os.extsep + outputfmt.extension)
                 outputurl = unohelper.absolutize( self.cwd, unohelper.systemPathToFileUrl(outputfn) )
                 doc.storeToURL(outputurl, tuple(outputprops) )
                 error(1, "Output file: %s" % outputfn)
