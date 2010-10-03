@@ -37,8 +37,8 @@ extrapaths = glob.glob('/usr/lib*/openoffice*/program') + \
              glob.glob('C:\\Program Files\\OpenOffice.org*\\URE\\bin') + \
              glob.glob('C:\\Program Files\\OpenOffice.org*\\program') + \
              glob.glob('C:\\Program Files\\OpenOffice.org*\\Basis*\\program') + \
-             glob.glob('/usr/bin') +
-             glob.glob('/usr/local/bin') +
+             glob.glob('/usr/bin') + \
+             glob.glob('/usr/local/bin') + \
              glob.glob('/opt/bin')
 
 binaries = ( 'soffice.bin', 'soffice', 'soffice.exe' )

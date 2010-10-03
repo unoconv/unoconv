@@ -12,7 +12,15 @@ localstatedir = /var
 
 .PHONY: all install docs clean
 
-bins = doc2odt odt2doc doc2ooxml ooxml2doc odp2pdf odp2ppt ppt2odp ods2pdf odt2bib odt2docbook odt2html odt2lt odt2ooxml ooxml2odt odt2pdf odt2sdw sdw2odt /odt2sxw sxw2odt odt2txt odt2xhtml odt2xml odt2rtf
+to_doc = odt2doc ooxml2doc
+to_html = odt2html
+to_odp = ppt2odp 
+to_ods = xls2ods
+to_odt = doc2odt sdw2odt sxw2odt ooxml2odt
+to_pdf = doc2pdf odp2pdf ods2pdf odt2pdf ooxml2pdf
+to_ppt = odp2ppt
+to_other = odt2rtf odt2txt odt2xhtml odt2xml odt2bib odt2docbook odt2lt odt2sdw odt2sxw
+links = $(to_doc) $(to_html) $(to_odp) $(to_ods) $(to_odt) $(to_pdf) $(to_ppt) $(to_other)
 
 all: docs
 	@echo "There is nothing to be build. Try install !"
@@ -27,9 +35,9 @@ install:
 	install -Dp -m0755 unoconv $(DESTDIR)$(bindir)/unoconv
 	install -Dp -m0644 docs/unoconv.1 $(DESTDIR)$(mandir)/man1/unoconv.1
 
-install-links: $(bins)
+install-links: $(links)
 
-$(filter %,$(bins)):
+$(filter %,$(links)):
 	ln -sf unoconv $(DESTDIR)$(bindir)/$@
 
 ### Remove odp because size > 300kB
