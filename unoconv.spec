@@ -56,7 +56,7 @@ and many more...
 %{_bindir}/unoconv
 
 %changelog
-* Mon Jul 26 2010 Dag Wieers <dag@wieers.com> - 0.4-1
+* Wed Oct 20 2010 Dag Wieers <dag@wieers.com> - 0.4-1
 - Updated to release 0.4.
 
 * Fri Aug 31 2007 Dag Wieers <dag@wieers.com> - 0.3-1
