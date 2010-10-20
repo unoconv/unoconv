@@ -34,12 +34,19 @@ extrapaths = glob.glob('/usr/lib*/openoffice*/program') + \
              glob.glob('/Applications/OpenOffice.org.app/Contents/basis-link/program') + \
              glob.glob('/Applications/NeoOffice.app/Contents/program') + \
              glob.glob('/Applications/NeoOffice.app/Contents/basis-link/program') + \
-             glob.glob('C:\\Program Files\\OpenOffice.org*\\URE\\bin') + \
-             glob.glob('C:\\Program Files\\OpenOffice.org*\\program') + \
-             glob.glob('C:\\Program Files\\OpenOffice.org*\\Basis*\\program') + \
              glob.glob('/usr/bin') + \
              glob.glob('/usr/local/bin') + \
              glob.glob('/opt/bin')
+
+if 'ProgramFiles' in os.environ.keys():
+    extrapaths += glob.glob(os.environ['ProgramFiles']+'\\OpenOffice.org*\\URE\\bin') + \
+                  glob.glob(os.environ['ProgramFiles']+'\\OpenOffice.org*\\program') + \
+                  glob.glob(os.environ['ProgramFiles']+'\\OpenOffice.org*\\Basis*\\program')
+
+if 'ProgramFiles(x86)' in os.environ.keys():
+    extrapaths += glob.glob(os.environ['ProgramFiles(x86)']+'\\OpenOffice.org*\\URE\\bin') + \
+                  glob.glob(os.environ['ProgramFiles(x86)']+'\\OpenOffice.org*\\program') + \
+                  glob.glob(os.environ['ProgramFiles(x86)']+'\\OpenOffice.org*\\Basis*\\program')
 
 binaries = ( 'soffice.bin', 'soffice', 'soffice.exe' )
 
@@ -332,16 +339,17 @@ class Options:
         self.server = 'localhost'
         self.showlist = False
         self.stdout = False
+        self.template = None
         self.timeout = 6
         self.verbose = 0
 
         ### Get options from the commandline
         try:
-            opts, args = getopt.getopt (args, 'c:d:e:f:hi:Llo:p:s:T:v',
+            opts, args = getopt.getopt (args, 'c:d:e:f:hi:Llo:p:s:t:T:v',
                 ['connection=', 'doctype=', 'export', 'format=', 'help',
                  'import', 'listener', 'outputpath=', 'pipe=', 'port=',
-                 'server=', 'timeout=', 'show', 'stdout', 'verbose',
-                 'version'] )
+                 'server=', 'timeout=', 'show', 'stdout', 'template',
+                 'verbose', 'version'] )
         except getopt.error, exc:
             print 'unoconv: %s, try unoconv -h for a list of all the options' % str(exc)
             sys.exit(255)
@@ -386,6 +394,8 @@ class Options:
                 self.showlist = True
             elif opt in ['--stdout']:
                 self.stdout = True
+            elif opt in ['-t', '--template']:
+                self.template = arg
             elif opt in ['-T', '--timeout']:
                 self.timeout = int(arg)
             elif opt in ['-v', '--verbose']:
@@ -470,6 +480,7 @@ unoconv options:
                              to be used by client or listener
   -s, --server=server      specify the server address (default: localhost)
                              to be used by client or listener
+  -t, --template=file      import the styles from template (.ott)
   -T, --timeout=secs       timeout after secs if connections to OpenOffice fail
       --show               list the available output formats
       --stdout             write output to stdout
@@ -485,23 +496,25 @@ class Convertor:
         self.context = uno.getComponentContext()
         resolver = self.context.ServiceManager.createInstanceWithContext("com.sun.star.bridge.UnoUrlResolver", self.context)
 
-        ### Test for an existing connection (twice)
+        ### Test for an existing connection
         try:
             unocontext = resolver.resolve("uno:%s" % op.connection)
         except NoConnectException, e:
-            error(3, "Existing listener not found.\n%s" % e)
+            info(3, "Existing listener not found.\n%s" % e)
 
-            ### Test if we can use an Openoffice *binary* in our (modified) path
-            error(3, "Trying to launch our own listener using %s." % oobin)
+            ### Start our own OpenOffice instance
+            info(3, "Launching our own listener using %s." % oobin)
             try:
                 ooproc = subprocess.Popen([oobin, "-headless", "-invisible", "-nocrashreport", "-nodefault", "-nofirststartwizard", "-nologo", "-norestore", "-accept=%s" % op.connection])
-                error(2, 'OpenOffice listener successfully started. (pid=%s)' % ooproc.pid)
+                info(2, 'OpenOffice listener successfully started. (pid=%s)' % ooproc.pid)
 
-                ### Try connection to it for op.timeout seconds
+                ### Try connection to it for op.timeout seconds (flakky OpenOffice)
                 timeout = 0
                 while timeout <= op.timeout:
-                    os.kill(ooproc.pid, 0)
-#                    ooproc.poll()
+                    ### Is it already/still running ?
+                    if ooproc.poll() != None:
+                        info(3, "Process %s (pid=%s) is not running." % (oobin, ooproc.pid))
+                        break
                     try:
                         unocontext = resolver.resolve("uno:%s" % op.connection)
                         break
@@ -511,10 +524,10 @@ class Convertor:
                     except:
                         raise
                 else:
-                    error(3, "Failed to connect to %s in %d seconds.\n%s" % (oobin, op.timeout, e))
+                    error("Failed to connect to %s (pid=%s) in %d seconds.\n%s" % (oobin, ooproc.pid, op.timeout, e))
             except Exception, e:
                 raise
-                error(1, "Launch of %s failed.\n%s" % (oobin, e))
+                error("Launch of %s failed.\n%s" % (oobin, e))
 
         if not unocontext:
             die(251, "Unable to connect or start own listener. Aborting.")
@@ -591,9 +604,23 @@ class Convertor:
             if not doc:
                 raise UnoException("File could not be loaded by OpenOffice", None)
 
-            error(1, "Selected output format: %s" % outputfmt)
-            error(1, "Selected ooffice filter: %s" % outputfmt.filter)
-            error(1, "Used doctype: %s" % outputfmt.doctype)
+            ### Import style template
+            if op.template:
+                if os.path.exists(op.template):
+                    if op.verbose > 0:
+                        print >>sys.stderr, 'Template file:', op.template
+                    templateprops = (
+                        PropertyValue( "OverwriteStyles", 0, True, 0),
+                    )
+                    templateurl = unohelper.absolutize(self.cwd, unohelper.systemPathToFileUrl(op.template))
+                    doc.StyleFamilies.loadStylesFromURL(templateurl, templateprops)
+                else:
+                    print >>sys.stderr, 'unoconv: template file `%s\' does not exist.' % op.template
+                    exitcode = 1
+
+            info(1, "Selected output format: %s" % outputfmt)
+            info(1, "Selected ooffice filter: %s" % outputfmt.filter)
+            info(1, "Used doctype: %s" % outputfmt.doctype)
 
             ### Update document links
             try:
@@ -635,7 +662,7 @@ class Convertor:
                     outputfn = os.path.join(op.outputpath, os.path.basename(outputfn) + os.extsep + outputfmt.extension)
                 outputurl = unohelper.absolutize( self.cwd, unohelper.systemPathToFileUrl(outputfn) )
                 doc.storeToURL(outputurl, tuple(outputprops) )
-                error(1, "Output file: %s" % outputfn)
+                info(1, "Output file: %s" % outputfn)
             else:
                 doc.storeToURL("private:stream", tuple(outputprops) )
 
@@ -643,50 +670,51 @@ class Convertor:
             doc.close(True)
 
         except SystemError, e:
-            error(0, "unoconv: SystemError during conversion: %s" % e)
-            error(0, "ERROR: The provided document cannot be converted to the desired format.")
+            error("unoconv: SystemError during conversion: %s" % e)
+            error("ERROR: The provided document cannot be converted to the desired format.")
             exitcode = 1
 
         except UnoException, e:
-            error(0, "unoconv: UnoException during conversion in %s: %s" % (repr(e.__class__), e.Message))
-            error(0, "ERROR: The provided document cannot be converted to the desired format. (code: %s)" % e.ErrCode)
+            error("unoconv: UnoException during conversion in %s: %s" % (repr(e.__class__), e.Message))
+            error("ERROR: The provided document cannot be converted to the desired format. (code: %s)" % e.ErrCode)
             exitcode = e.ErrCode
 
         except IOException, e:
-            error(0, "unoconv: IOException during conversion: %s" % e.Message)
-            error(0, "ERROR: The provided document cannot be exported to %s." % outputfmt)
+            error("unoconv: IOException during conversion: %s" % e.Message)
+            error("ERROR: The provided document cannot be exported to %s." % outputfmt)
             exitcode = 3
 
         except CannotConvertException, e:
-            error(0, "unoconv: CannotConvertException during conversion: %s" % e.Message)
+            error("unoconv: CannotConvertException during conversion: %s" % e.Message)
             exitcode = 4
 
 class Listener:
     def __init__(self):
-        error(1, "Start listener on %s:%s" % (op.server, op.port))
+        info(1, "Start listener on %s:%s" % (op.server, op.port))
         try:
             subprocess.call([oobin, "-headless", "-invisible", "-nocrashreport", "-nodefault", "-nologo", "-nofirststartwizard", "-norestore", "-accept=%s" % op.connection])
         except Exception, e:
-            error(3, "Launch of %s failed.\n%s" % (oobin, e))
+            error("Launch of %s failed.\n%s" % (oobin, e))
         else:
             die(253, "Existing listener found, aborting.")
 
-def error(level, str):
+def error(str):
     "Output error message"
-    if level <= op.verbose:
-        print >>sys.stderr, str
+    print >>sys.stderr, str
 
 def info(level, str):
     "Output info message"
     if not op.stdout and level <= op.verbose:
         print >>sys.stdout, str
+    elif level <= op.verbose:
+        print >>sys.stderr, str
 
 def die(ret, str=None):
     "Print error and exit with errorcode"
     global convertor, ooproc, oobin
 
     if str:
-        error(0, 'Error: %s' % str)
+        error('Error: %s' % str)
 
     ### Did we start an instance ?
     if ooproc and convertor:
@@ -695,17 +723,17 @@ def die(ret, str=None):
         if convertor.desktop.getCurrentFrame():
             try:
                 subprocess.Popen([oobin, "-headless", "-invisible", "-nocrashreport", "-nodefault", "-nofirststartwizard", "-nologo", "-norestore", "-unaccept=%s" % op.connection])
-                error(2, 'OpenOffice listener successfully disabled.')
+                info(2, 'OpenOffice listener successfully disabled.')
                 ooproc.wait()
             except Exception, e:
-                error(3, "Terminate using %s failed.\n%s" % (oobin, e))
+                error("Terminate using %s failed.\n%s" % (oobin, e))
 
         ### If there is no GUI attached to the instance, terminate instance
         else:
             try:
                 convertor.desktop.terminate()
             except DisposedException:
-                error(2, 'OpenOffice instance unsuccessfully terminated.')
+                info(2, 'OpenOffice instance unsuccessfully closed, sending TERM signal.')
                 try:
                     ooproc.terminate()
                 except AttributeError:
@@ -714,15 +742,16 @@ def die(ret, str=None):
 
         ### OpenOffice processes may get stuck and we have to kill them
         ### Is it still running ?
-        ooproc.poll()
-        if ooproc.returncode == None:
-            error(2, 'Taking down OpenOffice with pid %s.' % ooproc.pid)
-            try:
-                ooproc.kill()
-            except AttributeError:
-                os.kill(ooproc.pid, 9)
-            error(2, 'Waiting for OpenOffice with pid %s to disappear.' % ooproc.pid)
+        if ooproc.poll() == None:
+            info(1, 'OpenOffice instance still running, please investigate...')
             ooproc.wait()
+#            info(2, 'OpenOffice instance unsuccessfully terminated, sending KILL signal.')
+#            try:
+#                ooproc.kill()
+#            except AttributeError:
+#                os.kill(ooproc.pid, 9)
+#            info(2, 'Waiting for OpenOffice with pid %s to disappear.' % ooproc.pid)
+#            ooproc.wait()
 
     sys.exit(ret)
 
@@ -740,17 +769,17 @@ def main():
             convertor.convert(inputfn)
 
     except NoConnectException, e:
-        error(0, "unoconv: could not find an existing connection to Open Office at %s:%s." % (op.server, op.port))
+        error("unoconv: could not find an existing connection to Open Office at %s:%s." % (op.server, op.port))
         if op.connection:
-            error(0, "Please start an OpenOffice instance on server '%s' by doing:\n\n    unoconv --listener --server %s --port %s\n\nor alternatively:\n\n    ooffice -nologo -nodefault -accept=\"%s\"" % (op.server, op.server, op.port, op.connection))
+            info(0, "Please start an OpenOffice instance on server '%s' by doing:\n\n    unoconv --listener --server %s --port %s\n\nor alternatively:\n\n    ooffice -nologo -nodefault -accept=\"%s\"" % (op.server, op.server, op.port, op.connection))
         else:
-            error(0, "Please start an OpenOffice instance on server '%s' by doing:\n\n    unoconv --listener --server %s --port %s\n\nor alternatively:\n\n    ooffice -nologo -nodefault -accept=\"socket,host=%s,port=%s;urp;\"" % (op.server, op.server, op.port, op.server, op.port))
-            error(0, "Please start an ooffice instance on server '%s' by doing:\n\n    ooffice -nologo -nodefault -accept=\"socket,host=localhost,port=%s;urp;\"" % (op.server, op.port))
+            info(0, "Please start an OpenOffice instance on server '%s' by doing:\n\n    unoconv --listener --server %s --port %s\n\nor alternatively:\n\n    ooffice -nologo -nodefault -accept=\"socket,host=%s,port=%s;urp;\"" % (op.server, op.server, op.port, op.server, op.port))
+            info(0, "Please start an ooffice instance on server '%s' by doing:\n\n    ooffice -nologo -nodefault -accept=\"socket,host=localhost,port=%s;urp;\"" % (op.server, op.port))
         exitcode = 1
 #    except UnboundLocalError:
 #        die(252, "Failed to connect to remote listener.")
     except OSError:
-        error(0, "Warning: failed to launch OpenOffice. Aborting.")
+        error("Warning: failed to launch OpenOffice. Aborting.")
 
 ### Main entrance
 if __name__ == '__main__':

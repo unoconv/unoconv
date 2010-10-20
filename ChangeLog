@@ -1,4 +1,4 @@
-* 0.4 - released 28/09/2010
+* 0.4 - released 20/10/2010
 - Now properly check if there is a GUI attached and terminate() or -unaccept instance
 - Added official OpenOffice path '/opt/openoffice*/program'
 - Added support for OpenOffice on Windows (Fernando Lucas Rodriguez)
@@ -27,6 +27,10 @@
 - First update links, then indexes (Nicolae Mihalache)
 - More improvements to OpenOffice support on Windows (Fernando Lucas Rodriguez)
 - Improve terminating OpenOffice on Windows (Fernando Lucas Rodriguez)
+- Support OpenOffice installations on Windows on drive-letters other than C: (Fernando Lucas Rodriguez)
+- Allow to apply a style template during conversion
+- Improvements to stdout and stderr messages consistency
+- Updated documentation
 
 * 0.3 - released 31/08/2007
 - Determine doctype from input filename (if not specified)

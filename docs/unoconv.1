@@ -2,7 +2,7 @@
 .\" It was generated using the DocBook XSL Stylesheets (version 1.69.1).
 .\" Instead of manually editing it, you probably should edit the DocBook XML
 .\" source for it and then use the DocBook XSL Stylesheets to regenerate it.
-.TH "UNOCONV" "1" "08/08/2010" "\  0.3" "\ "
+.TH "UNOCONV" "1" "20 october 2010" "\  0.4" "\ "
 .\" disable hyphenation
 .nh
 .\" disable justification (adjust text to left margin only)
@@ -39,6 +39,13 @@ Specify the OpenOffice document type of the backend format. Possible document ty
 Default document type is 'document'.
 .fi
 .TP
+\-e, \-\-export
+Set specific export filter options (related to the used OpenOffice filter).
+.sp
+.nf
+eg. for the PDF output filter one can specify: \-e PageRange=1\-2
+.fi
+.TP
 \-f, \-\-format
 Specify the output format for the document. You can get a list of possible output formats per document type by using the
 \-\-show
@@ -48,14 +55,21 @@ option.
 Default document type is 'pdf'.
 .fi
 .TP
-\-i, \-\-pipe
-Use a pipe as an alternative connection mechanism to talk to OpenOffice.
+\-i, \-\-import
+Set specific import filters options (related to the used OpenOffice filter).
+.sp
+.nf
+eg. for some input filters one can specify: \-i utf8
+.fi
 .TP
 \-l, \-\-listener
 Start unoconv as listener for unoconv clients to connect to.
 .TP
 \-o, \-\-outputpath
 Directory to put converted documents.
+.TP
+\-\-pipe
+Use a pipe as an alternative connection mechanism to talk to OpenOffice.
 .TP
 \-p, \-\-port
 Port to listen on (as listener) or to connect to (as client).
@@ -75,11 +89,14 @@ Default server is 'localhost'.
 List the possible output formats to be used with
 \-f.
 .TP
-\-S, \-\-sleep
-When unoconv starts its own listener, wait an amount of seconds before connecting to the listener. This may get rid of random errors caused by the listener not being ready to accept conversion jobs.
-.TP
 \-\-stdout
 Print converted output file to stdout.
+.TP
+\-t, \-\-template
+Specify the template to use for importing styles from. This can be very useful if you have a corporate identity you have to apply to every document you distribute.
+.TP
+\-T, \-\-timeout
+When unoconv starts its own listener, try to connect to it for an amount of seconds before giving up. Increasing this may help when you receive random errors caused by the listener not being ready to accept conversion jobs.
 .TP
 \-v, \-\-verbose
 Be more and more and more verbose.
@@ -117,7 +134,7 @@ and then connect another system to convert documents:
 unoconv \-\-server 1.2.3.4 \-\-port 4567
 .fi
 .SH "BUGS"
-unoconv uses the UNO bindings to connect to OpenOffice, in absence of a usable socket, it will start its own OpenOffice instance with the correct parameters. However, OpenOffice requires a working DISPLAY (even with \-headless option) and therefor you cannot run it in a true console, you need X.
+unoconv uses the UNO bindings to connect to OpenOffice, in absence of a usable socket, it will start its own OpenOffice instance with the correct parameters.
 .sp
 .sp
 .it 1 an-trap
@@ -158,6 +175,8 @@ Main web site: [6]\&\fIhttp://dag.wieers.com/home\-made/unoconv/\fR
 .SH "COPYING"
 Copyright (C) 2007 Dag Wieers. Free use of this software is granted under the terms of the GNU General Public License (GPL).
 .sp
+.SH "AUTHOR"
+Dag Wieers <dag@wieers.com>. 
 .SH "REFERENCES"
 .TP 3
 1.\ http://www.methods.co.nz/asciidoc/

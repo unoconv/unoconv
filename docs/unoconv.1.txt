@@ -1,6 +1,6 @@
 = unoconv(1)
 Dag Wieers <dag@wieers.com>
-v0.3, 31 august 2007
+v0.4, 20 october 2010
 
 
 == NAME
@@ -40,20 +40,31 @@ connections or even for remote connections.
 +
     Default document type is 'document'.
 
+-e, --export::
+    Set specific export filter options (related to the used OpenOffice filter).
++
+    eg. for the PDF output filter one can specify: -e PageRange=1-2
+
 -f, --format::
     Specify the output format for the document. You can get a list of
     possible output formats per document type by using the +--show+ option.
 +
     Default document type is 'pdf'.
 
--i, --pipe::
-    Use a pipe as an alternative connection mechanism to talk to OpenOffice.
+-i, --import::
+    Set specific import filters options (related to the used OpenOffice
+    filter).
++
+    eg. for some input filters one can specify: -i utf8
 
 -l, --listener::
     Start unoconv as listener for unoconv clients to connect to.
 
 -o, --outputpath::
     Directory to put converted documents.
+
+--pipe::
+    Use a pipe as an alternative connection mechanism to talk to OpenOffice.
 
 -p, --port::
     Port to listen on (as listener) or to connect to (as client).
@@ -68,13 +79,19 @@ connections or even for remote connections.
 --show::
     List the possible output formats to be used with +-f+.
 
--S, --sleep::
-    When unoconv starts its own listener, wait an amount of seconds before
-    connecting to the listener. This may get rid of random errors caused
-    by the listener not being ready to accept conversion jobs.
-
 --stdout::
     Print converted output file to stdout.
+
+-t, --template::
+    Specify the template to use for importing styles from. This can be very
+    useful if you have a corporate identity you have to apply to every
+    document you distribute.
+
+-T, --timeout::
+    When unoconv starts its own listener, try to connect to it for an amount
+    of seconds before giving up. Increasing this may help when you receive
+    random errors caused by the listener not being ready to accept conversion
+    jobs.
 
 -v, --verbose::
     Be more and more and more verbose.
@@ -116,8 +133,6 @@ and then connect another system to convert documents:
 == BUGS
 unoconv uses the UNO bindings to connect to OpenOffice, in absence of a usable
 socket, it will start its own OpenOffice instance with the correct parameters.
-However, OpenOffice requires a working +DISPLAY+ (even with +-headless+
-option) and therefor you cannot run it in a true console, you need X.
 
 [NOTE]
 Please see the TODO file for known bugs and future plans.
