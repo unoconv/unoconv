@@ -60,8 +60,11 @@ connections or even for remote connections.
 -l, --listener::
     Start unoconv as listener for unoconv clients to connect to.
 
--o, --outputpath::
-    Directory to put converted documents.
+-o, --output::
+    If the argument is a directory, put the converted documents in this
+    directory. If multiple input files are provided, use it as a 
+    basename (and add output extension). Otherwise use it as the
+    output filename.
 
 --pipe::
     Use a pipe as an alternative connection mechanism to talk to OpenOffice.
