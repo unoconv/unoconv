@@ -64,7 +64,10 @@ except ImportError:
             sys.path.append(oolibpath)
             import uno, unohelper
             ### Export an environment that OpenOffice is pleased to work with
-            os.environ['LD_LIBRARY_PATH'] = oolibpath + os.pathsep + os.environ['LD_LIBRARY_PATH']
+            if 'LD_LIBRARY_PATH' in os.environ:
+                os.environ['LD_LIBRARY_PATH'] = oolibpath + os.pathsep + os.environ['LD_LIBRARY_PATH']
+            else:
+                os.environ['LD_LIBRARY_PATH'] = oolibpath
             break
         except ImportError, e:
             sys.path.remove(oolibpath)
@@ -583,7 +586,7 @@ class Convertor:
     def convert(self, inputfn):
         global exitcode
 
-        doc = None
+        document = None
         outputfmt = self.getformat(inputfn)
 
         if op.verbose > 0:
@@ -602,9 +605,9 @@ class Convertor:
             )
 
             inputurl = unohelper.absolutize(self.cwd, unohelper.systemPathToFileUrl(inputfn))
-            doc = self.desktop.loadComponentFromURL( inputurl , "_blank", 0, inputprops )
+            document = self.desktop.loadComponentFromURL( inputurl , "_blank", 0, inputprops )
 
-            if not doc:
+            if not document:
                 raise UnoException("File could not be loaded by OpenOffice", None)
 
             ### Import style template
@@ -616,7 +619,7 @@ class Convertor:
                         PropertyValue( "OverwriteStyles", 0, True, 0),
                     )
                     templateurl = unohelper.absolutize(self.cwd, unohelper.systemPathToFileUrl(op.template))
-                    doc.StyleFamilies.loadStylesFromURL(templateurl, templateprops)
+                    document.StyleFamilies.loadStylesFromURL(templateurl, templateprops)
                 else:
                     print >>sys.stderr, 'unoconv: template file `%s\' does not exist.' % op.template
                     exitcode = 1
@@ -627,15 +630,15 @@ class Convertor:
 
             ### Update document links
             try:
-                doc.updateLinks()
+                document.updateLinks()
             except AttributeError:
                 # the document doesn't implement the XLinkUpdate interface
                 pass
 
             ### Update document indexes
             try:
-                doc.refresh()
-                indexes = doc.getDocumentIndexes()
+                document.refresh()
+                indexes = document.getDocumentIndexes()
             except AttributeError:
                 # the document doesn't implement the XRefreshable and/or
                 # XDocumentIndexesSupplier interfaces
@@ -669,13 +672,13 @@ class Convertor:
                     outputfn = op.output
 
                 outputurl = unohelper.absolutize( self.cwd, unohelper.systemPathToFileUrl(outputfn) )
-                doc.storeToURL(outputurl, tuple(outputprops) )
+                document.storeToURL(outputurl, tuple(outputprops) )
                 info(1, "Output file: %s" % outputfn)
             else:
-                doc.storeToURL("private:stream", tuple(outputprops) )
+                document.storeToURL("private:stream", tuple(outputprops) )
 
-            doc.dispose()
-            doc.close(True)
+            document.dispose()
+            document.close(True)
 
         except SystemError, e:
             error("unoconv: SystemError during conversion: %s" % e)

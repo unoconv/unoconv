@@ -1,5 +1,6 @@
-* 0.4svn - released 25/10/2010
+* 0.4svn - released 03/11/2010
 - Change to how -o/--output/--outputpath works (can now output to filenames too)
+- Improve handling of LD_LIBRARY_PATH (Paul Polak)
 
 * 0.4 - released 20/10/2010
 - Now properly check if there is a GUI attached and terminate() or -unaccept instance
