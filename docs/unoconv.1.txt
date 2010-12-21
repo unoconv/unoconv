@@ -10,7 +10,7 @@ unoconv - convert any document from and to any OpenOffice supported format
 == SYNOPSIS
 'unoconv' [options] file [file2 ..]
 
-'unoconv' --listener [--server SRV] [--port PRT] [--connections CON]
+'unoconv' --listener [--server SRV] [--port PRT] [--connection CON]
 
 
 == DESCRIPTION
@@ -44,6 +44,8 @@ connections or even for remote connections.
     Set specific export filter options (related to the used OpenOffice filter).
 +
     eg. for the PDF output filter one can specify: -e PageRange=1-2
++
+    See the *EXPORT FILTERS* section.
 
 -f, --format::
     Specify the output format for the document. You can get a list of
@@ -53,9 +55,9 @@ connections or even for remote connections.
 
 -i, --import::
     Set specific import filters options (related to the used OpenOffice
-    filter).
+    import filter based on the input filename).
 +
-    eg. for some input filters one can specify: -i utf8
+    See the *IMPORT FILTERS* section.
 
 -l, --listener::
     Start unoconv as listener for unoconv clients to connect to.
@@ -103,6 +105,67 @@ connections or even for remote connections.
 == ARGUMENTS
 You can provide one or more *files* as arguments to convert each of them to
 the specified *output format*.
+
+
+== IMPORT FILTERS
+Depending on the used input file, a different OpenOffice import filter is
+automatically used by unoconv. This import filter can be influenced by the
++-i+ option that, depending on the filter used, accepts different arguments.
+
+It is not always clear what import filter options you can provide, the import
+dialog in OpenOffice for the filter you ar using might give a good indication
+as to what you can expect as import filter options.
+
+The reference is OpenOffice's documentation, for spreadsheets it is described at:
+http://wiki.services.openoffice.org/wiki/Documentation/DevGuide/Spreadsheets/Filter_Options
+but we will look into some examples.
+
+
+== DEFAULT IMPORT FILTER OPTIONS
+The default import filter for many imports (eg. Lotus, dBase or DIF) accepts
+as the only argument the input encoding-type, so if you require utf-8 you
+can do:
+
+    -i utf-8
+
+For a list of posible encoding types, you can use the above link to find the
+possible options.
+
+
+== CSV IMPORT FILTER OPTIONS
+The CSV import filter accepts various arguments, the order is:
+'separator(s),text-delimiter,encoding,first-row,column-format'
+
+For example you might want to use this for a real comma-separated document:
+
+    -i 44,34,utf-8,2,1/5/2/1/3/1/4/1
+
+which will use a comma (44) as the field separator, a double quote (34) as the
+text delimiter, UTF-8 for the input encoding, start from the second row and
+use the specified formats for each column (1 means standard, 5 means YY/MM/DD
+date)
+
+If you like to use more than one separator (say a space or a tab) and use the
+system's encoding, but with no text-delimiter, you can do:
+
+    -i 9/32,,system,2
+
+
+== EXPORT FILTERS
+In contrast to import filters, export filters can have multiple named options,
+although it is not always clear what options are available. It all depends on
+the version of OpenOffice. The export dialog you get in OpenOffice might give
+you a clue about what is possible, each of those widgets represents an option.
+
+
+== PDF EXPORT FILTER OPTIONS
+The PDF export filter is likely the most advanced export filter in its kind
+with a myriad of options one can use. The export filter options are described
+in a separate document, or on OpenOffice's wiki at:
+
+http://wiki.services.openoffice.org/wiki/API/Tutorials/PDF_export
+
+For example one can specify: +-e PageRange=1-2+
 
 
 == EXAMPLES
