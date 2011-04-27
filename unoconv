@@ -20,7 +20,8 @@ global convertor, oobin, oobinpath, oolibpath, ooproc
 
 ### The first thing we ought to do is find a suitable OpenOffice installation
 ### with a compatible pyuno library that we can import.
-extrapaths = glob.glob('/usr/lib*/openoffice*/program') + \
+extrapaths = glob.glob('/usr/lib*/libreoffice*/basis*/program') + \
+             glob.glob('/usr/lib*/openoffice*/program') + \
              glob.glob('/usr/lib*/openoffice*/basis*/program') + \
              glob.glob('/usr/lib*/ooo*/program') + \
              glob.glob('/usr/lib*/ooo*/basis*/program') + \
