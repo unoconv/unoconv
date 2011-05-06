@@ -338,6 +338,7 @@ class Options:
         self.format = None
         self.importfilter = ""
         self.listener = False
+        self.nolaunch = False
         self.output = None
         self.pipe = None
         self.port = '2002'
@@ -350,9 +351,9 @@ class Options:
 
         ### Get options from the commandline
         try:
-            opts, args = getopt.getopt (args, 'c:d:e:f:hi:Llo:p:s:t:T:v',
+            opts, args = getopt.getopt (args, 'c:d:e:f:hi:Llo:n:p:s:t:T:v',
                 ['connection=', 'doctype=', 'export', 'format=', 'help',
-                 'import', 'listener', 'output=', 'outputpath', 'pipe=',
+                 'import', 'listener', 'no-launch', 'output=', 'outputpath', 'pipe=',
                  'port=', 'server=', 'timeout=', 'show', 'stdout',
                  'template', 'verbose', 'version'] )
         except getopt.error, exc:
@@ -387,6 +388,8 @@ class Options:
                 self.importfilter = arg
             elif opt in ['-l', '--listener']:
                 self.listener = True
+            elif opt in ['-n', '--no-launch']:
+                self.nolaunch = True
             elif opt in ['-o', '--output']:
                 self.output = arg
             elif opt in ['--outputpath']:
@@ -482,6 +485,7 @@ unoconv options:
   -i, --import=string      set import filter option string
                              eg. -i utf8
   -l, --listener           start a listener to use by unoconv clients
+  -n, --no-launch          no launch our own listener, if listener not found
   -o, --output=name        output basename, filename or directory
       --pipe=name          alternative method of connection using a pipe
   -p, --port=port          specify the port (default: 2002)
@@ -509,6 +513,9 @@ class Convertor:
             unocontext = resolver.resolve("uno:%s" % op.connection)
         except NoConnectException, e:
             info(3, "Existing listener not found.\n%s" % e)
+
+            if op.nolaunch:
+                die(113, "Existing listener not found. Unable start listener by parameters. Aborting.")
 
             ### Start our own OpenOffice instance
             info(3, "Launching our own listener using %s." % oobin)
