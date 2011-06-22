@@ -351,7 +351,7 @@ class Options:
 
         ### Get options from the commandline
         try:
-            opts, args = getopt.getopt (args, 'c:d:e:f:hi:Llo:n:p:s:t:T:v',
+            opts, args = getopt.getopt (args, 'c:d:e:f:hi:Llo:np:s:t:T:v',
                 ['connection=', 'doctype=', 'export', 'format=', 'help',
                  'import', 'listener', 'no-launch', 'output=', 'outputpath', 'pipe=',
                  'port=', 'server=', 'timeout=', 'show', 'stdout',
