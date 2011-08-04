@@ -379,7 +379,10 @@ class Options:
                     elif value in ('False', 'false'):
                         self.exportfilter.append( PropertyValue( name, 0, False, 0 ) )
                     else:
-                        self.exportfilter.append( PropertyValue( name, 0, value, 0 ) )
+                        try:
+                            self.exportfilter.append( PropertyValue( name, 0, int(value), 0 ) )
+                        except ValueError:
+                            self.exportfilter.append( PropertyValue( name, 0, value, 0 ) )
                 else:
                     print >>sys.stderr, 'Warning: Option %s cannot be parsed, ignoring.' % arg
             elif opt in ['-f', '--format']:
