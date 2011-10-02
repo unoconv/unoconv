@@ -19,7 +19,7 @@
 .\" * MAIN CONTENT STARTS HERE *
 .\" -----------------------------------------------------------------
 .SH "NAME"
-unoconv \- convert any document from and to any OpenOffice supported format
+unoconv \- convert any document from and to any LibreOffice supported format
 .SH "SYNOPSIS"
 .sp
 \fIunoconv\fR [options] file [file2 \&.\&.]
@@ -27,14 +27,14 @@ unoconv \- convert any document from and to any OpenOffice supported format
 \fIunoconv\fR \-\-listener [\-\-server SRV] [\-\-port PRT] [\-\-connection CON]
 .SH "DESCRIPTION"
 .sp
-unoconv is a command line utility that can convert any file format that OpenOffice can import, to any file format that OpenOffice is capable of exporting\&.
+unoconv is a command line utility that can convert any file format that LibreOffice can import, to any file format that LibreOffice is capable of exporting\&.
 .sp
-unoconv uses the OpenOffice\(cqs UNO bindings for non\-interactive conversion of documents and therefor needs an OpenOffice instance to communicate with\&. Therefore if it cannot find one, it will start its own instance for temporary usage\&. If desired, one can start a \(lqlistener\(rq instance to use for subsequent connections or even for remote connections\&.
+unoconv uses the LibreOffice\(cqs UNO bindings for non\-interactive conversion of documents and therefor needs an LibreOffice instance to communicate with\&. Therefore if it cannot find one, it will start its own instance for temporary usage\&. If desired, one can start a \(lqlistener\(rq instance to use for subsequent connections or even for remote connections\&.
 .SH "OPTIONS"
 .PP
 \-c, \-\-connection
 .RS 4
-UNO connection string to be used by the client to connect to an OpenOffice instance, or used by the listener to make OpenOffice listen\&.
+UNO connection string to be used by the client to connect to an LibreOffice instance, or used by the listener to make LibreOffice listen\&.
 .sp
 .if n \{\
 .RS 4
@@ -49,7 +49,7 @@ Default connection string is "socket,host=localhost,port=2002;urp;StarOffice\&.C
 .PP
 \-d, \-\-doctype
 .RS 4
-Specify the OpenOffice document type of the backend format\&. Possible document types are:
+Specify the LibreOffice document type of the backend format\&. Possible document types are:
 \fIdocument\fR,
 \fIgraphics\fR,
 \fIpresentation\fR,
@@ -68,7 +68,7 @@ Default document type is \'document\'\&.
 .PP
 \-e, \-\-export
 .RS 4
-Set specific export filter options (related to the used OpenOffice filter)\&.
+Set specific export filter options (related to the used LibreOffice filter)\&.
 .sp
 .if n \{\
 .RS 4
@@ -110,7 +110,7 @@ Default document type is \'pdf\'\&.
 .PP
 \-i, \-\-import
 .RS 4
-Set specific import filters options (related to the used OpenOffice import filter based on the input filename)\&.
+Set specific import filters options (related to the used LibreOffice import filter based on the input filename)\&.
 .sp
 .if n \{\
 .RS 4
@@ -135,7 +135,7 @@ If the argument is a directory, put the converted documents in this directory\&.
 .PP
 \-\-pipe
 .RS 4
-Use a pipe as an alternative connection mechanism to talk to OpenOffice\&.
+Use a pipe as an alternative connection mechanism to talk to LibreOffice\&.
 .RE
 .PP
 \-p, \-\-port
@@ -198,11 +198,11 @@ Be more and more and more verbose\&.
 You can provide one or more \fBfiles\fR as arguments to convert each of them to the specified \fBoutput format\fR\&.
 .SH "IMPORT FILTERS"
 .sp
-Depending on the used input file, a different OpenOffice import filter is automatically used by unoconv\&. This import filter can be influenced by the \-i option that, depending on the filter used, accepts different arguments\&.
+Depending on the used input file, a different LibreOffice import filter is automatically used by unoconv\&. This import filter can be influenced by the \-i option that, depending on the filter used, accepts different arguments\&.
 .sp
-It is not always clear what import filter options you can provide, the import dialog in OpenOffice for the filter you ar using might give a good indication as to what you can expect as import filter options\&.
+It is not always clear what import filter options you can provide, the import dialog in LibreOffice for the filter you ar using might give a good indication as to what you can expect as import filter options\&.
 .sp
-The reference is OpenOffice\(cqs documentation, for spreadsheets it is described at: \m[blue]\fBhttp://wiki\&.services\&.openoffice\&.org/wiki/Documentation/DevGuide/Spreadsheets/Filter_Options\fR\m[] but we will look into some examples\&.
+The reference is LibreOffice\(cqs documentation, for spreadsheets it is described at: \m[blue]\fBhttp://wiki\&.services\&.openoffice\&.org/wiki/Documentation/DevGuide/Spreadsheets/Filter_Options\fR\m[] but we will look into some examples\&.
 .SH "DEFAULT IMPORT FILTER OPTIONS"
 .sp
 The default import filter for many imports (eg\&. Lotus, dBase or DIF) accepts as the only argument the input encoding\-type, so if you require utf\-8 you can do:
@@ -249,17 +249,17 @@ If you like to use more than one separator (say a space or a tab) and use the sy
 .\}
 .SH "EXPORT FILTERS"
 .sp
-In contrast to import filters, export filters can have multiple named options, although it is not always clear what options are available\&. It all depends on the version of OpenOffice\&. The export dialog you get in OpenOffice might give you a clue about what is possible, each of those widgets represents an option\&.
+In contrast to import filters, export filters can have multiple named options, although it is not always clear what options are available\&. It all depends on the version of LibreOffice\&. The export dialog you get in LibreOffice might give you a clue about what is possible, each of those widgets represents an option\&.
 .SH "PDF EXPORT FILTER OPTIONS"
 .sp
-The PDF export filter is likely the most advanced export filter in its kind with a myriad of options one can use\&. The export filter options are described in a separate document, or on OpenOffice\(cqs wiki at:
+The PDF export filter is likely the most advanced export filter in its kind with a myriad of options one can use\&. The export filter options are described in a separate document, or on LibreOffice\(cqs wiki at:
 .sp
 \m[blue]\fBhttp://wiki\&.services\&.openoffice\&.org/wiki/API/Tutorials/PDF_export\fR\m[]
 .sp
 For example one can specify: \-e PageRange=1\-2
 .SH "EXAMPLES"
 .sp
-You can use unoconv in standalone mode, this means that in absence of an OpenOffice listener, it will starts its own:
+You can use unoconv in standalone mode, this means that in absence of an LibreOffice listener, it will starts its own:
 .sp
 .if n \{\
 .RS 4
@@ -313,7 +313,7 @@ unoconv \-\-server 1\&.2\&.3\&.4 \-\-port 4567
 .\}
 .SH "BUGS"
 .sp
-unoconv uses the UNO bindings to connect to OpenOffice, in absence of a usable socket, it will start its own OpenOffice instance with the correct parameters\&.
+unoconv uses the UNO bindings to connect to LibreOffice, in absence of a usable socket, it will start its own LibreOffice instance with the correct parameters\&.
 .if n \{\
 .sp
 .\}

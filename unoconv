@@ -16,99 +16,155 @@
 
 import getopt, sys, os, glob, time, socket, subprocess
 
-global convertor, oobin, oobinpath, oolibpath, ooproc
+global convertor, office, ooproc
 
-### The first thing we ought to do is find a suitable OpenOffice installation
+class Office:
+    def __init__(self, basepath, unopath, pyuno, binary, python):
+        self.basepath = basepath
+        self.unopath = unopath
+        self.pyuno = pyuno
+        self.binary = binary
+        self.python = python
+
+    def __str__(self):
+        return self.basepath
+
+    def __repr__(self):
+        return self.basepath
+
+### The first thing we ought to do is find a suitable LibreOffice installation
 ### with a compatible pyuno library that we can import.
-extrapaths = glob.glob('/usr/lib*/openoffice*/program') + \
-             glob.glob('/usr/lib*/openoffice*/basis*/program') + \
-             glob.glob('/usr/lib*/ooo*/program') + \
-             glob.glob('/usr/lib*/ooo*/basis*/program') + \
-             glob.glob('/usr/local/openoffice*/program') + \
-             glob.glob('/usr/local/openoffice*/basis*/program') + \
-             glob.glob('/usr/local/ooo*/program') + \
-             glob.glob('/usr/local/ooo*/basis*/program') + \
-             glob.glob('/opt/openoffice*/program') + \
-             glob.glob('/opt/openoffice*/basis*/program') + \
-             glob.glob('/Applications/OpenOffice.org.app/Contents/program') + \
-             glob.glob('/Applications/OpenOffice.org.app/Contents/basis-link/program') + \
-             glob.glob('/Applications/NeoOffice.app/Contents/program') + \
-             glob.glob('/Applications/NeoOffice.app/Contents/basis-link/program') + \
-             glob.glob('/usr/bin') + \
-             glob.glob('/usr/local/bin') + \
-             glob.glob('/opt/bin')
+###
+### See: http://user.services.openoffice.org/en/forum/viewtopic.php?f=45&t=36370&p=166783
 
-if 'ProgramFiles' in os.environ.keys():
-    extrapaths += glob.glob(os.environ['ProgramFiles']+'\\OpenOffice.org*\\URE\\bin') + \
-                  glob.glob(os.environ['ProgramFiles']+'\\OpenOffice.org*\\program') + \
-                  glob.glob(os.environ['ProgramFiles']+'\\OpenOffice.org*\\Basis*\\program')
+def find_offices():
+    ret = []
 
-if 'ProgramFiles(x86)' in os.environ.keys():
-    extrapaths += glob.glob(os.environ['ProgramFiles(x86)']+'\\OpenOffice.org*\\URE\\bin') + \
-                  glob.glob(os.environ['ProgramFiles(x86)']+'\\OpenOffice.org*\\program') + \
-                  glob.glob(os.environ['ProgramFiles(x86)']+'\\OpenOffice.org*\\Basis*\\program')
+    extrapaths = []
+    if 'UNO_PATH' in os.environ:
+        extrapaths += glob.glob(os.environ['UNO_PATH']) + \
+                      glob.glob(os.path.dirname(os.environ['UNO_PATH'])) + \
+                      glob.glob(os.path.dirname(os.path.dirname(os.environ['UNO_PATH'])))
 
-binaries = ( 'soffice.bin', 'soffice', 'soffice.exe' )
+    if os.name in ( 'nt', 'os2' ):
+        if 'ProgramFiles' in os.environ.keys():
+            extrapaths += glob.glob(os.environ['ProgramFiles']+'\\LibreOffice.org*') + \
+                          glob.glob(os.environ['ProgramFiles']+'\\OpenOffice.org*')
 
-try:
-    import uno, unohelper
-except ImportError:
-    for oolibpath in extrapaths:
-        if os.path.exists(os.path.join(oolibpath, "pyuno.so")):
-            filename = "pyuno.so"
-        elif os.path.exists(os.path.join(oolibpath, "pyuno.pyd")):
-            filename = "pyuno.pyd"
-        else:
-            continue
-        try:
-            sys.path.append(oolibpath)
-            import uno, unohelper
-            ### Export an environment that OpenOffice is pleased to work with
-            if 'LD_LIBRARY_PATH' in os.environ:
-                os.environ['LD_LIBRARY_PATH'] = oolibpath + os.pathsep + os.environ['LD_LIBRARY_PATH']
-            else:
-                os.environ['LD_LIBRARY_PATH'] = oolibpath
-            break
-        except ImportError, e:
-            sys.path.remove(oolibpath)
-            print >>sys.stderr, e
-            print >>sys.stderr, "WARNING: Found %s in %s, but could not import it." % (filename, oolibpath)
-            continue
+        if 'ProgramFiles(x86)' in os.environ.keys():
+            extrapaths += glob.glob(os.environ['ProgramFiles(x86)']+'\\LibreOffice.org*') + \
+                          glob.glob(os.environ['ProgramFiles(x86)']+'\\OpenOffice.org*')
+    elif os.name in ( 'mac' ):
+        extrapaths += glob.glob('/Applications/LibreOffice.app/Contents') + \
+                      glob.glob('/Applications/NeoOffice.app/Contents') + \
+                      glob.glob('/Applications/OpenOffice.org.app/Contents')
     else:
-        print >>sys.stderr, "unoconv: Cannot find the pyuno library in sys.path and known paths."
-        print >>sys.stderr, "ERROR: Please locate this library and send your feedback to: <tools@lists.rpmforge.net>."
-        sys.exit(1)
+        extrapaths += glob.glob('/usr/lib*/libreoffice*') + \
+                      glob.glob('/usr/lib*/openoffice*') + \
+                      glob.glob('/usr/lib*/ooo*') + \
+                      glob.glob('/usr/local/libreoffice*') + \
+                      glob.glob('/usr/local/openoffice*') + \
+                      glob.glob('/usr/local/ooo*') + \
+                      glob.glob('/opt/libreoffice*') + \
+                      glob.glob('/opt/openoffice*') + \
+                      glob.glob('/opt/ooo*')
 
-oobin = None
-for oobinpath in extrapaths:
-    for binary in binaries:
-        bin = os.path.join(oobinpath, binary)
-        if os.path.exists(bin):
-            sys.path.append(oobinpath)
-            oobin = bin
-            break
-    if oobin:
-        break
-else:
-    print >>sys.stderr, "unoconv: Cannot find the soffice binary in sys.path and known paths."
-    print >>sys.stderr, "ERROR: Please locate this binary and send your feedback to: <tools@lists.rpmforge.net>."
-    sys.exit(1)
+    ### Find a working set of pyuno module
+    for basepath in extrapaths:
+        if os.name in ( 'nt', 'os2' ):
+            officelibrary = 'pyuno.pyd'
+            officebinary = 'soffice.exe'
+            pythonbinary = 'python.exe'
+        else:
+            officelibrary = 'pyuno.so'
+            officebinary = 'soffice.bin'
+            pythonbinary = 'python.bin'
 
-### Export an environment that OpenOffice is pleased to work with
-os.environ['PATH'] = oobinpath + os.pathsep + os.environ['PATH']
+        if not os.path.isfile(os.path.join(basepath, 'basis-link', 'program', officelibrary)):
+            continue
 
-### Now that we have found a working pyuno library, let's import some classes
-from com.sun.star.beans import PropertyValue
-from com.sun.star.connection import NoConnectException
-from com.sun.star.lang import DisposedException
-from com.sun.star.io import IOException, XOutputStream
-from com.sun.star.script import CannotConvertException
-from com.sun.star.uno import Exception as UnoException
+        if not os.path.isfile(os.path.join(basepath, 'program', officebinary)):
+            continue
+
+        if os.path.isfile(os.path.join(basepath, 'basis-link', 'program', pythonbinary)):
+            ret.append(Office(basepath,
+                              os.path.join(basepath, 'basis-link', 'program'),
+                              os.path.join(basepath, 'basis-link', 'program', officelibrary),
+                              os.path.join(basepath, 'program', officebinary),
+                              os.path.join(basepath, 'basis-link', 'program', pythonbinary)))
+        else:
+            ret.append(Office(basepath,
+                              os.path.join(basepath, 'basis-link', 'program'),
+                              os.path.join(basepath, 'basis-link', 'program', officelibrary),
+                              os.path.join(basepath, 'program', officebinary),
+                              sys.executable))
+
+#    print ret
+    return ret
+
+def test_office(office):
+    use_office(office)
+    sys.path.insert(0, office.unopath)
+    try:
+        import uno, unohelper
+#        print 'Testing', office, 'succeeded'
+        return True
+    except:
+#        print 'Testing', office, 'failed'
+        return False
+
+def use_office(office):
+    ### Set PATH so that crash_report is found
+    os.environ['PATH'] = os.path.join(office.basepath, 'program') + os.pathsep + os.environ['PATH']
+
+    ### Set LD_LIBRARY_PATH so that "import pyuno" finds libpyuno.so:
+#    if 'LD_LIBRARY_PATH' in os.environ:
+#        os.environ['LD_LIBRARY_PATH'] = office.unopath + os.pathsep + \
+#                                        os.path.join(office.basepath, 'basis-link', 'ure-link', 'lib') + os.pathsep + \
+#                                        os.environ['LD_LIBRARY_PATH']
+#    else:
+#        os.environ['LD_LIBRARY_PATH'] = office.unopath + os.pathsep + \
+#                                        os.path.join(office.basepath, 'basis-link', 'ure-link', 'lib')
+
+    ### Set UNO_PATH so that "officehelper.bootstrap()" can find soffice executable:
+    os.environ['UNO_PATH'] = office.unopath
+
+    ### Set URE_BOOTSTRAP so that "uno.getComponentContext()" bootstraps a complete
+    if os.name in ( 'nt', 'os2' ):
+        os.environ['URE_BOOTSTRAP'] = os.path.join(office.basepath, 'program', 'fundamental.ini')
+    else:
+        os.environ['URE_BOOTSTRAP'] = os.path.join(office.basepath, 'program', 'fundamentalrc')
+
+#    os.environ['PYTHONHOME'] = glob.glob(os.path.join(office.unopath, 'python-core-*'))[0]
+    for libpath in glob.glob(os.path.join(office.basepath, 'basis-link', 'ure-link', 'lib')) + \
+                   glob.glob(os.path.join(office.unopath, 'python-core-*', 'lib', 'site-packages')) + \
+                   glob.glob(os.path.join(office.unopath, 'python-core-*', 'lib', 'lib-tk')) + \
+                   glob.glob(os.path.join(office.unopath, 'python-core-*', 'lib', 'lib-dynload')) + \
+                   glob.glob(os.path.join(office.unopath, 'python-core-*', 'lib')):
+        sys.path.insert(0, libpath)
+    sys.path.insert(0, office.unopath)
+
+def debug_office():
+    print 'python=%s' % sys.executable
+    if 'URE_BOOTSTRAP' in os.environ:
+        print 'URE_BOOTSTRAP=%s' % os.environ['URE_BOOTSTRAP']
+    if 'UNO_PATH' in os.environ:
+        print 'UNO_PATH=%s' % os.environ['UNO_PATH']
+    print 'PATH=%s' % os.environ['PATH']
+    if 'PYTHONHOME' in os.environ:
+        print 'PYTHONHOME =', os.environ['PYTHONHOME']
+    if 'LD_LIBRARY_PATH' in os.environ:
+        print 'LD_LIBRARY_PATH =', os.environ['LD_LIBRARY_PATH']
+
+def switch_python(office):
+#   print >>sys.stderr, "WARNING: It is recommended to use python %s to run unoconv" % pybin
+    print >>sys.stderr, "Switching from python %s to %s" % (sys.executable, office.python)
+    os.execv(office.python, [office.python, ] + sys.argv[0:])
 
 __version__ = "$Revision$"
 # $Source$
 
-VERSION = '0.4svn'
+VERSION = '0.5'
 
 doctypes = ('document', 'graphics', 'presentation', 'spreadsheet')
 
@@ -163,19 +219,6 @@ class FmtList:
             if fmt.doctype == doctype:
                 print >>sys.stderr, "  %-8s - %s" % (fmt.name, fmt)
         print >>sys.stderr
-
-class OutputStream( unohelper.Base, XOutputStream ):
-    def __init__( self ):
-        self.closed = 0
-
-    def closeOutput(self):
-        self.closed = 1
-
-    def writeBytes( self, seq ):
-        sys.stdout.write( seq.value )
-
-    def flush( self ):
-        pass
 
 fmts = FmtList()
 
@@ -378,7 +421,8 @@ class Options:
                     else:
                         self.exportfilter.append( PropertyValue( name, 0, value, 0 ) )
                 else:
-                    print >>sys.stderr, 'Warning: Option %s cannot be parsed, ignoring.' % arg
+#                    print >>sys.stderr, 'Warning: Option %s cannot be parsed, ignoring.' % arg
+                    self.importfilter = arg
             elif opt in ['-f', '--format']:
                 self.format = arg
             elif opt in ['-i', '--import']:
@@ -468,7 +512,7 @@ class Options:
         print >>sys.stderr, 'usage: unoconv [options] file [file2 ..]'
 
     def help(self):
-        print >>sys.stderr, '''Convert from and to any format supported by OpenOffice
+        print >>sys.stderr, '''Convert from and to any format supported by LibreOffice
 
 unoconv options:
   -c, --connection=string  use a custom connection string
@@ -486,19 +530,19 @@ unoconv options:
                              to be used by client or listener
   -s, --server=server      specify the server address (default: localhost)
                              to be used by client or listener
-  -t, --template=file      import the styles from template (.ott)
-  -T, --timeout=secs       timeout after secs if connections to OpenOffice fail
       --show               list the available output formats
       --stdout             write output to stdout
+  -t, --template=file      import the styles from template (.ott)
+  -T, --timeout=secs       timeout after secs if connection to listener fails
   -v, --verbose            be more and more verbose
 '''
 
 class Convertor:
     def __init__(self):
-        global exitcode, ooproc, oobin, oolibpath
+        global exitcode, ooproc, office
         unocontext = None
 
-        ### Do the OpenOffice component dance
+        ### Do the LibreOffice component dance
         self.context = uno.getComponentContext()
         resolver = self.context.ServiceManager.createInstanceWithContext("com.sun.star.bridge.UnoUrlResolver", self.context)
 
@@ -506,20 +550,23 @@ class Convertor:
         try:
             unocontext = resolver.resolve("uno:%s" % op.connection)
         except NoConnectException, e:
-            info(3, "Existing listener not found.\n%s" % e)
+#            info(3, "Existing listener not found.\n%s" % e)
+            info(3, "Existing listener not found.")
 
-            ### Start our own OpenOffice instance
-            info(3, "Launching our own listener using %s." % oobin)
+            ### Start our own LibreOffice instance
+            info(3, "Launching our own listener using %s." % office.binary)
             try:
-                ooproc = subprocess.Popen([oobin, "-headless", "-invisible", "-nocrashreport", "-nodefault", "-nofirststartwizard", "-nologo", "-norestore", "-accept=%s" % op.connection])
-                info(2, 'OpenOffice listener successfully started. (pid=%s)' % ooproc.pid)
+#                print office.binary, "-headless", "-invisible", "-nocrashreport", "-nodefault", "-nofirststartwizard", "-nologo", "-norestore", "-accept=%s" % op.connection
+                ooproc = subprocess.Popen([office.binary, "-headless", "-invisible", "-nocrashreport", "-nodefault", "-nofirststartwizard", "-nologo", "-norestore", "-accept=%s" % op.connection], env=os.environ)
+                info(2, 'LibreOffice listener successfully started. (pid=%s)' % ooproc.pid)
 
-                ### Try connection to it for op.timeout seconds (flakky OpenOffice)
+                ### Try connection to it for op.timeout seconds (flakky LibreOffice)
                 timeout = 0
                 while timeout <= op.timeout:
                     ### Is it already/still running ?
-                    if ooproc.poll() != None:
-                        info(3, "Process %s (pid=%s) is not running." % (oobin, ooproc.pid))
+                    retcode = ooproc.poll()
+                    if retcode != None:
+                        info(3, "Process %s (pid=%s) exited with %s." % (office.binary, ooproc.pid, retcode))
                         break
                     try:
                         unocontext = resolver.resolve("uno:%s" % op.connection)
@@ -530,15 +577,15 @@ class Convertor:
                     except:
                         raise
                 else:
-                    error("Failed to connect to %s (pid=%s) in %d seconds.\n%s" % (oobin, ooproc.pid, op.timeout, e))
+                    error("Failed to connect to %s (pid=%s) in %d seconds.\n%s" % (office.binary, ooproc.pid, op.timeout, e))
             except Exception, e:
                 raise
-                error("Launch of %s failed.\n%s" % (oobin, e))
+                error("Launch of %s failed.\n%s" % (office.binary, e))
 
         if not unocontext:
             die(251, "Unable to connect or start own listener. Aborting.")
 
-        ### And some more OpenOffice magic
+        ### And some more LibreOffice magic
         unosvcmgr = unocontext.ServiceManager
         self.desktop = unosvcmgr.createInstanceWithContext("com.sun.star.frame.Desktop", unocontext)
         self.config = unosvcmgr.createInstanceWithContext( "com.sun.star.configuration.ConfigurationProvider", unocontext)
@@ -605,10 +652,11 @@ class Convertor:
             )
 
             inputurl = unohelper.absolutize(self.cwd, unohelper.systemPathToFileUrl(inputfn))
+#            print dir(self.desktop)
             document = self.desktop.loadComponentFromURL( inputurl , "_blank", 0, inputprops )
 
             if not document:
-                raise UnoException("File could not be loaded by OpenOffice", None)
+                raise UnoException("File could not be loaded by LibreOffice", None)
 
             ### Import style template
             if op.template:
@@ -625,7 +673,7 @@ class Convertor:
                     exitcode = 1
 
             info(1, "Selected output format: %s" % outputfmt)
-            info(1, "Selected ooffice filter: %s" % outputfmt.filter)
+            info(1, "Selected office filter: %s" % outputfmt.filter)
             info(1, "Used doctype: %s" % outputfmt.doctype)
 
             ### Update document links
@@ -687,7 +735,7 @@ class Convertor:
 
         except UnoException, e:
             error("unoconv: UnoException during conversion in %s: %s" % (repr(e.__class__), e.Message))
-            error("ERROR: The provided document cannot be converted to the desired format. (code: %s)" % e.ErrCode)
+            error("ERROR: The provided document cannot be converted to the desired format. (Error code %s)" % e.ErrCode)
             exitcode = e.ErrCode
 
         except IOException, e:
@@ -703,9 +751,9 @@ class Listener:
     def __init__(self):
         info(1, "Start listener on %s:%s" % (op.server, op.port))
         try:
-            subprocess.call([oobin, "-headless", "-invisible", "-nocrashreport", "-nodefault", "-nologo", "-nofirststartwizard", "-norestore", "-accept=%s" % op.connection])
+            subprocess.call([office.binary, "-headless", "-invisible", "-nocrashreport", "-nodefault", "-nologo", "-nofirststartwizard", "-norestore", "-accept=%s" % op.connection], env=os.environ)
         except Exception, e:
-            error("Launch of %s failed.\n%s" % (oobin, e))
+            error("Launch of %s failed.\n%s" % (office.binary, e))
         else:
             die(253, "Existing listener found, aborting.")
 
@@ -721,47 +769,47 @@ def info(level, str):
         print >>sys.stderr, str
 
 def die(ret, str=None):
-    "Print error and exit with errorcode"
-    global convertor, ooproc, oobin
+    "Print optional error and exit with errorcode"
+    global convertor, ooproc, office
 
     if str:
         error('Error: %s' % str)
 
-    ### Did we start an instance ?
+    ### Did we start our own listener instance ?
     if ooproc and convertor:
 
         ### If there is a GUI now attached to the instance, disable listener
         if convertor.desktop.getCurrentFrame():
             try:
-                subprocess.Popen([oobin, "-headless", "-invisible", "-nocrashreport", "-nodefault", "-nofirststartwizard", "-nologo", "-norestore", "-unaccept=%s" % op.connection])
-                info(2, 'OpenOffice listener successfully disabled.')
+                subprocess.Popen([office.binary, "-headless", "-invisible", "-nocrashreport", "-nodefault", "-nofirststartwizard", "-nologo", "-norestore", "-unaccept=%s" % op.connection], env=os.environ)
+                info(2, 'LibreOffice listener successfully disabled.')
                 ooproc.wait()
             except Exception, e:
-                error("Terminate using %s failed.\n%s" % (oobin, e))
+                error("Terminate using %s failed.\n%s" % (office.binary, e))
 
         ### If there is no GUI attached to the instance, terminate instance
         else:
             try:
                 convertor.desktop.terminate()
             except DisposedException:
-                info(2, 'OpenOffice instance unsuccessfully closed, sending TERM signal.')
+                info(2, 'LibreOffice instance unsuccessfully closed, sending TERM signal.')
                 try:
                     ooproc.terminate()
                 except AttributeError:
                     os.kill(ooproc.pid, 15)
             ooproc.wait()
 
-        ### OpenOffice processes may get stuck and we have to kill them
+        ### LibreOffice processes may get stuck and we have to kill them
         ### Is it still running ?
         if ooproc.poll() == None:
-            info(1, 'OpenOffice instance still running, please investigate...')
+            info(1, 'LibreOffice instance still running, please investigate...')
             ooproc.wait()
-#            info(2, 'OpenOffice instance unsuccessfully terminated, sending KILL signal.')
+#            info(2, 'LibreOffice instance unsuccessfully terminated, sending KILL signal.')
 #            try:
 #                ooproc.kill()
 #            except AttributeError:
 #                os.kill(ooproc.pid, 9)
-#            info(2, 'Waiting for OpenOffice with pid %s to disappear.' % ooproc.pid)
+#            info(2, 'Waiting for LibreOffice with pid %s to disappear.' % ooproc.pid)
 #            ooproc.wait()
 
     sys.exit(ret)
@@ -782,21 +830,73 @@ def main():
     except NoConnectException, e:
         error("unoconv: could not find an existing connection to Open Office at %s:%s." % (op.server, op.port))
         if op.connection:
-            info(0, "Please start an OpenOffice instance on server '%s' by doing:\n\n    unoconv --listener --server %s --port %s\n\nor alternatively:\n\n    ooffice -nologo -nodefault -accept=\"%s\"" % (op.server, op.server, op.port, op.connection))
+            info(0, "Please start an LibreOffice instance on server '%s' by doing:\n\n    unoconv --listener --server %s --port %s\n\nor alternatively:\n\n    soffice -nologo -nodefault -accept=\"%s\"" % (op.server, op.server, op.port, op.connection))
         else:
-            info(0, "Please start an OpenOffice instance on server '%s' by doing:\n\n    unoconv --listener --server %s --port %s\n\nor alternatively:\n\n    ooffice -nologo -nodefault -accept=\"socket,host=%s,port=%s;urp;\"" % (op.server, op.server, op.port, op.server, op.port))
-            info(0, "Please start an ooffice instance on server '%s' by doing:\n\n    ooffice -nologo -nodefault -accept=\"socket,host=localhost,port=%s;urp;\"" % (op.server, op.port))
+            info(0, "Please start an LibreOffice instance on server '%s' by doing:\n\n    unoconv --listener --server %s --port %s\n\nor alternatively:\n\n    soffice -nologo -nodefault -accept=\"socket,host=%s,port=%s;urp;\"" % (op.server, op.server, op.port, op.server, op.port))
+            info(0, "Please start an soffice instance on server '%s' by doing:\n\n    soffice -nologo -nodefault -accept=\"socket,host=localhost,port=%s;urp;\"" % (op.server, op.port))
         exitcode = 1
 #    except UnboundLocalError:
 #        die(252, "Failed to connect to remote listener.")
     except OSError:
-        error("Warning: failed to launch OpenOffice. Aborting.")
+        error("Warning: failed to launch LibreOffice. Aborting.")
 
 ### Main entrance
 if __name__ == '__main__':
     exitcode = 0
 
     op = Options(sys.argv[1:])
+
+    for of in find_offices():
+        if sys.executable != of.python:
+           switch_python(of)
+        office = of
+        break
+    else:
+        ### Try next unopath python
+        for of in find_offices():
+            if sys.executable.startswith(of.basepath):
+                break
+#            print 'Skip', of
+        else:
+            print >>sys.stderr, "unoconv: Cannot find a suitable pyuno library and python binary combination on your system."
+            print >>sys.stderr, "ERROR: Please locate this library and send your feedback to: <tools@lists.repoforge.org>."
+            sys.exit(1)
+
+    try:
+        import uno, unohelper
+#        debug_office()
+    except Exception:
+        try:
+            use_office(office)
+#            debug_office()
+            import uno, unohelper
+        except:
+            print >>sys.stderr, "unoconv: Cannot find a suitable pyuno library and python binary combination on your system."
+            print >>sys.stderr, "ERROR: Please locate this library and send your feedback to: <tools@lists.rpmforge.net>."
+            sys.exit(1)
+
+    ### Now that we have found a working pyuno library, let's import some classes
+    from com.sun.star.beans import PropertyValue
+    from com.sun.star.connection import NoConnectException
+    from com.sun.star.lang import DisposedException
+    from com.sun.star.io import IOException, XOutputStream
+    from com.sun.star.script import CannotConvertException
+    from com.sun.star.uno import Exception as UnoException
+
+    ### And now that we have those classes, build on them
+    class OutputStream( unohelper.Base, XOutputStream ):
+        def __init__( self ):
+            self.closed = 0
+
+        def closeOutput(self):
+            self.closed = 1
+
+        def writeBytes( self, seq ):
+            sys.stdout.write( seq.value )
+
+        def flush( self ):
+            pass
+
     try:
         main()
     except KeyboardInterrupt, e:

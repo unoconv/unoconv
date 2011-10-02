@@ -43,8 +43,9 @@ $(filter %,$(links)):
 ### Remove odp because size > 300kB
 dist: clean
 	$(MAKE) -C docs dist
+	git ls-tree -r --name-only --full-tree $$(git branch --no-color 2>/dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/') | pax -d -w -x ustar -s ,^,$(name)-$(version)/, | bzip2 >../$(name)-$(version).tar.bz2
 #	svn list -R | grep -v '.odp$$' | pax -d -w -x ustar -s ',^.,$(name)-$(version),' | bzip2 >../$(name)-$(version).tar.bz2
-	svn st -v --xml | \
+#	svn st -v --xml | \
         xmlstarlet sel -t -m "/status/target/entry" -s A:T:U '@path' -i "wc-status[@revision]" -v "@path" -n | \
         pax -d -w -x ustar -s ,^,$(name)-$(version)/, | \
         bzip2 >../$(name)-$(version).tar.bz2

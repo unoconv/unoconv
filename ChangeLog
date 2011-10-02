@@ -1,6 +1,8 @@
-* 0.4svn - released 03/11/2010
+* 0.5 - released 03/10/2011
 - Change to how -o/--output/--outputpath works (can now output to filenames too)
-- Improve handling of LD_LIBRARY_PATH (Paul Polak)
+- Replaced OpenOffice by LibreOffice in source code and documentation
+- Automatically look for installed LibreOffice and OpenOffice binaries/libraries
+- Switch to LibreOffice python binary to load matching pyuno library
 
 * 0.4 - released 20/10/2010
 - Now properly check if there is a GUI attached and terminate() or -unaccept instance

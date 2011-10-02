@@ -4,7 +4,7 @@ v0.4, 20 october 2010
 
 
 == NAME
-unoconv - convert any document from and to any OpenOffice supported format
+unoconv - convert any document from and to any LibreOffice supported format
 
 
 == SYNOPSIS
@@ -15,11 +15,11 @@ unoconv - convert any document from and to any OpenOffice supported format
 
 == DESCRIPTION
 unoconv is a command line utility that can convert any file format that
-OpenOffice can import, to any file format that OpenOffice is capable of
+LibreOffice can import, to any file format that LibreOffice is capable of
 exporting.
 
-unoconv uses the OpenOffice's UNO bindings for non-interactive conversion
-of documents and therefor needs an OpenOffice instance to communicate with.
+unoconv uses the LibreOffice's UNO bindings for non-interactive conversion
+of documents and therefor needs an LibreOffice instance to communicate with.
 Therefore if it cannot find one, it will start its own instance for temporary
 usage. If desired, one can start a ``listener'' instance to use for subsequent
 connections or even for remote connections.
@@ -28,20 +28,20 @@ connections or even for remote connections.
 == OPTIONS
 -c, --connection::
     UNO connection string to be used by the client to connect to an
-    OpenOffice instance, or used by the listener to make OpenOffice
+    LibreOffice instance, or used by the listener to make LibreOffice
     listen.
 +
     Default connection string is "socket,host=localhost,port=2002;urp;StarOffice.ComponentContext"
 
 -d, --doctype::
-    Specify the OpenOffice document type of the backend format. Possible
+    Specify the LibreOffice document type of the backend format. Possible
     document types are: 'document', 'graphics', 'presentation',
     'spreadsheet'.
 +
     Default document type is 'document'.
 
 -e, --export::
-    Set specific export filter options (related to the used OpenOffice filter).
+    Set specific export filter options (related to the used LibreOffice filter).
 +
     eg. for the PDF output filter one can specify: -e PageRange=1-2
 +
@@ -54,7 +54,7 @@ connections or even for remote connections.
     Default document type is 'pdf'.
 
 -i, --import::
-    Set specific import filters options (related to the used OpenOffice
+    Set specific import filters options (related to the used LibreOffice
     import filter based on the input filename).
 +
     See the *IMPORT FILTERS* section.
@@ -69,7 +69,7 @@ connections or even for remote connections.
     output filename.
 
 --pipe::
-    Use a pipe as an alternative connection mechanism to talk to OpenOffice.
+    Use a pipe as an alternative connection mechanism to talk to LibreOffice.
 
 -p, --port::
     Port to listen on (as listener) or to connect to (as client).
@@ -108,15 +108,15 @@ the specified *output format*.
 
 
 == IMPORT FILTERS
-Depending on the used input file, a different OpenOffice import filter is
+Depending on the used input file, a different LibreOffice import filter is
 automatically used by unoconv. This import filter can be influenced by the
 +-i+ option that, depending on the filter used, accepts different arguments.
 
 It is not always clear what import filter options you can provide, the import
-dialog in OpenOffice for the filter you ar using might give a good indication
+dialog in LibreOffice for the filter you ar using might give a good indication
 as to what you can expect as import filter options.
 
-The reference is OpenOffice's documentation, for spreadsheets it is described at:
+The reference is LibreOffice's documentation, for spreadsheets it is described at:
 http://wiki.services.openoffice.org/wiki/Documentation/DevGuide/Spreadsheets/Filter_Options
 but we will look into some examples.
 
@@ -154,14 +154,14 @@ system's encoding, but with no text-delimiter, you can do:
 == EXPORT FILTERS
 In contrast to import filters, export filters can have multiple named options,
 although it is not always clear what options are available. It all depends on
-the version of OpenOffice. The export dialog you get in OpenOffice might give
+the version of LibreOffice. The export dialog you get in LibreOffice might give
 you a clue about what is possible, each of those widgets represents an option.
 
 
 == PDF EXPORT FILTER OPTIONS
 The PDF export filter is likely the most advanced export filter in its kind
 with a myriad of options one can use. The export filter options are described
-in a separate document, or on OpenOffice's wiki at:
+in a separate document, or on LibreOffice's wiki at:
 
 http://wiki.services.openoffice.org/wiki/API/Tutorials/PDF_export
 
@@ -170,7 +170,7 @@ For example one can specify: +-e PageRange=1-2+
 
 == EXAMPLES
 You can use unoconv in standalone mode, this means that in absence of an
-OpenOffice listener, it will starts its own:
+LibreOffice listener, it will starts its own:
 
     unoconv -f pdf some-document.odt
 
@@ -197,8 +197,8 @@ and then connect another system to convert documents:
 
 
 == BUGS
-unoconv uses the UNO bindings to connect to OpenOffice, in absence of a usable
-socket, it will start its own OpenOffice instance with the correct parameters.
+unoconv uses the UNO bindings to connect to LibreOffice, in absence of a usable
+socket, it will start its own LibreOffice instance with the correct parameters.
 
 [NOTE]
 Please see the TODO file for known bugs and future plans.

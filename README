@@ -1,7 +1,7 @@
-unoconv converts any document format that OpenOffice can import, to any
-document format that OpenOffice can export.
+unoconv converts any document format that LibreOffice can import, to any
+document format that LibreOffice can export.
 
-unoconv uses the OpenOffice's UNO bindings for non-interactive conversion
+unoconv uses the LibreOffice's UNO bindings for non-interactive conversion
 of documents.
 
 unoconv tries to start an ooffice instance (if it cannot find a running one)
@@ -24,17 +24,17 @@ finished using it and then stop it.
     unoconv -f html *.odt
     kill -15 %-
 
-Also possible is to use a listener or OpenOffice instance that accepts
+Also possible is to use a listener or LibreOffice instance that accepts
 connections on another system and use it from unoconv remotely. This
 way the conversion tasks are performed on a dedicated system instead
 of on the client system.
 
-Since OpenOffice 2.3 you do not need an X display for starting ooffice.
+Since LibreOffice 2.3 you do not need an X display for starting ooffice.
 However you may need the openoffice.org-headless package from your
-distribution. Since OpenOffice 2.4 nothing special is needed, running
+distribution. Since LibreOffice 2.4 nothing special is needed, running
 in headless mode does not require X.
 
-For any older OpenOffice releases, remember that ooffice requires an X
+For any older LibreOffice releases, remember that ooffice requires an X
 display, even when using it in headless mode. One solution is to use Xvfb
 to create a headless X display for ooffice.
 
@@ -45,9 +45,9 @@ to create a headless X display for ooffice.
 
 Also beware that the pyuno python module needs to be compiled with the exact
 same version of python that you are using to load it. A lot of people that
-run into problems loading pyuno are actually using a precompiled OpenOffice
+run into problems loading pyuno are actually using a precompiled LibreOffice
 that they downloaded somewhere and is incompatible with their python version.
-(Sometimes the OpenOffice comes with its own python wrapper.)
+(Sometimes the LibreOffice comes with its own python wrapper.)
 
 Other tools that are useful or similar in operation:
 
