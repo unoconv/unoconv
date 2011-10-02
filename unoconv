@@ -60,13 +60,13 @@ def find_offices():
                       glob.glob('/Applications/OpenOffice.org.app/Contents')
     else:
         extrapaths += glob.glob('/usr/lib*/libreoffice*') + \
-                      glob.glob('/usr/lib*/openoffice*') + \
-                      glob.glob('/usr/lib*/ooo*') + \
                       glob.glob('/usr/local/libreoffice*') + \
-                      glob.glob('/usr/local/openoffice*') + \
-                      glob.glob('/usr/local/ooo*') + \
                       glob.glob('/opt/libreoffice*') + \
+                      glob.glob('/usr/lib*/openoffice*') + \
+                      glob.glob('/usr/local/openoffice*') + \
                       glob.glob('/opt/openoffice*') + \
+                      glob.glob('/usr/lib*/ooo*') + \
+                      glob.glob('/usr/local/ooo*') + \
                       glob.glob('/opt/ooo*')
 
     ### Find a working set of pyuno module
@@ -379,6 +379,7 @@ class Options:
         self.format = None
         self.importfilter = ""
         self.listener = False
+        self.nolaunch = False
         self.output = None
         self.pipe = None
         self.port = '2002'
@@ -391,9 +392,9 @@ class Options:
 
         ### Get options from the commandline
         try:
-            opts, args = getopt.getopt (args, 'c:d:e:f:hi:Llo:p:s:t:T:v',
+            opts, args = getopt.getopt (args, 'c:d:e:f:hi:Llo:np:s:t:T:v',
                 ['connection=', 'doctype=', 'export', 'format=', 'help',
-                 'import', 'listener', 'output=', 'outputpath', 'pipe=',
+                 'import', 'listener', 'no-launch', 'output=', 'outputpath', 'pipe=',
                  'port=', 'server=', 'timeout=', 'show', 'stdout',
                  'template', 'verbose', 'version'] )
         except getopt.error, exc:
@@ -419,7 +420,10 @@ class Options:
                     elif value in ('False', 'false'):
                         self.exportfilter.append( PropertyValue( name, 0, False, 0 ) )
                     else:
-                        self.exportfilter.append( PropertyValue( name, 0, value, 0 ) )
+                        try:
+                            self.exportfilter.append( PropertyValue( name, 0, int(value), 0 ) )
+                        except ValueError:
+                            self.exportfilter.append( PropertyValue( name, 0, value, 0 ) )
                 else:
 #                    print >>sys.stderr, 'Warning: Option %s cannot be parsed, ignoring.' % arg
                     self.importfilter = arg
@@ -429,6 +433,8 @@ class Options:
                 self.importfilter = arg
             elif opt in ['-l', '--listener']:
                 self.listener = True
+            elif opt in ['-n', '--no-launch']:
+                self.nolaunch = True
             elif opt in ['-o', '--output']:
                 self.output = arg
             elif opt in ['--outputpath']:
@@ -524,6 +530,7 @@ unoconv options:
   -i, --import=string      set import filter option string
                              eg. -i utf8
   -l, --listener           start a listener to use by unoconv clients
+  -n, --no-launch          no launch our own listener, if listener not found
   -o, --output=name        output basename, filename or directory
       --pipe=name          alternative method of connection using a pipe
   -p, --port=port          specify the port (default: 2002)
@@ -553,8 +560,11 @@ class Convertor:
 #            info(3, "Existing listener not found.\n%s" % e)
             info(3, "Existing listener not found.")
 
-            ### Start our own LibreOffice instance
-            info(3, "Launching our own listener using %s." % office.binary)
+            if op.nolaunch:
+                die(113, "Existing listener not found. Unable start listener by parameters. Aborting.")
+
+            ### Start our own OpenOffice instance
+            info(3, "Launching our own listener using %s." % oobin)
             try:
 #                print office.binary, "-headless", "-invisible", "-nocrashreport", "-nodefault", "-nofirststartwizard", "-nologo", "-norestore", "-accept=%s" % op.connection
                 ooproc = subprocess.Popen([office.binary, "-headless", "-invisible", "-nocrashreport", "-nodefault", "-nofirststartwizard", "-nologo", "-norestore", "-accept=%s" % op.connection], env=os.environ)
