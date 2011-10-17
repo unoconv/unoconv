@@ -66,7 +66,7 @@ def find_offices():
             extrapaths += glob.glob(os.environ['ProgramFiles(x86)']+'\\LibreOffice.org*') + \
                           glob.glob(os.environ['ProgramFiles(x86)']+'\\OpenOffice.org*')
 
-    elif os.name in ( 'mac' ):
+    elif os.name in ( 'mac', ) or sys.platform in ( 'darwin', ):
         extrapaths += [ '/Applications/LibreOffice.app/Contents',
                         '/Applications/NeoOffice.app/Contents',
                         '/Applications/OpenOffice.org.app/Contents' ]
@@ -899,7 +899,7 @@ if __name__ == '__main__':
     except Exception:
         print >>sys.stderr, "unoconv: Cannot find a suitable pyuno library and python binary combination on your system."
         print >>sys.stderr, "ERROR: Please locate this library and send your feedback to: <tools@lists.rpmforge.net>."
-        raise
+        print >>sys.stderr, sys.exc_info()[1]
         sys.exit(1)
 
     ### Now that we have found a working pyuno library, let's import some classes

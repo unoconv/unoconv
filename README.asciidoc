@@ -7,6 +7,8 @@ document format that LibreOffice can export.
 unoconv uses the LibreOffice's UNO bindings for non-interactive conversion
 of documents.
 
+
+== How does unoconv work ?
 unoconv tries to start an ooffice instance (if it cannot find a running one)
 that it then uses and destroys. However the success rate of starting and
 stopping this ooffice instance depends on some outside factors.
@@ -16,6 +18,8 @@ in fact ready to communicate, we don't know exactly when we can use the UNO
 api. By default unoconv waits for 3 seconds, but you can specify another
 delay with -T/--timeout. If ooffice is not ready, you may get a random error.
 
+
+== Start your own unoconv listener
 However, you can always start an instance yourself at the default port 2002
 (or specify another port with -p/--port) and then use unoconv until you're
 finished using it and then stop it.
@@ -32,26 +36,35 @@ connections on another system and use it from unoconv remotely. This
 way the conversion tasks are performed on a dedicated system instead
 of on the client system.
 
-Since LibreOffice 2.3 you do not need an X display for starting ooffice.
+== Using unoconv with not X display
+Since OpenOffice 2.3 you do not need an X display for starting ooffice.
 However you may need the openoffice.org-headless package from your
 distribution. Since LibreOffice 2.4 nothing special is needed, running
 in headless mode does not require X.
 
-For any older LibreOffice releases, remember that ooffice requires an X
+For any older OpenOffice releases, remember that ooffice requires an X
 display, even when using it in headless mode. One solution is to use Xvfb
 to create a headless X display for ooffice.
 
-    http://www.oooforum.org/forum/viewtopic.phtml?t=11890
-    http://www.wonko.be/2008/01/09/running-openoffice-headless-on-debian
-    http://ward.vandewege.net/writings/200510auto_doc_conv/
-    http://www.artofsolving.com/node/10
+ - http://www.oooforum.org/forum/viewtopic.phtml?t=11890
+ - http://www.wonko.be/2008/01/09/running-openoffice-headless-on-debian
+ - http://ward.vandewege.net/writings/200510auto_doc_conv/
+ - http://www.artofsolving.com/node/10
 
+
+== Python and pyuno incompatibilities
 Also beware that the pyuno python module needs to be compiled with the exact
 same version of python that you are using to load it. A lot of people that
 run into problems loading pyuno are actually using a precompiled LibreOffice
 that they downloaded somewhere and is incompatible with their python version.
 (Sometimes the LibreOffice comes with its own python wrapper.)
 
+The most recent unoconv no longer has this issue as it automatically detects
+incompatibilities between python and pyuno, and restarts itself using a
+compatible python (one that ships with LibreOffice).
+
+
+== Related tools
 Other tools that are useful or similar in operation:
 
  + Text based document generation
