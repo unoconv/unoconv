@@ -196,6 +196,17 @@ and then connect another system to convert documents:
     unoconv --server 1.2.3.4 --port 4567
 
 
+== ENVIRONMENT VARIABLES
+UNO_PATH::
+    specifies what LibreOffice pyuno installation unoconv needs to use
+    eg. _/opt/libreoffice3.4/basis-link/program_
+
+
+
+== SEE ALSO
+    convert(1), file(1), odt2txt
+
+
 == BUGS
 unoconv uses the UNO bindings to connect to LibreOffice, in absence of a usable
 socket, it will start its own LibreOffice instance with the correct parameters.
@@ -204,15 +215,14 @@ socket, it will start its own LibreOffice instance with the correct parameters.
 Please see the TODO file for known bugs and future plans.
 
 
-== SEE ALSO
-    convert(1), file(1), odt2txt
-
-
 == REFERENCES
 unoconv is very useful together with the following tools:
 
 Asciidoc::
     http://www.methods.co.nz/asciidoc/
+
+asciidoc-odf::
+    http://github.com/dagwieers/asciidoc-odf
 
 docbook2odf::
     http://open.comsultia.com/docbook2odf/

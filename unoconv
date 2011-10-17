@@ -16,15 +16,25 @@
 
 import getopt, sys, os, glob, time, socket, subprocess
 
+__version__ = "$Revision$"
+# $Source$
+
+VERSION = '0.5'
+
+doctypes = ('document', 'graphics', 'presentation', 'spreadsheet')
+
 global convertor, office, ooproc
+ooproc = None
+exitcode = 0
 
 class Office:
-    def __init__(self, basepath, unopath, pyuno, binary, python):
+    def __init__(self, basepath, unopath, pyuno, binary, python, pythonhome):
         self.basepath = basepath
         self.unopath = unopath
         self.pyuno = pyuno
         self.binary = binary
         self.python = python
+        self.pythonhome = pythonhome
 
     def __str__(self):
         return self.basepath
@@ -39,12 +49,13 @@ class Office:
 
 def find_offices():
     ret = []
-
     extrapaths = []
+
+    ### Try using UNO_PATH first (in many incarnations, we'll see what sticks)
     if 'UNO_PATH' in os.environ:
-        extrapaths += glob.glob(os.environ['UNO_PATH']) + \
-                      glob.glob(os.path.dirname(os.environ['UNO_PATH'])) + \
-                      glob.glob(os.path.dirname(os.path.dirname(os.environ['UNO_PATH'])))
+        extrapaths += [ os.environ['UNO_PATH'],
+                        os.path.dirname(os.environ['UNO_PATH']),
+                        os.path.dirname(os.path.dirname(os.environ['UNO_PATH'])) ]
 
     if os.name in ( 'nt', 'os2' ):
         if 'ProgramFiles' in os.environ.keys():
@@ -54,20 +65,22 @@ def find_offices():
         if 'ProgramFiles(x86)' in os.environ.keys():
             extrapaths += glob.glob(os.environ['ProgramFiles(x86)']+'\\LibreOffice.org*') + \
                           glob.glob(os.environ['ProgramFiles(x86)']+'\\OpenOffice.org*')
+
     elif os.name in ( 'mac' ):
-        extrapaths += glob.glob('/Applications/LibreOffice.app/Contents') + \
-                      glob.glob('/Applications/NeoOffice.app/Contents') + \
-                      glob.glob('/Applications/OpenOffice.org.app/Contents')
+        extrapaths += [ '/Applications/LibreOffice.app/Contents',
+                        '/Applications/NeoOffice.app/Contents',
+                        '/Applications/OpenOffice.org.app/Contents' ]
+
     else:
         extrapaths += glob.glob('/usr/lib*/libreoffice*') + \
-                      glob.glob('/usr/local/libreoffice*') + \
-                      glob.glob('/opt/libreoffice*') + \
                       glob.glob('/usr/lib*/openoffice*') + \
-                      glob.glob('/usr/local/openoffice*') + \
-                      glob.glob('/opt/openoffice*') + \
                       glob.glob('/usr/lib*/ooo*') + \
-                      glob.glob('/usr/local/ooo*') + \
-                      glob.glob('/opt/ooo*')
+                      glob.glob('/opt/libreoffice*') + \
+                      glob.glob('/opt/openoffice*') + \
+                      glob.glob('/opt/ooo*') + \
+                      glob.glob('/usr/local/libreoffice*') + \
+                      glob.glob('/usr/local/openoffice*') + \
+                      glob.glob('/usr/local/ooo*')
 
     ### Find a working set of pyuno module
     for basepath in extrapaths:
@@ -75,67 +88,68 @@ def find_offices():
             officelibrary = 'pyuno.pyd'
             officebinary = 'soffice.exe'
             pythonbinary = 'python.exe'
+            basispath = 'basis'
         else:
             officelibrary = 'pyuno.so'
             officebinary = 'soffice.bin'
             pythonbinary = 'python.bin'
+            basispath = 'basis-link'
 
-        if not os.path.isfile(os.path.join(basepath, 'basis-link', 'program', officelibrary)):
+        if not os.path.isfile(os.path.join(basepath, basispath, 'program', officelibrary)):
             continue
 
         if not os.path.isfile(os.path.join(basepath, 'program', officebinary)):
             continue
 
-        if os.path.isfile(os.path.join(basepath, 'basis-link', 'program', pythonbinary)):
+#        if not glob.glob(os.path.join(basepath, basispath, 'program', 'python-core-*')):
+#            continue
+
+        if os.path.isfile(os.path.join(basepath, basispath, 'program', pythonbinary)):
             ret.append(Office(basepath,
-                              os.path.join(basepath, 'basis-link', 'program'),
-                              os.path.join(basepath, 'basis-link', 'program', officelibrary),
+                              os.path.join(basepath, basispath, 'program'),
+                              os.path.join(basepath, basispath, 'program', officelibrary),
                               os.path.join(basepath, 'program', officebinary),
-                              os.path.join(basepath, 'basis-link', 'program', pythonbinary)))
+                              os.path.join(basepath, basispath, 'program', pythonbinary),
+                              glob.glob(os.path.join(basepath, basispath, 'program', 'python-core-*'))[0]))
         else:
             ret.append(Office(basepath,
-                              os.path.join(basepath, 'basis-link', 'program'),
-                              os.path.join(basepath, 'basis-link', 'program', officelibrary),
+                              os.path.join(basepath, basispath, 'program'),
+                              os.path.join(basepath, basispath, 'program', officelibrary),
                               os.path.join(basepath, 'program', officebinary),
-                              sys.executable))
+                              sys.executable,
+                              None))
 
-#    print ret
+    print ret
     return ret
 
-def test_office(office):
-    use_office(office)
-    sys.path.insert(0, office.unopath)
-    try:
-        import uno, unohelper
-#        print 'Testing', office, 'succeeded'
-        return True
-    except:
-#        print 'Testing', office, 'failed'
-        return False
-
-def use_office(office):
+def office_environ(office):
     ### Set PATH so that crash_report is found
     os.environ['PATH'] = os.path.join(office.basepath, 'program') + os.pathsep + os.environ['PATH']
 
+
     ### Set LD_LIBRARY_PATH so that "import pyuno" finds libpyuno.so:
-#    if 'LD_LIBRARY_PATH' in os.environ:
-#        os.environ['LD_LIBRARY_PATH'] = office.unopath + os.pathsep + \
-#                                        os.path.join(office.basepath, 'basis-link', 'ure-link', 'lib') + os.pathsep + \
-#                                        os.environ['LD_LIBRARY_PATH']
-#    else:
-#        os.environ['LD_LIBRARY_PATH'] = office.unopath + os.pathsep + \
-#                                        os.path.join(office.basepath, 'basis-link', 'ure-link', 'lib')
+    if 'LD_LIBRARY_PATH' in os.environ:
+        os.environ['LD_LIBRARY_PATH'] = office.unopath + os.pathsep + \
+                                        os.path.join(office.basepath, 'basis-link', 'ure-link', 'lib') + os.pathsep + \
+                                        os.environ['LD_LIBRARY_PATH']
+    else:
+        os.environ['LD_LIBRARY_PATH'] = office.unopath + os.pathsep + \
+                                        os.path.join(office.basepath, 'basis-link', 'ure-link', 'lib')
 
     ### Set UNO_PATH so that "officehelper.bootstrap()" can find soffice executable:
     os.environ['UNO_PATH'] = office.unopath
 
     ### Set URE_BOOTSTRAP so that "uno.getComponentContext()" bootstraps a complete
+    ### UNO environment
     if os.name in ( 'nt', 'os2' ):
-        os.environ['URE_BOOTSTRAP'] = os.path.join(office.basepath, 'program', 'fundamental.ini')
+        os.environ['URE_BOOTSTRAP'] = 'vnd.sun.star.pathname:' + os.path.join(office.basepath, 'program', 'fundamental.ini')
     else:
-        os.environ['URE_BOOTSTRAP'] = os.path.join(office.basepath, 'program', 'fundamentalrc')
+        os.environ['URE_BOOTSTRAP'] = 'vnd.sun.star.pathname:' + os.path.join(office.basepath, 'program', 'fundamentalrc')
+#    if os.name in ( 'nt', 'os2' ):
+#        os.environ['URE_BOOTSTRAP'] = os.path.join(office.basepath, 'program', 'fundamental.ini')
+#    else:
+#        os.environ['URE_BOOTSTRAP'] = os.path.join(office.basepath, 'program', 'fundamentalrc')
 
-#    os.environ['PYTHONHOME'] = glob.glob(os.path.join(office.unopath, 'python-core-*'))[0]
     for libpath in glob.glob(os.path.join(office.basepath, 'basis-link', 'ure-link', 'lib')) + \
                    glob.glob(os.path.join(office.unopath, 'python-core-*', 'lib', 'site-packages')) + \
                    glob.glob(os.path.join(office.unopath, 'python-core-*', 'lib', 'lib-tk')) + \
@@ -146,30 +160,44 @@ def use_office(office):
 
 def debug_office():
     print 'python=%s' % sys.executable
+    print 'python-version=%s' % sys.version
     if 'URE_BOOTSTRAP' in os.environ:
         print 'URE_BOOTSTRAP=%s' % os.environ['URE_BOOTSTRAP']
     if 'UNO_PATH' in os.environ:
         print 'UNO_PATH=%s' % os.environ['UNO_PATH']
+    if 'UNO_TYPES' in os.environ:
+        print 'UNO_TYPES=%s' % os.environ['UNO_TYPES']
     print 'PATH=%s' % os.environ['PATH']
     if 'PYTHONHOME' in os.environ:
         print 'PYTHONHOME =', os.environ['PYTHONHOME']
+    if 'PYTHONPATH' in os.environ:
+        print 'PYTHONPATH =', os.environ['PYTHONPATH']
     if 'LD_LIBRARY_PATH' in os.environ:
         print 'LD_LIBRARY_PATH =', os.environ['LD_LIBRARY_PATH']
 
-def switch_python(office):
+def python_switch(office):
 #   print >>sys.stderr, "WARNING: It is recommended to use python %s to run unoconv" % pybin
+    if office.pythonhome:
+        os.environ['PYTHONHOME'] = office.pythonhome
+        os.environ['PYTHONPATH'] = os.path.join(office.pythonhome, 'lib') + os.pathsep + \
+                                   os.path.join(office.pythonhome, 'lib', 'site-packages') + os.pathsep + \
+                                   os.path.join(office.pythonhome, 'lib', 'lib-tk') + os.pathsep + \
+                                   os.path.join(office.pythonhome, 'lib', 'lib-dynload') + os.pathsep + \
+                                   office.unopath
+
+    ### Set LD_LIBRARY_PATH so that "import pyuno" finds libpyuno.so:
+    if 'LD_LIBRARY_PATH' in os.environ:
+        os.environ['LD_LIBRARY_PATH'] = office.unopath + os.pathsep + \
+                                        os.path.join(office.basepath, 'basis-link', 'ure-link', 'lib') + os.pathsep + \
+                                        os.environ['LD_LIBRARY_PATH']
+    else:
+        os.environ['LD_LIBRARY_PATH'] = office.unopath + os.pathsep + \
+                                        os.path.join(office.basepath, 'basis-link', 'ure-link', 'lib')
+
+    os.environ['UNO_PATH'] = office.unopath
+
     print >>sys.stderr, "Switching from python %s to %s" % (sys.executable, office.python)
-    os.execv(office.python, [office.python, ] + sys.argv[0:])
-
-__version__ = "$Revision$"
-# $Source$
-
-VERSION = '0.5'
-
-doctypes = ('document', 'graphics', 'presentation', 'spreadsheet')
-
-ooproc = None
-exitcode = 0
+    os.execvpe(office.python, [office.python, ] + sys.argv[0:], os.environ)
 
 class Fmt:
     def __init__(self, doctype, name, extension, summary, filter):
@@ -564,7 +592,7 @@ class Convertor:
                 die(113, "Existing listener not found. Unable start listener by parameters. Aborting.")
 
             ### Start our own OpenOffice instance
-            info(3, "Launching our own listener using %s." % oobin)
+            info(3, "Launching our own listener using %s." % office.binary)
             try:
 #                print office.binary, "-headless", "-invisible", "-nocrashreport", "-nodefault", "-nofirststartwizard", "-nologo", "-norestore", "-accept=%s" % op.connection
                 ooproc = subprocess.Popen([office.binary, "-headless", "-invisible", "-nocrashreport", "-nodefault", "-nofirststartwizard", "-nologo", "-norestore", "-accept=%s" % op.connection], env=os.environ)
@@ -814,13 +842,13 @@ def die(ret, str=None):
         if ooproc.poll() == None:
             info(1, 'LibreOffice instance still running, please investigate...')
             ooproc.wait()
-#            info(2, 'LibreOffice instance unsuccessfully terminated, sending KILL signal.')
-#            try:
-#                ooproc.kill()
-#            except AttributeError:
-#                os.kill(ooproc.pid, 9)
-#            info(2, 'Waiting for LibreOffice with pid %s to disappear.' % ooproc.pid)
-#            ooproc.wait()
+            info(2, 'LibreOffice instance unsuccessfully terminated, sending KILL signal.')
+            try:
+                ooproc.kill()
+            except AttributeError:
+                os.kill(ooproc.pid, 9)
+            info(2, 'Waiting for LibreOffice with pid %s to disappear.' % ooproc.pid)
+            ooproc.wait()
 
     sys.exit(ret)
 
@@ -858,32 +886,20 @@ if __name__ == '__main__':
 
     for of in find_offices():
         if sys.executable != of.python:
-           switch_python(of)
+           python_switch(of)
         office = of
         break
-    else:
-        ### Try next unopath python
-        for of in find_offices():
-            if sys.executable.startswith(of.basepath):
-                break
-#            print 'Skip', of
-        else:
-            print >>sys.stderr, "unoconv: Cannot find a suitable pyuno library and python binary combination on your system."
-            print >>sys.stderr, "ERROR: Please locate this library and send your feedback to: <tools@lists.repoforge.org>."
-            sys.exit(1)
 
+    if 'UNO_PATH' in os.environ:
+        office_environ(office)
+#        debug_office()
     try:
         import uno, unohelper
-#        debug_office()
     except Exception:
-        try:
-            use_office(office)
-#            debug_office()
-            import uno, unohelper
-        except:
-            print >>sys.stderr, "unoconv: Cannot find a suitable pyuno library and python binary combination on your system."
-            print >>sys.stderr, "ERROR: Please locate this library and send your feedback to: <tools@lists.rpmforge.net>."
-            sys.exit(1)
+        print >>sys.stderr, "unoconv: Cannot find a suitable pyuno library and python binary combination on your system."
+        print >>sys.stderr, "ERROR: Please locate this library and send your feedback to: <tools@lists.rpmforge.net>."
+        raise
+        sys.exit(1)
 
     ### Now that we have found a working pyuno library, let's import some classes
     from com.sun.star.beans import PropertyValue

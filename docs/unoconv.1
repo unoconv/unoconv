@@ -311,6 +311,24 @@ unoconv \-\-server 1\&.2\&.3\&.4 \-\-port 4567
 .if n \{\
 .RE
 .\}
+.SH "ENVIRONMENT VARIABLES"
+.PP
+UNO_PATH
+.RS 4
+specifies what LibreOffice pyuno installation unoconv needs to use eg\&.
+\fI/opt/libreoffice3\&.4/basis\-link/program\fR
+.RE
+.SH "SEE ALSO"
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+convert(1), file(1), odt2txt
+.fi
+.if n \{\
+.RE
+.\}
 .SH "BUGS"
 .sp
 unoconv uses the UNO bindings to connect to LibreOffice, in absence of a usable socket, it will start its own LibreOffice instance with the correct parameters\&.
@@ -330,17 +348,6 @@ unoconv uses the UNO bindings to connect to LibreOffice, in absence of a usable 
 Please see the TODO file for known bugs and future plans\&.
 .sp .5v
 .RE
-.SH "SEE ALSO"
-.sp
-.if n \{\
-.RS 4
-.\}
-.nf
-convert(1), file(1), odt2txt
-.fi
-.if n \{\
-.RE
-.\}
 .SH "REFERENCES"
 .sp
 unoconv is very useful together with the following tools:
@@ -349,6 +356,12 @@ Asciidoc
 .RS 4
 
 \m[blue]\fBhttp://www\&.methods\&.co\&.nz/asciidoc/\fR\m[]
+.RE
+.PP
+asciidoc\-odf
+.RS 4
+
+\m[blue]\fBhttp://github\&.com/dagwieers/asciidoc\-odf\fR\m[]
 .RE
 .PP
 docbook2odf
