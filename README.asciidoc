@@ -1,3 +1,6 @@
+= Automated conversion and styling using LibreOffice
+Dag Wieers <dag@wieers.com>
+
 unoconv converts any document format that LibreOffice can import, to any
 document format that LibreOffice can export.
 
