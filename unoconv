@@ -773,8 +773,7 @@ class Convertor:
             exitcode = 1
 
         except UnoException, e:
-            error("unoconv: UnoException during conversion in %s: %s" % (repr(e.__class__), e.Message))
-            error("ERROR: The provided document cannot be converted to the desired format. (Error code %s)" % e.ErrCode)
+            error("unoconv: UnoException during conversion in %s (Error %d)" % (repr(e.__class__), e.ErrCode))
             exitcode = e.ErrCode
 
         except IOException, e:

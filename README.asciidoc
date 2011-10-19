@@ -1,22 +1,22 @@
 = Automated conversion and styling using LibreOffice
 Dag Wieers <dag@wieers.com>
 
-unoconv converts any document format that LibreOffice can import, to any
-document format that LibreOffice can export.
+unoconv is a command line tool to convert any document format that LibreOffice
+can import to any document format that LibreOffice can export. It makes use
+of the LibreOffice's UNO bindings for non-interactive conversion of documents.
 
-unoconv uses the LibreOffice's UNO bindings for non-interactive conversion
-of documents.
+_For practical reasons we mention LibreOffice, but OpenOffice is supported by
+unoconv as well._
 
 
 == How does unoconv work ?
-unoconv tries to start an ooffice instance (if it cannot find a running one)
-that it then uses and destroys. However the success rate of starting and
-stopping this ooffice instance depends on some outside factors.
+unoconv starts its own office instance (if it cannot find an existing
+listener) that it then uses. There are some challenges to do this
+correctly, but in general this works fine.
 
-Since there is no feedback mechanism to see if the newly started ooffice is
-in fact ready to communicate, we don't know exactly when we can use the UNO
-api. By default unoconv waits for 3 seconds, but you can specify another
-delay with -T/--timeout. If ooffice is not ready, you may get a random error.
+Typically you would convert an ODT document to PDF by running:
+
+    unoconv -f pdf some-file.odt
 
 
 == Start your own unoconv listener
@@ -31,10 +31,29 @@ finished using it and then stop it.
     unoconv -f html *.odt
     kill -15 %-
 
-Also possible is to use a listener or LibreOffice instance that accepts
+It is also possible to use a listener or LibreOffice instance that accepts
 connections on another system and use it from unoconv remotely. This
 way the conversion tasks are performed on a dedicated system instead
 of on the client system.
+
+Since there is no feedback mechanism to see if the newly started ooffice is
+in fact ready to communicate, we don't know exactly when we can use the UNO
+api. By default unoconv waits for 3 seconds, but you can specify another
+delay with -T/--timeout. If ooffice is not ready, you may get a random error.
+
+
+== Python and pyuno incompatibilities
+Also beware that the pyuno python module needs to be compiled with the exact
+same version of python that you are using to load it. A lot of people that
+run into problems loading pyuno are actually using a precompiled LibreOffice
+that they downloaded somewhere and is incompatible with their python version.
+(Often the LibreOffice comes with its own python build that works flawlessly
+with their own pyuno)
+
+The most recent unoconv works around this issue by automatically detecting
+incompatibilities, and restarting itself using a compatible python (the one
+that ships with LibreOffice).
+
 
 == Using unoconv with not X display
 Since OpenOffice 2.3 you do not need an X display for starting ooffice.
@@ -52,16 +71,20 @@ to create a headless X display for ooffice.
  - http://www.artofsolving.com/node/10
 
 
-== Python and pyuno incompatibilities
-Also beware that the pyuno python module needs to be compiled with the exact
-same version of python that you are using to load it. A lot of people that
-run into problems loading pyuno are actually using a precompiled LibreOffice
-that they downloaded somewhere and is incompatible with their python version.
-(Sometimes the LibreOffice comes with its own python wrapper.)
+== Conversion problems
+If you encounter problems converting files, it often helps to try again. If
+you are using a listener, restarting the listener may help as well.
 
-The most recent unoconv no longer has this issue as it automatically detects
-incompatibilities between python and pyuno, and restarts itself using a
-compatible python (one that ships with LibreOffice).
+The reason for conversion failures are unclear, and they are not
+deterministic. unoconv is not the only project to have noticed problems
+with import and export filters using PyUNO. We assume these are related
+to internal state or timing issues that under certain conditions fail
+to correctly work.
+
+We are looking into this with the LibreOffice developers to:
+
+ - Collaborate closer to find, report and fix unexpected failures
+ - Allow end-users to increase debugging and reporting to the project
 
 
 == Related tools
