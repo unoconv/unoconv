@@ -59,11 +59,11 @@ def find_offices():
 
     if os.name in ( 'nt', 'os2' ):
         if 'ProgramFiles' in os.environ.keys():
-            extrapaths += glob.glob(os.environ['ProgramFiles']+'\\LibreOffice.org*') + \
+            extrapaths += glob.glob(os.environ['ProgramFiles']+'\\LibreOffice*') + \
                           glob.glob(os.environ['ProgramFiles']+'\\OpenOffice.org*')
 
         if 'ProgramFiles(x86)' in os.environ.keys():
-            extrapaths += glob.glob(os.environ['ProgramFiles(x86)']+'\\LibreOffice.org*') + \
+            extrapaths += glob.glob(os.environ['ProgramFiles(x86)']+'\\LibreOffice*') + \
                           glob.glob(os.environ['ProgramFiles(x86)']+'\\OpenOffice.org*')
 
     elif os.name in ( 'mac', ) or sys.platform in ( 'darwin', ):
