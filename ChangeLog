@@ -3,6 +3,8 @@
 - Replaced OpenOffice by LibreOffice in source code and documentation
 - Automatically look for installed LibreOffice and OpenOffice binaries/libraries
 - Switch to LibreOffice python binary to load matching pyuno library
+- Show Office location when using -v -v
+- Fix a problem when not using UNO_PATH and LibreOffice (Daniel Díaz)
 
 * 0.4 - released 20/10/2010
 - Now properly check if there is a GUI attached and terminate() or -unaccept instance

@@ -42,7 +42,7 @@ class Office:
     def __repr__(self):
         return self.basepath
 
-### The first thing we ought to do is find a suitable LibreOffice installation
+### The first thing we ought to do is find a suitable Office installation
 ### with a compatible pyuno library that we can import.
 ###
 ### See: http://user.services.openoffice.org/en/forum/viewtopic.php?f=45&t=36370&p=166783
@@ -876,7 +876,7 @@ def main():
 #    except UnboundLocalError:
 #        die(252, "Failed to connect to remote listener.")
     except OSError:
-        error("Warning: failed to launch LibreOffice. Aborting.")
+        error("Warning: failed to launch Office suite. Aborting.")
 
 ### Main entrance
 if __name__ == '__main__':
@@ -890,9 +890,12 @@ if __name__ == '__main__':
         office = of
         break
 
-    if 'UNO_PATH' in os.environ:
-        office_environ(office)
+#    if 'UNO_PATH' in os.environ:
+#        office_environ(office)
 #        debug_office()
+    office_environ(office)
+    info(2, "Office base location: %s" % office.basepath)
+    info(2, "Office binary location: %s" % office.unopath)
     try:
         import uno, unohelper
     except Exception:
