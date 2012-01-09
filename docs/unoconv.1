@@ -318,6 +318,47 @@ UNO_PATH
 specifies what LibreOffice pyuno installation unoconv needs to use eg\&.
 \fI/opt/libreoffice3\&.4/basis\-link/program\fR
 .RE
+.SH "EXIT STATUS"
+.sp
+Normally, the exit status is 0 if the conversion ran successful\&. If an error has occured, the return code is most likely an error returned by LibreOffice (or its interface, called UNO) however, the error never translates to something meaningful\&. In case you like to decipher the LibreOffice errCode, look at:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+http://cgit\&.freedesktop\&.org/libreoffice/core/tree/tools/inc/tools/errcode\&.hxx
+http://cgit\&.freedesktop\&.org/libreoffice/core/tree/svtools/inc/svtools/sfxecode\&.hxx
+http://cgit\&.freedesktop\&.org/libreoffice/core/tree/svtools/inc/svtools/soerr\&.hxx
+.fi
+.if n \{\
+.RE
+.\}
+.sp
+Using the above lists, the error code 2074 means:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+Class: 1 (ERRCODE_CLASS_ABORT)
+Code: 26 (ERRCODE_IO_INVALIDPARAMETER or SVSTREAM_INVALID_PARAMETER)
+.fi
+.if n \{\
+.RE
+.\}
+.sp
+And the error code 3088 means:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+Class: 3 (ERRCODE_CLASS_NOTEXISTS)
+Code: 16 (ERRCODE_IO_CANTWRITE)
+.fi
+.if n \{\
+.RE
+.\}
 .SH "SEE ALSO"
 .sp
 .if n \{\

@@ -202,6 +202,26 @@ UNO_PATH::
     eg. _/opt/libreoffice3.4/basis-link/program_
 
 
+== EXIT STATUS
+Normally, the exit status is 0 if the conversion ran successful. If an error
+has occured, the return code is most likely an error returned by LibreOffice
+(or its interface, called UNO) however, the error never translates to something
+meaningful. In case you like to decipher the LibreOffice errCode, look at:
+
+    http://cgit.freedesktop.org/libreoffice/core/tree/tools/inc/tools/errcode.hxx
+    http://cgit.freedesktop.org/libreoffice/core/tree/svtools/inc/svtools/sfxecode.hxx
+    http://cgit.freedesktop.org/libreoffice/core/tree/svtools/inc/svtools/soerr.hxx
+
+Using the above lists, the error code 2074 means:
+
+    Class: 1 (ERRCODE_CLASS_ABORT)
+    Code: 26 (ERRCODE_IO_INVALIDPARAMETER or SVSTREAM_INVALID_PARAMETER)
+
+And the error code 3088 means:
+
+    Class: 3 (ERRCODE_CLASS_NOTEXISTS)
+    Code: 16 (ERRCODE_IO_CANTWRITE)
+
 
 == SEE ALSO
     convert(1), file(1), odt2txt
