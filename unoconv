@@ -781,10 +781,10 @@ class Convertor:
 
         except UnoException, e:
             if hasattr(e, 'ErrCode'):
-                error("unoconv: UnoException during %s phase in %s (Error %d)" % (phase, repr(e.__class__), e.ErrCode))
+                error("unoconv: UnoException during %s phase in %s (ErrCode %d)" % (phase, repr(e.__class__), e.ErrCode))
                 exitcode = e.ErrCode
             else:
-                error("unoconv: UnoException during %s phase in %s (Error unknown)" % (phase, repr(e.__class__)))
+                error("unoconv: UnoException during %s phase in %s" % (phase, repr(e.__class__)))
                 exitcode = 2
 
         except IOException, e:
