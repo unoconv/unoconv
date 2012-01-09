@@ -1,6 +1,6 @@
 ### Please modify and send me improvements
 
-all: clean bib doc6 doc95 doc docbook html mediawiki ooxml pdf rtf latex sdw3 sdw4 sdw sxw text txt uot xhtml
+all: clean doc6 doc95 doc docbook html mediawiki ooxml pdf rtf sdw3 sdw4 sdw sxw text txt uot xhtml
 	@echo "== Tests finished."
 
 #xml: curriculum-vitae-dag-wieers.txt
