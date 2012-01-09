@@ -683,6 +683,9 @@ class Convertor:
             exitcode = 1
 
         try:
+            ### Import phase
+            phase = "import"
+
             ### Load inputfile
             inputprops = (
                 PropertyValue( "Hidden", 0, True, 0 ),
@@ -711,6 +714,8 @@ class Convertor:
                     print >>sys.stderr, 'unoconv: template file `%s\' does not exist.' % op.template
                     exitcode = 1
 
+            ### Update phase
+            phase = "update"
             info(1, "Selected output format: %s" % outputfmt)
             info(1, "Selected office filter: %s" % outputfmt.filter)
             info(1, "Used doctype: %s" % outputfmt.doctype)
@@ -733,6 +738,9 @@ class Convertor:
             else:
                 for i in range(0, indexes.getCount()):
                     indexes.getByIndex(i).update()
+
+            ### Export phase
+            phase = "export"
 
             ### Write outputfile
             outputprops = [
@@ -768,21 +776,25 @@ class Convertor:
             document.close(True)
 
         except SystemError, e:
-            error("unoconv: SystemError during conversion: %s" % e)
-            error("ERROR: The provided document cannot be converted to the desired format.")
+            error("unoconv: SystemError during %s phase: %s" % (phase, e))
             exitcode = 1
 
         except UnoException, e:
-            error("unoconv: UnoException during conversion in %s (Error %d)" % (repr(e.__class__), e.ErrCode))
-            exitcode = e.ErrCode
+            if hasattr(e, 'ErrCode'):
+                error("unoconv: UnoException during %s phase in %s (Error %d)" % (phase, repr(e.__class__), e.ErrCode))
+                exitcode = e.ErrCode
+            else:
+                error("unoconv: UnoException during %s phase in %s (Error unknown)" % (phase, repr(e.__class__)))
+                exitcode = 2
 
         except IOException, e:
-            error("unoconv: IOException during conversion: %s" % e.Message)
-            error("ERROR: The provided document cannot be exported to %s." % outputfmt)
+#            for attr in dir(e): print '%s: %s', (attr, getattr(e, attr))
+            error("unoconv: IOException during %s phase: %s" % (phase, e.Message))
             exitcode = 3
 
         except CannotConvertException, e:
-            error("unoconv: CannotConvertException during conversion: %s" % e.Message)
+#            for attr in dir(e): print '%s: %s', (attr, getattr(e, attr))
+            error("unoconv: CannotConvertException during %s phase: %s" % (phase, e.Message))
             exitcode = 4
 
 class Listener:
