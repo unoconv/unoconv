@@ -196,8 +196,7 @@ def python_switch(office):
 
     os.environ['UNO_PATH'] = office.unopath
 
-    if op.verbose > 0:
-        print >>sys.stderr, "Switching from python %s to %s" % (sys.executable, office.python)
+#    print >>sys.stderr, "Switching from python %s to %s" % (sys.executable, office.python)
     os.execvpe(office.python, [office.python, ] + sys.argv[0:], os.environ)
 
 class Fmt:
@@ -250,9 +249,6 @@ class FmtList:
         print >>sys.stderr
 
 fmts = FmtList()
-
-#oFF = createUnoService( "com.sun.star.document.FilterFactory" )
-#oFilterNames = oFF.getElementNames()
 
 ### TextDocument
 fmts.add('document', 'bib', 'bib', 'BibTeX', 'BibTeX_Writer') ### 22
@@ -630,6 +626,12 @@ class Convertor:
         self.config = unosvcmgr.createInstanceWithContext( "com.sun.star.configuration.ConfigurationProvider", unocontext)
         self.cwd = unohelper.systemPathToFileUrl( os.getcwd() )
 
+        ### List all filters
+#        self.filters = unosvcmgr.createInstanceWithContext( "com.sun.star.document.FilterFactory", unocontext)
+#        for filter in self.filters.getElementNames():
+#            print filter
+#            #print dir(filter), dir(filter.format)
+
     def getformat(self, inputfn):
         doctype = None
 
@@ -783,9 +785,11 @@ class Convertor:
             if hasattr(e, 'ErrCode'):
                 error("unoconv: UnoException during %s phase in %s (ErrCode %d)" % (phase, repr(e.__class__), e.ErrCode))
                 exitcode = e.ErrCode
+                pass
             else:
                 error("unoconv: UnoException during %s phase in %s" % (phase, repr(e.__class__)))
                 exitcode = 2
+                pass
 
         except IOException, e:
 #            for attr in dir(e): print '%s: %s', (attr, getattr(e, attr))
@@ -894,8 +898,6 @@ def main():
 if __name__ == '__main__':
     exitcode = 0
 
-    op = Options(sys.argv[1:])
-
     for of in find_offices():
         if sys.executable != of.python:
            python_switch(of)
@@ -904,10 +906,8 @@ if __name__ == '__main__':
 
 #    if 'UNO_PATH' in os.environ:
 #        office_environ(office)
-#        debug_office()
     office_environ(office)
-    info(2, "Office base location: %s" % office.basepath)
-    info(2, "Office binary location: %s" % office.unopath)
+#    debug_office()
     try:
         import uno, unohelper
     except Exception:
@@ -937,6 +937,11 @@ if __name__ == '__main__':
 
         def flush( self ):
             pass
+
+    op = Options(sys.argv[1:])
+
+    info(2, "Office base location: %s" % office.basepath)
+    info(2, "Office binary location: %s" % office.unopath)
 
     try:
         main()
