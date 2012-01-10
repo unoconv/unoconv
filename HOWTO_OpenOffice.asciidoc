@@ -2,7 +2,7 @@
 //              Using Unoconv with OpenOffice af Fedora 12                   //
 ///////////////////////////////////////////////////////////////////////////////
 
-\/\/first check whether unoconv is installed at all =)
+//first check whether unoconv is installed at all =)
 [root@localhost ~]# yum info unoconv
 //Must have INSTALLED note at Repository field
 
