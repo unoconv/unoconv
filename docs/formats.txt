@@ -1,4 +1,10 @@
+### The most current list of filters on LibreOffice can be found using:
 
+    xmllint --format /opt/libreoffice3.5/share/registry/*.xcd
+
+    xmlstarlet sel -T -t -m "/oor:data/oor:component-data/node[@oor:name='Filters']/node" \
+        -v "concat(prop[@oor:name='DocumentService'],'|',@oor:name,'|',prop[@oor:name='Flags'],'|',prop[@oor:name='UIName'],'|',prop[@oor:name='Extensions'],'|')"
+        -n /opt/libreoffice3.5/share/registry/*.xcd
 
 ### This is a current list of formats known by Openoffice:
 ### from http://wiki.services.openoffice.org/wiki/Framework/Article/Filter/FilterList_OOo_3_0
