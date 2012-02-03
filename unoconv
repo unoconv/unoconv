@@ -101,15 +101,13 @@ def find_offices():
             if os.path.isfile(os.path.join(basepath, basis, 'program', officelibrary)):
                 basispath = basis
                 break
-        else:
-            continue
 
-        for ure in ('ure-link', 'ure', ''):
+        ### Windows does not provide or need a URE/lib directory ?
+        urepath = ''
+        for ure in ('ure-link', 'ure', 'URE', ''):
             if os.path.isfile(os.path.join(basepath, basis, ure, 'lib', 'unorc')):
                 urepath = ure
                 break
-        else:
-            continue
 
         if not os.path.isfile(os.path.join(basepath, 'program', officebinary)):
             continue
