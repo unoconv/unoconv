@@ -304,7 +304,7 @@ fmts.add('document', 'sdw4', 'sdw', 'StarWriter 4.0', 'StarWriter 4.0') ### 2
 fmts.add('document', 'sdw3', 'sdw', 'StarWriter 3.0', 'StarWriter 3.0') ### 20
 fmts.add('document', 'stw', 'stw', 'Open Office.org 1.0 Text Document Template', 'writer_StarOffice_XML_Writer_Template') ### 9
 fmts.add('document', 'sxw', 'sxw', 'Open Office.org 1.0 Text Document', 'StarOffice XML (Writer)') ### 1
-fmts.add('document', 'text', 'txt', 'Text Encoded', 'Text (encoded)') ### 26
+fmts.add('document', 'text', 'txt', 'Text Encoded', 'Text (Encoded)') ### 26
 fmts.add('document', 'mediawiki', 'txt', 'MediaWiki', 'MediaWiki')
 fmts.add('document', 'txt', 'txt', 'Text', 'Text') ### 34
 fmts.add('document', 'uot', 'uot', 'Unified Office Format text','UOF text') ### 27
@@ -571,12 +571,16 @@ class Options:
                 self.format = 'pdf'
 
     def version(self):
+        ### Get office product information
+        product = uno.getComponentContext().ServiceManager.createInstance("com.sun.star.configuration.ConfigurationProvider").createInstanceWithArguments("com.sun.star.configuration.ConfigurationAccess", UnoProps(nodepath="/org.openoffice.Setup/Product"))
+
         print 'unoconv %s' % VERSION
         print 'Written by Dag Wieers <dag@wieers.com>'
         print 'Homepage at http://dag.wieers.com/home-made/unoconv/'
         print
         print 'platform %s/%s' % (os.name, sys.platform)
         print 'python %s' % sys.version
+        print product.ooName, product.ooSetupVersion
         print
         print 'build revision $Rev$'
 
@@ -632,8 +636,11 @@ class Convertor:
             ### Start our own OpenOffice instance
             info(3, "Launching our own listener using %s." % office.binary)
             try:
-#                print office.binary, "-headless", "-invisible", "-nocrashreport", "-nodefault", "-nofirststartwizard", "-nologo", "-norestore", "-accept=%s" % op.connection
-                ooproc = subprocess.Popen([office.binary, "-headless", "-invisible", "-nocrashreport", "-nodefault", "-nofirststartwizard", "-nologo", "-norestore", "-accept=%s" % op.connection], env=os.environ)
+                product = uno.getComponentContext().ServiceManager.createInstance("com.sun.star.configuration.ConfigurationProvider").createInstanceWithArguments("com.sun.star.configuration.ConfigurationAccess", UnoProps(nodepath="/org.openoffice.Setup/Product"))
+                if product.ooName != "LibreOffice" or product.ooSetupVersion <= 3.3:
+                    ooproc = subprocess.Popen([office.binary, "-headless", "-invisible", "-nocrashreport", "-nodefault", "-nofirststartwizard", "-nologo", "-norestore", "-accept=%s" % op.connection], env=os.environ)
+                else:
+                    ooproc = subprocess.Popen([office.binary, "--headless", "--invisible", "--nocrashreport", "--nodefault", "--nofirststartwizard", "--nologo", "--norestore", "--accept=%s" % op.connection], env=os.environ)
                 info(2, 'LibreOffice listener successfully started. (pid=%s)' % ooproc.pid)
 
                 ### Try connection to it for op.timeout seconds (flakky LibreOffice)
@@ -730,40 +737,28 @@ class Convertor:
             phase = "import"
 
             ### Load inputfile
-            inputprops = (
-                PropertyValue( "Hidden", 0, True, 0 ),
-                PropertyValue( "ReadOnly", 0, True, 0 ),
-                PropertyValue( "FilterOptions", 0, op.importfilter, 0 ),
-            )
-
+            inputprops = UnoProps(Hidden=True, ReadOnly=True, UpdateDocMode=QUIET_UPDATE, FilterOptions=op.importfilter)
             inputurl = unohelper.absolutize(self.cwd, unohelper.systemPathToFileUrl(inputfn))
 #            print dir(self.desktop)
             document = self.desktop.loadComponentFromURL( inputurl , "_blank", 0, inputprops )
 
             if not document:
-                raise UnoException("File could not be loaded by LibreOffice", None)
+                raise UnoException("The document '%s' could not be opened." % inputurl, None)
 
             ### Import style template
+            phase = "import-style"
             if op.template:
                 if os.path.exists(op.template):
-                    if op.verbose > 0:
-                        print >>sys.stderr, 'Template file:', op.template
-                    templateprops = (
-                        PropertyValue( "OverwriteStyles", 0, True, 0),
-                    )
+                    info(1, "Template file: %s" % op.template)
+                    templateprops = UnoProps(OverwriteStyles=True)
                     templateurl = unohelper.absolutize(self.cwd, unohelper.systemPathToFileUrl(op.template))
                     document.StyleFamilies.loadStylesFromURL(templateurl, templateprops)
                 else:
                     print >>sys.stderr, 'unoconv: template file `%s\' does not exist.' % op.template
                     exitcode = 1
 
-            ### Update phase
-            phase = "update"
-            info(1, "Selected output format: %s" % outputfmt)
-            info(1, "Selected office filter: %s" % outputfmt.filter)
-            info(1, "Used doctype: %s" % outputfmt.doctype)
-
             ### Update document links
+            phase = "update-links"
             try:
                 document.updateLinks()
             except AttributeError:
@@ -771,6 +766,7 @@ class Convertor:
                 pass
 
             ### Update document indexes
+            phase = "update-indexes"
             try:
                 document.refresh()
                 indexes = document.getDocumentIndexes()
@@ -782,21 +778,23 @@ class Convertor:
                 for i in range(0, indexes.getCount()):
                     indexes.getByIndex(i).update()
 
+            info(1, "Selected output format: %s" % outputfmt)
+            info(1, "Selected office filter: %s" % outputfmt.filter)
+            info(1, "Used doctype: %s" % outputfmt.doctype)
+
             ### Export phase
             phase = "export"
-
-            ### Write outputfile
-            outputprops = [
+            outputprops = UnoProps(FilterName=outputfmt.filter, OutputStream=OutputStream(), Overwrite=True, FilterData=tuple( op.exportfilter) )
 #                PropertyValue( "FilterData" , 0, ( PropertyValue( "SelectPdfVersion" , 0, 1 , uno.getConstantByName( "com.sun.star.beans.PropertyState.DIRECT_VALUE" ) ) ), uno.getConstantByName( "com.sun.star.beans.PropertyState.DIRECT_VALUE" ) ),
-                PropertyValue( "FilterData", 0, uno.Any("[]com.sun.star.beans.PropertyValue", tuple( op.exportfilter ), ), 0 ),
-                PropertyValue( "FilterName", 0, outputfmt.filter, 0),
-#                PropertyValue( "SelectionOnly", 0, True, 0 ),
-                PropertyValue( "OutputStream", 0, OutputStream(), 0 ),
-                PropertyValue( "Overwrite", 0, True, 0 ),
-            ]
 
             if outputfmt.filter == 'Text (encoded)':
-                outputprops.append(PropertyValue( "FilterFlags", 0, "UTF8, LF", 0))
+                outputprops += UnoProps(FilterOptions="UTF8, LF")
+
+            elif outputfmt.filter == 'Text':
+                outputprops += UnoProps(FilterOptions="UTF8")
+
+            elif outputfmt.filter == 'Text - txt - csv (StarCalc)':
+                outputprops += UnoProps(FilterOptions="44,34,0")
 
             if not op.stdout:
                 (outputfn, ext) = os.path.splitext(inputfn)
@@ -810,11 +808,16 @@ class Convertor:
                     outputfn = op.output
 
                 outputurl = unohelper.absolutize( self.cwd, unohelper.systemPathToFileUrl(outputfn) )
-                document.storeToURL(outputurl, tuple(outputprops) )
                 info(1, "Output file: %s" % outputfn)
             else:
-                document.storeToURL("private:stream", tuple(outputprops) )
+                outputurl = "private:stream"
 
+            try:
+                document.storeToURL(outputurl, tuple(outputprops) )
+            except IOException, e:
+                raise UnoException("Unable to store document to %s with properties %s. Exception: %s" % (outputurl, outputprops, e), None)
+
+            phase = "dispose"
             document.dispose()
             document.close(True)
 
@@ -822,15 +825,17 @@ class Convertor:
             error("unoconv: SystemError during %s phase: %s" % (phase, e))
             exitcode = 1
 
-        except UnoException, e:
-            if hasattr(e, 'ErrCode'):
-                error("unoconv: UnoException during %s phase in %s (ErrCode %d)" % (phase, repr(e.__class__), e.ErrCode))
-                exitcode = e.ErrCode
-                pass
-            else:
-                error("unoconv: UnoException during %s phase in %s" % (phase, repr(e.__class__)))
-                exitcode = 2
-                pass
+        except RuntimeException, e:
+            error("unoconv: RuntimeException during %s phase: Office probably died. %s" % (phase, e))
+            exitcode = 6
+
+        except DisposedException, e:
+            error("unoconv: DisposedException during %s phase: Office probably died. %s" % (phase, e))
+            exitcode = 7
+
+        except IllegalArgumentException, e:
+            error("UNO IllegalArgument during %s phase: Source file cannot be read. %s" % (phase, e))
+            exitcode = 8
 
         except IOException, e:
 #            for attr in dir(e): print '%s: %s', (attr, getattr(e, attr))
@@ -841,6 +846,19 @@ class Convertor:
 #            for attr in dir(e): print '%s: %s', (attr, getattr(e, attr))
             error("unoconv: CannotConvertException during %s phase: %s" % (phase, e.Message))
             exitcode = 4
+
+        except UnoException, e:
+            if hasattr(e, 'ErrCode'):
+                error("unoconv: UnoException during %s phase in %s (ErrCode %d)" % (phase, repr(e.__class__), e.ErrCode))
+                exitcode = e.ErrCode
+                pass
+            if hasattr(e, 'Message'):
+                error("unoconv: UnoException during %s phase: %s" % (phase, e.Message))
+                exitcode = 5
+            else:
+                error("unoconv: UnoException during %s phase in %s" % (phase, repr(e.__class__)))
+                exitcode = 2
+                pass
 
 class Listener:
     def __init__(self):
@@ -950,21 +968,25 @@ if __name__ == '__main__':
             break
         except:
             print >>sys.stderr, "unoconv: Cannot find a suitable pyuno library and python binary combination in %s" % of
-            print >>sys.stderr, "ERROR: Please locate this library and send your feedback to: <tools@lists.rpmforge.net>."
+            print >>sys.stderr, "ERROR: Please locate this library and send your feedback to:"
+            print >>sys.stderr, "       http://github.com/dagwieers/unoconv/issues"
             print >>sys.stderr, sys.exc_info()[1]
             pass
     else:
         print >>sys.stderr, "unoconv: Cannot find a suitable office installation on your system."
-        print >>sys.stderr, "ERROR: Please locate your office installation and send your feedback to: <tools@lists.rpmforge.net>."
+        print >>sys.stderr, "ERROR: Please locate your office installation and send your feedback to:"
+        print >>sys.stderr, "       http://github.com/dagwieers/unoconv/issues"
         sys.exit(1)
 
     ### Now that we have found a working pyuno library, let's import some classes
     from com.sun.star.beans import PropertyValue
     from com.sun.star.connection import NoConnectException
-    from com.sun.star.lang import DisposedException
+    from com.sun.star.document.UpdateDocMode import QUIET_UPDATE
+    from com.sun.star.lang import DisposedException, IllegalArgumentException
     from com.sun.star.io import IOException, XOutputStream
     from com.sun.star.script import CannotConvertException
     from com.sun.star.uno import Exception as UnoException
+    from com.sun.star.uno import RuntimeException
 
     ### And now that we have those classes, build on them
     class OutputStream( unohelper.Base, XOutputStream ):
@@ -979,6 +1001,15 @@ if __name__ == '__main__':
 
         def flush( self ):
             pass
+
+    def UnoProps(**args):
+        props = []
+        for key in args:
+            prop = PropertyValue()
+            prop.Name = key
+            prop.Value = args[key]
+            props.append(prop)
+        return tuple(props)
 
     op = Options(sys.argv[1:])
 
