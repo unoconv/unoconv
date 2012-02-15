@@ -97,38 +97,49 @@ def find_offices():
             pythonbinary = 'python.bin'
 
         ### Older LibreOffice/OpenOffice and Windows use basis-link/ or basis/
-        for basis in ('basis-link', 'basis', ''):
-            if os.path.isfile(os.path.join(basepath, basis, 'program', officelibrary)):
-                basispath = basis
+        basis = 'error'
+        for sub in ('basis-link', 'basis', ''):
+            if os.path.isfile(os.path.join(basepath, sub, 'program', officelibrary)):
+                basis = sub
                 break
 
         ### Windows does not provide or need a URE/lib directory ?
-        urepath = ''
-        for ure in ('ure-link', 'ure', 'URE', ''):
-            if os.path.isfile(os.path.join(basepath, basis, ure, 'lib', 'unorc')):
-                urepath = ure
+        ure = 'error'
+        for sub in ('ure-link', 'ure', 'URE', ''):
+            if os.path.isfile(os.path.join(basepath, basis, sub, 'lib', 'unorc')):
+                ure = sub
                 break
 
-        if not os.path.isfile(os.path.join(basepath, 'program', officebinary)):
+        ### MacOSX have binaries installed in MacOS subdirectory, not program
+        program = 'error'
+        for sub in ('program', 'MacOS'):
+            if os.path.isfile(os.path.join(basepath, basis, sub, officebinary)):
+                program = os.path.join(basis, sub)
+                break
+            elif os.path.isfile(os.path.join(basepath, sub, officebinary)):
+                program = sub
+                break
+
+        if not os.path.isfile(os.path.join(basepath, program, officebinary)):
             continue
 
-#        if not glob.glob(os.path.join(basepath, basispath, 'program', 'python-core-*')):
+#        if not glob.glob(os.path.join(basepath, basis, program, 'python-core-*')):
 #            continue
 
-        if os.path.isfile(os.path.join(basepath, basispath, 'program', pythonbinary)):
+        if os.path.isfile(os.path.join(basepath, basis, program, pythonbinary)):
             ret.append(Office(basepath,
-                              os.path.join(basepath, basispath, urepath),
-                              os.path.join(basepath, basispath, 'program'),
-                              os.path.join(basepath, basispath, 'program', officelibrary),
-                              os.path.join(basepath, 'program', officebinary),
-                              os.path.join(basepath, basispath, 'program', pythonbinary),
-                              glob.glob(os.path.join(basepath, basispath, 'program', 'python-core-*'))[0]))
+                              os.path.join(basepath, basis, ure),
+                              os.path.join(basepath, basis, program),
+                              os.path.join(basepath, basis, program, officelibrary),
+                              os.path.join(basepath, program, officebinary),
+                              os.path.join(basepath, basis, program, pythonbinary),
+                              glob.glob(os.path.join(basepath, basis, program, 'python-core-*'))[0]))
         else:
             ret.append(Office(basepath,
-                              os.path.join(basepath, basispath, urepath),
-                              os.path.join(basepath, basispath, 'program'),
-                              os.path.join(basepath, basispath, 'program', officelibrary),
-                              os.path.join(basepath, 'program', officebinary),
+                              os.path.join(basepath, basis, ure),
+                              os.path.join(basepath, basis, program),
+                              os.path.join(basepath, basis, program, officelibrary),
+                              os.path.join(basepath, program, officebinary),
                               sys.executable,
                               None))
 
@@ -294,9 +305,11 @@ fmts.add('document', 'html', 'html', 'HTML Document (OpenOffice.org Writer)', 'H
 fmts.add('document', 'odt', 'odt', 'ODF Text Document', 'writer8') ### 10
 fmts.add('document', 'ott', 'ott', 'Open Document Text', 'writer8_template') ### 21
 fmts.add('document', 'ooxml', 'xml', 'Microsoft Office Open XML', 'MS Word 2003 XML') ### 11
-#fmts.add('document', 'pdb', 'pdb', 'AportisDoc (Palm)', 'AportisDoc Palm DB')
+fmts.add('document', 'docx7', 'docx', 'Microsoft Office Open XML', 'MS Word 2007 XML')
+fmts.add('document', 'docx', 'docx', 'Microsoft Office Open XML', 'Office Open XML Text')
+fmts.add('document', 'pdb', 'pdb', 'AportisDoc (Palm)', 'AportisDoc Palm DB')
 fmts.add('document', 'pdf', 'pdf', 'Portable Document Format', 'writer_pdf_Export') ### 18
-#fmts.add('document', 'psw', 'psw', 'Pocket Word', 'PocketWord File')
+fmts.add('document', 'psw', 'psw', 'Pocket Word', 'PocketWord File')
 fmts.add('document', 'rtf', 'rtf', 'Rich Text Format', 'Rich Text Format') ### 16
 fmts.add('document', 'latex', 'ltx', 'LaTeX 2e', 'LaTeX_Writer') ### 31
 fmts.add('document', 'sdw', 'sdw', 'StarWriter 5.0', 'StarWriter 5.0') ### 23
@@ -339,7 +352,7 @@ fmts.add('spreadsheet', 'ods', 'ods', 'ODF Spreadsheet', 'calc8') ### 15
 fmts.add('spreadsheet', 'ooxml', 'xml', 'Microsoft Excel 2003 XML', 'MS Excel 2003 XML') ### 23
 fmts.add('spreadsheet', 'ots', 'ots', 'ODF Spreadsheet Template', 'calc8_template') ### 14
 fmts.add('spreadsheet', 'pdf', 'pdf', 'Portable Document Format', 'calc_pdf_Export') ### 34
-#fmts.add('spreadsheet', 'pxl', 'pxl', 'Pocket Excel', 'Pocket Excel')
+fmts.add('spreadsheet', 'pxl', 'pxl', 'Pocket Excel', 'Pocket Excel')
 fmts.add('spreadsheet', 'sdc', 'sdc', 'StarCalc 5.0', 'StarCalc 5.0') ### 31
 fmts.add('spreadsheet', 'sdc4', 'sdc', 'StarCalc 4.0', 'StarCalc 4.0') ### 11
 fmts.add('spreadsheet', 'sdc3', 'sdc', 'StarCalc 3.0', 'StarCalc 3.0') ### 29

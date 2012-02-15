@@ -1,0 +1,37 @@
+= LibreOffice error codes
+Since various people have reported issues using unoconv related to LibreOffice,
+it's clear we need to list the various errors and give some explanation.
+
+If you have more information to improve this document, let me know !
+
+== How to decipher LibreOffice error codes
+Unfortunately the LibreOffice error codes is a combination of project area,
+error class and error code. The combination of these three provides some
+indication of what the cause is, although in most cases this is not conclusive.
+
+The authoritative source for ErrCodes are the following files:
+
+List of ErrCode classifications::
+    http://cgit.freedesktop.org/libreoffice/core/tree/tools/inc/tools/errcode.hxx
+
+List of SFX (?) related ErrCode classifications::
+ - http://cgit.freedesktop.org/libreoffice/core/tree/svtools/inc/svtools/sfxecode.hxx
+ - http://cgit.freedesktop.org/libreoffice/core/tree/svtools/inc/svtools/soerr.hxx
+
+
+== UnoException ErrCode
+
+1287::
+    Area: 0 (ERRCODE_AREA_TOOLS)
+    Class: 5 (ERRCODE_CLASS_ACCESS)
+    Code: 7 (ERRCODE_IO_ACCESSDENIED)
+
+2074::
+    Area: 0 (ERRCODE_AREA_TOOLS)
+    Class: 8 (ERRCODE_CLASS_PARAMETER)
+    Code: 26 (ERRCODE_IO_INVALIDPARAMETER)
+
+3088::
+    Area: 0 (ERRCODE_AREA_TOOLS)
+    Class: 12 (ERRCODE_CLASS_WRITE)
+    Code: 16 (ERRCODE_IO_CANTWRITE)
