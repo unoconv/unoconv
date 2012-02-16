@@ -471,7 +471,7 @@ class Options:
 
         ### Get options from the commandline
         try:
-            opts, args = getopt.getopt (args, 'c:Dd:e:f:hi:Llo:np:s:T:t:v',
+            opts, args = getopt.getopt (args, 'c:d:e:f:hi:Llo:np:s:t:T:v',
                 ['connection=', 'doctype=', 'export', 'format=', 'help',
                  'import', 'listener', 'no-launch', 'output=', 'outputpath',
                  'pipe=', 'port=', 'server=', 'timeout=', 'show', 'stdout',
@@ -545,7 +545,7 @@ class Options:
 
         self.filenames = args
 
-        if not not self.listener and not self.showlist and self.doctype != 'list' and not self.filenames:
+        if not self.listener and not self.showlist and self.doctype != 'list' and not self.filenames:
             print >>sys.stderr, 'unoconv: you have to provide a filename as argument'
             print >>sys.stderr, 'Try `unoconv -h\' for more information.'
             sys.exit(255)
@@ -887,7 +887,10 @@ class Listener:
         except Exception, e:
             error("Launch of %s failed.\n%s" % (office.binary, e))
         else:
-            info(1, "Existing listener found, nothing to do.")
+            if not op.filenames:
+                proc.wait()
+                info(1, "Existing listener found, nothing to do.")
+        if not op.filenames:
             sys.exit(0)
 
 def error(str):
@@ -957,8 +960,8 @@ def main():
     try:
         if op.listener:
             listener = Listener()
-        else:
-            convertor = Convertor()
+
+        convertor = Convertor()
 
         for inputfn in op.filenames:
             convertor.convert(inputfn)
