@@ -877,6 +877,7 @@ class Listener:
     def __init__(self):
         info(1, "Start listener on %s:%s" % (op.server, op.port))
         try:
+            product = uno.getComponentContext().ServiceManager.createInstance("com.sun.star.configuration.ConfigurationProvider").createInstanceWithArguments("com.sun.star.configuration.ConfigurationAccess", UnoProps(nodepath="/org.openoffice.Setup/Product"))
             if product.ooName != "LibreOffice" or product.ooSetupVersion <= 3.3:
                 subprocess.call([office.binary, "-headless", "-invisible", "-nocrashreport", "-nodefault", "-nologo", "-nofirststartwizard", "-norestore", "-accept=%s" % op.connection], env=os.environ)
             else:
