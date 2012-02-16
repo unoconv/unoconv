@@ -1,4 +1,4 @@
-* 0.5 - released 03/10/2011
+* 0.5 - not released yet
 - Change to how -o/--output/--outputpath works (can now output to filenames too)
 - Replaced OpenOffice by LibreOffice in source code and documentation
 - Automatically look for installed LibreOffice and OpenOffice binaries/libraries
