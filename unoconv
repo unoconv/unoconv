@@ -473,8 +473,8 @@ class Options:
         try:
             opts, args = getopt.getopt (args, 'c:d:e:f:hi:Llo:np:s:t:T:v',
                 ['connection=', 'doctype=', 'export', 'format=', 'help',
-                 'import', 'listener', 'no-launch', 'output=', 'outputpath', 'pipe=',
-                 'port=', 'server=', 'timeout=', 'show', 'stdout',
+                 'import', 'listener', 'no-launch', 'output=', 'outputpath',
+                 'pipe=', 'port=', 'server=', 'timeout=', 'show', 'stdout',
                  'template', 'verbose', 'version'] )
         except getopt.error, exc:
             print 'unoconv: %s, try unoconv -h for a list of all the options' % str(exc)
@@ -612,8 +612,8 @@ unoconv options:
   -f, --format=format      specify the output format
   -i, --import=string      set import filter option string
                              eg. -i utf8
-  -l, --listener           start a listener to use by unoconv clients
-  -n, --no-launch          no launch our own listener, if listener not found
+  -l, --listener           start a permanent listener to use by unoconv clients
+  -n, --no-launch          fail if no listener is found (default: launch one)
   -o, --output=name        output basename, filename or directory
       --pipe=name          alternative method of connection using a pipe
   -p, --port=port          specify the port (default: 2002)

@@ -62,6 +62,12 @@ connections or even for remote connections.
 -l, --listener::
     Start unoconv as listener for unoconv clients to connect to.
 
+-n, --no-launch::
+    By default if no listener is running, unoconv will launch its own
+    (temporary) listener to make sure the conversion works. This option
+    will abort the conversion if no listener is found, rather than starting
+    our own listener.
+
 -o, --output::
     If the argument is a directory, put the converted documents in this
     directory. If multiple input files are provided, use it as a 

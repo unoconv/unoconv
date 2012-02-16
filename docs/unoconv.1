@@ -128,6 +128,11 @@ See the *IMPORT FILTERS* section\&.
 Start unoconv as listener for unoconv clients to connect to\&.
 .RE
 .PP
+\-n, \-\-no\-launch
+.RS 4
+By default if no listener is running, unoconv will launch its own (temporary) listener to make sure the conversion works\&. This option will abort the conversion if no listener is found, rather than starting our own listener\&.
+.RE
+.PP
 \-o, \-\-output
 .RS 4
 If the argument is a directory, put the converted documents in this directory\&. If multiple input files are provided, use it as a basename (and add output extension)\&. Otherwise use it as the output filename\&.
