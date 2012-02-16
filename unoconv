@@ -452,7 +452,6 @@ fmts.add('presentation', 'xpm', 'xpm', 'X PixMap', 'impress_xpm_Export') ### 10
 class Options:
     def __init__(self, args):
         self.connection = None
-        self.daemon = False
         self.doctype = None
         self.exportfilter = []
         self.filenames = []
@@ -473,7 +472,7 @@ class Options:
         ### Get options from the commandline
         try:
             opts, args = getopt.getopt (args, 'c:d:e:f:hi:Llo:np:s:t:T:v',
-                ['connection=', 'daemon', 'doctype=', 'export', 'format=', 'help',
+                ['connection=', 'doctype=', 'export', 'format=', 'help',
                  'import', 'listener', 'no-launch', 'output=', 'outputpath',
                  'pipe=', 'port=', 'server=', 'timeout=', 'show', 'stdout',
                  'template', 'verbose', 'version'] )
@@ -489,8 +488,6 @@ class Options:
                 sys.exit(1)
             elif opt in ['-c', '--connection']:
                 self.connection = arg
-            elif opt in ['-d', '--daemon']:
-                self.daemon = True
             elif opt in ['-d', '--doctype']:
                 self.doctype = arg
             elif opt in ['-e', '--export']:
@@ -548,7 +545,7 @@ class Options:
 
         self.filenames = args
 
-        if not self.daemon and not self.listener and not self.showlist and self.doctype != 'list' and not self.filenames:
+        if not self.listener and not self.showlist and self.doctype != 'list' and not self.filenames:
             print >>sys.stderr, 'unoconv: you have to provide a filename as argument'
             print >>sys.stderr, 'Try `unoconv -h\' for more information.'
             sys.exit(255)
@@ -608,7 +605,6 @@ class Options:
 
 unoconv options:
   -c, --connection=string  use a custom connection string
-  -d, --daemon             permanent daemon to use by unoconv clients and exit
   -d, --doctype=type       specify document type
                              (document, graphics, presentation, spreadsheet)
   -e, --export=name=value  set export filter options
@@ -887,9 +883,12 @@ class Listener:
             else:
                 proc = subprocess.Popen([office.binary, "--headless", "--invisible", "--nocrashreport", "--nodefault", "--nologo", "--nofirststartwizard", "--norestore", "--accept=%s" % op.connection], env=os.environ)
         except Exception, e:
-            error("Launch of %s failed.\n%s" % (office.binary, e))
+            if not op.filenames:
+                die(250, "Launch of %s failed.\n%s" % (office.binary, e))
+            else:
+               error("Launch of %s failed.\n%s" % (office.binary, e))
         else:
-            if op.listener:
+            if not op.filenames:
                 proc.wait()
                 die(253, "Existing listener found, aborting.")
 
@@ -960,10 +959,8 @@ def main():
     try:
         if op.listener:
             listener = Listener()
-        else:
-            if op.daemon:
-                listener = Listener()
-            convertor = Convertor()
+
+        convertor = Convertor()
 
         for inputfn in op.filenames:
             convertor.convert(inputfn)
