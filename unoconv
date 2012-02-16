@@ -174,7 +174,7 @@ def office_environ(office):
                        os.path.join(office.pythonhome, 'lib', 'lib-dynload') + \
                        os.path.join(office.pythonhome, 'lib', 'lib-tk') + \
                        os.path.join(office.pythonhome, 'lib', 'site-packages') +\
-                       office.unopath):
+                       office.unopath:
             sys.path.insert(0, libpath)
 
 def debug_office():
@@ -452,6 +452,7 @@ fmts.add('presentation', 'xpm', 'xpm', 'X PixMap', 'impress_xpm_Export') ### 10
 class Options:
     def __init__(self, args):
         self.connection = None
+        self.daemon = False
         self.doctype = None
         self.exportfilter = []
         self.filenames = []
@@ -472,7 +473,7 @@ class Options:
         ### Get options from the commandline
         try:
             opts, args = getopt.getopt (args, 'c:d:e:f:hi:Llo:np:s:t:T:v',
-                ['connection=', 'doctype=', 'export', 'format=', 'help',
+                ['connection=', 'daemon', 'doctype=', 'export', 'format=', 'help',
                  'import', 'listener', 'no-launch', 'output=', 'outputpath',
                  'pipe=', 'port=', 'server=', 'timeout=', 'show', 'stdout',
                  'template', 'verbose', 'version'] )
@@ -488,6 +489,8 @@ class Options:
                 sys.exit(1)
             elif opt in ['-c', '--connection']:
                 self.connection = arg
+            elif opt in ['-d', '--daemon']:
+                self.daemon = True
             elif opt in ['-d', '--doctype']:
                 self.doctype = arg
             elif opt in ['-e', '--export']:
@@ -545,7 +548,7 @@ class Options:
 
         self.filenames = args
 
-        if not self.listener and not self.showlist and self.doctype != 'list' and not self.filenames:
+        if not self.daemon and not self.listener and not self.showlist and self.doctype != 'list' and not self.filenames:
             print >>sys.stderr, 'unoconv: you have to provide a filename as argument'
             print >>sys.stderr, 'Try `unoconv -h\' for more information.'
             sys.exit(255)
@@ -605,6 +608,7 @@ class Options:
 
 unoconv options:
   -c, --connection=string  use a custom connection string
+  -d, --daemon             permanent daemon to use by unoconv clients and exit
   -d, --doctype=type       specify document type
                              (document, graphics, presentation, spreadsheet)
   -e, --export=name=value  set export filter options
@@ -879,13 +883,15 @@ class Listener:
         try:
             product = uno.getComponentContext().ServiceManager.createInstance("com.sun.star.configuration.ConfigurationProvider").createInstanceWithArguments("com.sun.star.configuration.ConfigurationAccess", UnoProps(nodepath="/org.openoffice.Setup/Product"))
             if product.ooName != "LibreOffice" or product.ooSetupVersion <= 3.3:
-                subprocess.call([office.binary, "-headless", "-invisible", "-nocrashreport", "-nodefault", "-nologo", "-nofirststartwizard", "-norestore", "-accept=%s" % op.connection], env=os.environ)
+                proc = subprocess.Popen([office.binary, "-headless", "-invisible", "-nocrashreport", "-nodefault", "-nologo", "-nofirststartwizard", "-norestore", "-accept=%s" % op.connection], env=os.environ)
             else:
-                subprocess.call([office.binary, "--headless", "--invisible", "--nocrashreport", "--nodefault", "--nologo", "--nofirststartwizard", "--norestore", "--accept=%s" % op.connection], env=os.environ)
+                proc = subprocess.Popen([office.binary, "--headless", "--invisible", "--nocrashreport", "--nodefault", "--nologo", "--nofirststartwizard", "--norestore", "--accept=%s" % op.connection], env=os.environ)
         except Exception, e:
             error("Launch of %s failed.\n%s" % (office.binary, e))
         else:
-            die(253, "Existing listener found, aborting.")
+            if op.listener:
+                proc.wait()
+                die(253, "Existing listener found, aborting.")
 
 def error(str):
     "Output error message"
@@ -955,6 +961,8 @@ def main():
         if op.listener:
             listener = Listener()
         else:
+            if op.daemon:
+                listener = Listener()
             convertor = Convertor()
 
         for inputfn in op.filenames:
