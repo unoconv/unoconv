@@ -877,7 +877,10 @@ class Listener:
     def __init__(self):
         info(1, "Start listener on %s:%s" % (op.server, op.port))
         try:
-            subprocess.call([office.binary, "-headless", "-invisible", "-nocrashreport", "-nodefault", "-nologo", "-nofirststartwizard", "-norestore", "-accept=%s" % op.connection], env=os.environ)
+            if product.ooName != "LibreOffice" or product.ooSetupVersion <= 3.3:
+                subprocess.call([office.binary, "-headless", "-invisible", "-nocrashreport", "-nodefault", "-nologo", "-nofirststartwizard", "-norestore", "-accept=%s" % op.connection], env=os.environ)
+            else:
+                subprocess.call([office.binary, "--headless", "--invisible", "--nocrashreport", "--nodefault", "--nologo", "--nofirststartwizard", "--norestore", "--accept=%s" % op.connection], env=os.environ)
         except Exception, e:
             error("Launch of %s failed.\n%s" % (office.binary, e))
         else:
@@ -907,9 +910,12 @@ def die(ret, str=None):
         ### If there is a GUI now attached to the instance, disable listener
         if convertor.desktop.getCurrentFrame():
             try:
-                subprocess.Popen([office.binary, "-headless", "-invisible", "-nocrashreport", "-nodefault", "-nofirststartwizard", "-nologo", "-norestore", "-unaccept=%s" % op.connection], env=os.environ)
-                info(2, 'LibreOffice listener successfully disabled.')
+                if product.ooName != "LibreOffice" or product.ooSetupVersion <= 3.3:
+                    subprocess.Popen([office.binary, "-headless", "-invisible", "-nocrashreport", "-nodefault", "-nofirststartwizard", "-nologo", "-norestore", "-accept=%s" % op.connection], env=os.environ)
+                else:
+                    subprocess.Popen([office.binary, "--headless", "--invisible", "--nocrashreport", "--nodefault", "--nofirststartwizard", "--nologo", "--norestore", "--accept=%s" % op.connection], env=os.environ)
                 ooproc.wait()
+                info(2, 'LibreOffice listener successfully disabled.')
             except Exception, e:
                 error("Terminate using %s failed.\n%s" % (office.binary, e))
 
