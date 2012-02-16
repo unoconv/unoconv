@@ -351,11 +351,11 @@ fmts.add('web', 'text10', 'txt', 'OpenOffice.org 1.0 Text Document (OpenOffice.o
 ### GlobalDocument
 #fmts.add('global', '', '', 'StarWriter 3.0', 'StarWriter 3.0 (StarWriter/GlobalDocument)') ### 3
 #fmts.add('global', '', '', 'StarWriter 4.0', 'StarWriter 4.0 (StarWriter/GlobalDocument)') ### 4
-#fmts.add('global', '', '', 'ODF Master Document', 'writerglobal8') ### 7
 #fmts.add('global', '', '', 'StarWriter 4.0 Master Document', 'StarWriter 4.0/GlobalDocument') ### 9
 #fmts.add('global', '', '', 'StarWriter 5.0 Master Document', 'StarWriter 5.0/GlobalDocument') ### 10
 fmts.add('global', 'html', 'htm', 'HTML (Writer/Global)', 'writerglobal8_HTML') ### 6
 fmts.add('global', 'html', 'html', 'HTML (Writer/Global)', 'writerglobal8_HTML') ### 6
+fmts.add('global', 'odm', 'odm', 'ODF Master Document', 'writerglobal8') ### 7
 fmts.add('global', 'odt', 'odt', 'ODF Text Document', 'writerglobal8_writer') ### 8
 fmts.add('global', 'pdf', 'pdf', 'PDF - Portable Document Format', 'writer_globaldocument_pdf_Export') ### 11
 fmts.add('global', 'sgl', 'sgl', 'StarWriter 5.0', 'StarWriter 5.0 (StarWriter/GlobalDocument)') ### 5
