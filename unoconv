@@ -23,7 +23,7 @@ VERSION = '0.5'
 
 doctypes = ('document', 'graphics', 'presentation', 'spreadsheet')
 
-global convertor, office, ooproc
+global convertor, office, ooproc, product
 ooproc = None
 exitcode = 0
 
@@ -110,7 +110,7 @@ def find_offices():
                 ure = sub
                 break
 
-        ### MacOSX have binaries installed in MacOS subdirectory, not program
+        ### MacOSX have soffice binaries installed in MacOS subdirectory, not program
         program = 'error'
         for sub in ('program', 'MacOS'):
             if os.path.isfile(os.path.join(basepath, basis, sub, officebinary)):
@@ -545,7 +545,7 @@ class Options:
 
         self.filenames = args
 
-        if not not self.listener and not self.showlist and self.doctype != 'list' and not self.filenames:
+        if not self.listener and not self.showlist and self.doctype != 'list' and not self.filenames:
             print >>sys.stderr, 'unoconv: you have to provide a filename as argument'
             print >>sys.stderr, 'Try `unoconv -h\' for more information.'
             sys.exit(255)
@@ -629,7 +629,7 @@ unoconv options:
 
 class Convertor:
     def __init__(self):
-        global exitcode, ooproc, office
+        global exitcode, ooproc, office, product
         unocontext = None
 
         ### Do the LibreOffice component dance
@@ -683,8 +683,8 @@ class Convertor:
             die(251, "Unable to connect or start own listener. Aborting.")
 
         ### And some more LibreOffice magic
-        self.desktop = self.svcmgr.createInstanceWithContext("com.sun.star.frame.Desktop", unocontext)
-        self.config = self.svcmgr.createInstanceWithContext( "com.sun.star.configuration.ConfigurationProvider", unocontext)
+        unosvcmgr = unocontext.ServiceManager
+        self.desktop = unosvcmgr.createInstanceWithContext("com.sun.star.frame.Desktop", unocontext)
         self.cwd = unohelper.systemPathToFileUrl( os.getcwd() )
 
         ### List all filters
@@ -875,6 +875,8 @@ class Convertor:
 
 class Listener:
     def __init__(self):
+        global product
+
         info(1, "Start listener on %s:%s" % (op.server, op.port))
         self.context = uno.getComponentContext()
         self.svcmgr = self.context.ServiceManager
@@ -887,8 +889,7 @@ class Listener:
         except Exception, e:
             error("Launch of %s failed.\n%s" % (office.binary, e))
         else:
-            info(1, "Existing listener found, nothing to do.")
-            sys.exit(0)
+            info(1, "Existing %s listener found, nothing to do." % product.ooName)
 
 def error(str):
     "Output error message"
@@ -909,43 +910,46 @@ def die(ret, str=None):
         error('Error: %s' % str)
 
     ### Did we start our own listener instance ?
-    if ooproc and convertor:
+    if not op.listener and ooproc and convertor:
 
         ### If there is a GUI now attached to the instance, disable listener
         if convertor.desktop.getCurrentFrame():
+            info(2, 'Trying to stop %s GUI listener.' % product.ooName)
             try:
                 if product.ooName != "LibreOffice" or product.ooSetupVersion <= 3.3:
                     subprocess.Popen([office.binary, "-headless", "-invisible", "-nocrashreport", "-nodefault", "-nofirststartwizard", "-nologo", "-norestore", "-unaccept=%s" % op.connection], env=os.environ)
                 else:
                     subprocess.Popen([office.binary, "--headless", "--invisible", "--nocrashreport", "--nodefault", "--nofirststartwizard", "--nologo", "--norestore", "--unaccept=%s" % op.connection], env=os.environ)
                 ooproc.wait()
-                info(2, 'LibreOffice listener successfully disabled.')
+                info(2, '%s listener successfully disabled.' % product.ooName)
             except Exception, e:
                 error("Terminate using %s failed.\n%s" % (office.binary, e))
 
         ### If there is no GUI attached to the instance, terminate instance
         else:
+            info(2, 'Terminating %s instance.' % product.ooName)
             try:
                 convertor.desktop.terminate()
             except DisposedException:
-                info(2, 'LibreOffice instance unsuccessfully closed, sending TERM signal.')
+                info(2, '%s instance unsuccessfully closed, sending TERM signal.' % product.ooName)
                 try:
                     ooproc.terminate()
                 except AttributeError:
                     os.kill(ooproc.pid, 15)
+            info(2, 'Waiting for %s instance to exit.' % product.ooName)
             ooproc.wait()
 
         ### LibreOffice processes may get stuck and we have to kill them
         ### Is it still running ?
         if ooproc.poll() == None:
-            info(1, 'LibreOffice instance still running, please investigate...')
+            info(1, '%s instance still running, please investigate...' % product.ooName)
             ooproc.wait()
-            info(2, 'LibreOffice instance unsuccessfully terminated, sending KILL signal.')
+            info(2, '%s instance unsuccessfully terminated, sending KILL signal.' % product.ooName)
             try:
                 ooproc.kill()
             except AttributeError:
                 os.kill(ooproc.pid, 9)
-            info(2, 'Waiting for LibreOffice with pid %s to disappear.' % ooproc.pid)
+            info(2, 'Waiting for %s with pid %s to disappear.' % (ooproc.pid, product.ooName))
             ooproc.wait()
 
     sys.exit(ret)
@@ -957,14 +961,14 @@ def main():
     try:
         if op.listener:
             listener = Listener()
-        else:
-            convertor = Convertor()
 
-        for inputfn in op.filenames:
-            convertor.convert(inputfn)
+        if op.filenames:
+            convertor = Convertor()
+            for inputfn in op.filenames:
+                convertor.convert(inputfn)
 
     except NoConnectException, e:
-        error("unoconv: could not find an existing connection to Open Office at %s:%s." % (op.server, op.port))
+        error("unoconv: could not find an existing connection to LibreOffice at %s:%s." % (op.server, op.port))
         if op.connection:
             info(0, "Please start an LibreOffice instance on server '%s' by doing:\n\n    unoconv --listener --server %s --port %s\n\nor alternatively:\n\n    soffice -nologo -nodefault -accept=\"%s\"" % (op.server, op.server, op.port, op.connection))
         else:
