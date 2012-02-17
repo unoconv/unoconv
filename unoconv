@@ -927,7 +927,7 @@ def die(ret, str=None):
 
         ### If there is no GUI attached to the instance, terminate instance
         else:
-            info(2, 'Terminating %s instance.' % product.ooName)
+            info(3, 'Terminating %s instance.' % product.ooName)
             try:
                 convertor.desktop.terminate()
             except DisposedException:
@@ -936,7 +936,7 @@ def die(ret, str=None):
                     ooproc.terminate()
                 except AttributeError:
                     os.kill(ooproc.pid, 15)
-            info(2, 'Waiting for %s instance to exit.' % product.ooName)
+            info(3, 'Waiting for %s instance to exit.' % product.ooName)
             ooproc.wait()
 
         ### LibreOffice processes may get stuck and we have to kill them
@@ -949,7 +949,7 @@ def die(ret, str=None):
                 ooproc.kill()
             except AttributeError:
                 os.kill(ooproc.pid, 9)
-            info(2, 'Waiting for %s with pid %s to disappear.' % (ooproc.pid, product.ooName))
+            info(3, 'Waiting for %s with pid %s to disappear.' % (ooproc.pid, product.ooName))
             ooproc.wait()
 
     sys.exit(ret)
