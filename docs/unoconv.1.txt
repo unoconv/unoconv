@@ -19,7 +19,7 @@ LibreOffice can import, to any file format that LibreOffice is capable of
 exporting.
 
 unoconv uses the LibreOffice's UNO bindings for non-interactive conversion
-of documents and therefor needs an LibreOffice instance to communicate with.
+of documents and therefore needs an LibreOffice instance to communicate with.
 Therefore if it cannot find one, it will start its own instance for temporary
 usage. If desired, one can start a ``listener'' instance to use for subsequent
 connections or even for remote connections.
