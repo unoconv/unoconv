@@ -21,8 +21,7 @@ Typically you would convert an ODT document to PDF by running:
 
 == Start your own unoconv listener
 However, you can always start an instance yourself at the default port 2002
-(or specify another port with -p/--port) and then use unoconv until you're
-finished using it and then stop it.
+(or specify another port with -p/--port) and after use you can tear it down:
 
     unoconv --listener &
     sleep 20
@@ -34,12 +33,8 @@ finished using it and then stop it.
 It is also possible to use a listener or LibreOffice instance that accepts
 connections on another system and use it from unoconv remotely. This
 way the conversion tasks are performed on a dedicated system instead
-of on the client system.
-
-Since there is no feedback mechanism to see if the newly started ooffice is
-in fact ready to communicate, we don't know exactly when we can use the UNO
-api. By default unoconv waits for 3 seconds, but you can specify another
-delay with -T/--timeout. If ooffice is not ready, you may get a random error.
+of on the client system. This works only if you have a shared filesystem
+mounted at the same location.
 
 
 == Python and pyuno incompatibilities
@@ -57,10 +52,10 @@ that ships with LibreOffice).
 You can influence the automatic detection by setting the UNO_PATH environment
 variable to point to an alternative LibreOffice installation, e.g.:
 
-    UNO_PATH=/opt/libreoffice3.4 unoconv some-file.odt
+    UNO_PATH=/opt/libreoffice3.5 unoconv some-file.odt
 
 
-== Using unoconv with not X display
+== Using unoconv with no X display
 Since OpenOffice 2.3 you do not need an X display for starting ooffice.
 However you may need the openoffice.org-headless package from your
 distribution. Since LibreOffice 2.4 nothing special is needed, running
@@ -76,7 +71,7 @@ to create a headless X display for ooffice.
  - http://www.artofsolving.com/node/10
 
 
-== Problems running unconv from Apache/PHP
+== Problems running unoconv from Apache/PHP
 Some people have had difficulties using unoconv through webservices. Here
 is a list of probable causes:
 
@@ -99,6 +94,52 @@ We are looking into this with the LibreOffice developers to:
 
  - Collaborate closer to find, report and fix unexpected failures
  - Allow end-users to increase debugging and reporting to the project
+
+
+== Troubleshooting instructions
+If you encounter a problem with converting documents using unoconv, please
+consider that this could be to a number of things:
+
+ - a LibreOffice bug or regression specific to your version
+ - an import or export filter issue
+ - a problem related to the source document
+ - a problem related to the python UNO bindings
+ - a problem related to the unoconv python script
+
+It is recommended to follow any of these steps to pinpoint the problem:
+
+ - check if there is no existing LibreOffice process running on the system
+   that could interfere with proper functioning
+
+        # pgrep -l 'office|writer|calc'
+
+ - check that the LibreOffice instance handling UNO requests is not handling
+   multiple requests at the same time
+
+ - try using the latest unoconv release, or the latest version on Github at:
+   https://github.com/dagwieers/unoconv/downloads
+
+ - try the conversion by opening the file in LibreOffice and exporting
+   it through LibreOffice
+
+ - try unoconv with a different minor or major LibreOffice version to test
+   whether it is a regression in LibreOffice
+
+ - try to load the UNO bindings in python
+
+   * do this with the python executable that ships with the LibreOffice
+     package/installer
+
+        # /opt/libreoffice3.5/program/python.bin -c 'import uno, unohelper'
+
+   * or alternatively, run the disribution python (with the distribution
+     LibreOffice)
+
+        # python -c 'import uno, unohelper
+
+If all of the above worked, the issue might still be related to import/export
+filters, LibreOffice or unoconv, so please report any information to reproduce
+the problem on the Github issue-tracker at: http://github.com/dagwieers/unoconv
 
 
 == Related tools
