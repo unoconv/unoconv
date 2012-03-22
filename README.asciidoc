@@ -101,7 +101,7 @@ If you encounter a problem with converting documents using unoconv, please
 consider that this could be to a number of things:
 
  - a LibreOffice bug or regression specific to your version
- - an import or export filter issue
+ - a LibreOffice import or export filter issue
  - a problem related to the source document
  - a problem related to the python UNO bindings
  - a problem related to the unoconv python script
