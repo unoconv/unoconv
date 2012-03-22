@@ -517,7 +517,7 @@ class Options:
             elif opt in ['-o', '--output']:
                 self.output = arg
             elif opt in ['--outputpath']:
-                print >>sys.stderr, 'Warning: This option is deprecated by --output.' % arg
+                print >>sys.stderr, 'Warning: This option is deprecated by --output.'
                 self.output = arg
             elif opt in ['--pipe']:
                 self.pipe = arg
