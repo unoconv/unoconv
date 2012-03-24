@@ -100,6 +100,7 @@ We are looking into this with the LibreOffice developers to:
 If you encounter a problem with converting documents using unoconv, please
 consider that this could be to a number of things:
 
+ - an incomplete LibreOffice implementation
  - a LibreOffice bug or regression specific to your version
  - a LibreOffice import or export filter issue
  - a problem related to the source document
@@ -107,6 +108,11 @@ consider that this could be to a number of things:
  - a problem related to the unoconv python script
 
 It is recommended to follow any of these steps to pinpoint the problem:
+
+ - if this is the first time you are using LibreOffice/OpenOffice, make sure
+   you have all the required sub-packages installed, depending on the
+   distribution this could be the +xsltfilter+, +headless+, +writer+,
+   +calc+, +impress+ or +draw+ sub-packages.
 
  - check if there is no existing LibreOffice process running on the system
    that could interfere with proper functioning
