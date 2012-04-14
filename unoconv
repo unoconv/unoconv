@@ -168,7 +168,6 @@ def office_environ(office):
             os.environ['LD_LIBRARY_PATH'] = office.unopath + os.pathsep + \
                                             os.path.join(office.urepath, 'lib')
 
-    ### Still needed for system python using LibreOffice UNO bindings
     if office.pythonhome:
         for libpath in ( os.path.join(office.pythonhome, 'lib'),
                          os.path.join(office.pythonhome, 'lib', 'lib-dynload'),
@@ -176,6 +175,10 @@ def office_environ(office):
                          os.path.join(office.pythonhome, 'lib', 'site-packages'),
                          office.unopath):
             sys.path.insert(0, libpath)
+    else:
+        ### Still needed for system python using LibreOffice UNO bindings
+        ### Although we prefer to use a system UNO binding in this case
+        sys.path.append(office.unopath)
 
 def debug_office():
     print 'sysname=%s' % os.name
