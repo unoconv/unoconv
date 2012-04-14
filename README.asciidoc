@@ -23,12 +23,14 @@ Typically you would convert an ODT document to PDF by running:
 However, you can always start an instance yourself at the default port 2002
 (or specify another port with -p/--port) and after use you can tear it down:
 
-    unoconv --listener &
-    sleep 20
-    unoconv -f pdf *.odt
-    unoconv -f doc *.odt
-    unoconv -f html *.odt
-    kill -15 %-
+----
+unoconv --listener &
+sleep 20
+unoconv -f pdf *.odt
+unoconv -f doc *.odt
+unoconv -f html *.odt
+kill -15 %-
+----
 
 It is also possible to use a listener or LibreOffice instance that accepts
 connections on another system and use it from unoconv remotely. This
@@ -103,6 +105,7 @@ consider that this could be to a number of things:
  - an incomplete LibreOffice implementation
  - a LibreOffice bug or regression specific to your version
  - a LibreOffice import or export filter issue
+ - a problem related to stale lock files
  - a problem related to the source document
  - a problem related to the python UNO bindings
  - a problem related to the unoconv python script
@@ -118,6 +121,9 @@ It is recommended to follow any of these steps to pinpoint the problem:
    that could interfere with proper functioning
 
         # pgrep -l 'office|writer|calc'
+
+ - check that there are no stale lock files present, e.g. '.~lock.file.pdf#' or
+   '.~lock.index.html#'
 
  - check that the LibreOffice instance handling UNO requests is not handling
    multiple requests at the same time
