@@ -9,7 +9,7 @@
   http://udk.openoffice.org/
 
 + Python-UNO bridge
-  http://udk.openoffice.org/python/python-bridge.html
+  http://www.openoffice.org/udk/python/python-bridge.html
 
 + OpenOffice.org developer manual
   http://api.openoffice.org/DevelopersGuide/DevelopersGuide.html
