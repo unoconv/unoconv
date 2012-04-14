@@ -1,9 +1,10 @@
 = Automated conversion and styling using LibreOffice
 Dag Wieers <dag@wieers.com>
 
-unoconv is a command line tool to convert any document format that LibreOffice
-can import to any document format that LibreOffice can export. It makes use
-of the LibreOffice's UNO bindings for non-interactive conversion of documents.
+Universal Office Converter (unoconv) is a command line tool to convert any
+document format that LibreOffice can import to any document format that
+LibreOffice can export. It makes use of the LibreOffice's UNO bindings for
+non-interactive conversion of documents.
 
 _For practical reasons we mention LibreOffice, but OpenOffice is supported by
 unoconv as well._
@@ -102,13 +103,14 @@ We are looking into this with the LibreOffice developers to:
 If you encounter a problem with converting documents using unoconv, please
 consider that this could be to a number of things:
 
- - an incomplete LibreOffice implementation
- - a LibreOffice bug or regression specific to your version
- - a LibreOffice import or export filter issue
- - a problem related to stale lock files
- - a problem related to the source document
- - a problem related to the python UNO bindings
- - a problem related to the unoconv python script
+ - incomplete LibreOffice implementation
+ - LibreOffice bug or regression specific to your version/distribution
+ - LibreOffice import or export filter issue
+ - problem related to stale lock files
+ - problem related to the source document
+ - problem related to permissions or SELinux
+ - problem related to the python UNO bindings
+ - problem related to the unoconv python script
 
 It is recommended to follow any of these steps to pinpoint the problem:
 
@@ -137,7 +139,7 @@ It is recommended to follow any of these steps to pinpoint the problem:
  - try unoconv with a different minor or major LibreOffice version to test
    whether it is a regression in LibreOffice
 
- - try to load the UNO bindings in python
+ - try to load the UNO bindings in python manually
 
    * do this with the python executable that ships with the LibreOffice
      package/installer
@@ -147,11 +149,52 @@ It is recommended to follow any of these steps to pinpoint the problem:
    * or alternatively, run the disribution python (with the distribution
      LibreOffice)
 
-        # python -c 'import uno, unohelper
+        # python -c 'import uno, unohelper'
 
 If all of the above worked, the issue might still be related to import/export
 filters, LibreOffice or unoconv, so please report any information to reproduce
 the problem on the Github issue-tracker at: http://github.com/dagwieers/unoconv
+
+And do mention that you already tried the above hints to troubleshoot the issue.
+
+
+== Interesting lecture
+If you're interested to help out with development, here are some pointers to
+interesting sources:
+
+ - [Tutorial] Import uno module to a different Python install
+   http://user.services.openoffice.org/en/forum/viewtopic.php?f=45&t=36370&p=166783
+
+ - UDK: UNO Development Kit
+   http://udk.openoffice.org/
+
+ - Python-UNO bridge
+   http://www.openoffice.org/udk/python/python-bridge.html
+
+ - Python and OpenOffice.org
+   http://wiki.services.openoffice.org/wiki/Python
+
+ - OpenOffice.org developer manual
+   http://api.openoffice.org/DevelopersGuide/DevelopersGuide.html
+
+ - Framework/Article/Filter/FilterList OOo 2 1
+   http://wiki.services.openoffice.org/wiki/Framework/Article/Filter/FilterList_OOo_2_1
+
+ - Framework/Article/Filter/FilterList OOo 3 0
+   http://wiki.services.openoffice.org/wiki/Framework/Article/Filter/FilterList_OOo_3_0
+
+
+== Other implementation
+Other implementations using python and UNO:
+
+ - oooconv
+   https://svn.infrae.com/oooconv/trunk/src/oooconv/filters.py
+
+ - officeshots.org
+   http://code.officeshots.org/trac/officeshots/browser/trunk/factory/src/backends/oooserver.py
+
+ - cloudooo
+   http://svn.erp5.org/erp5/trunk/utils/cloudooo.handler/ooo/cloudooo/handler/ooo/
 
 
 == Related tools
