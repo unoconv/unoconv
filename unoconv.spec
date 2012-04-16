@@ -51,13 +51,13 @@ and many more...
 
 %files
 %defattr(-, root, root, 0755)
-%doc AUTHORS ChangeLog COPYING README TODO WISHLIST docs/ tests/
+%doc AUTHORS ChangeLog COPYING README* WISHLIST docs/ tests/
 %doc %{_mandir}/man1/unoconv.1*
 %{_bindir}/unoconv
 
 %changelog
-* Mon Oct 25 2010 Dag Wieers <dag@wieers.com> - 0.4svn-1
-- Updated to release 0.4svn.
+* Mon Apr 16 2012 Dag Wieers <dag@wieers.com> - 0.5-1
+- Updated to release 0.5.
 
 * Wed Oct 20 2010 Dag Wieers <dag@wieers.com> - 0.4-1
 - Updated to release 0.4.
