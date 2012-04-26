@@ -14,7 +14,14 @@
 ### Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 ### Copyright 2007-2010 Dag Wieers <dag@wieers.com>
 
-import getopt, sys, os, glob, time, socket, subprocess
+from distutils.version import LooseVersion
+import getopt
+import glob
+import os
+import socket
+import subprocess
+import sys
+import time
 
 __version__ = "$Revision$"
 # $Source$
@@ -670,7 +677,7 @@ class Convertor:
             info(3, "Launching our own listener using %s." % office.binary)
             try:
                 product = self.svcmgr.createInstance("com.sun.star.configuration.ConfigurationProvider").createInstanceWithArguments("com.sun.star.configuration.ConfigurationAccess", UnoProps(nodepath="/org.openoffice.Setup/Product"))
-                if product.ooName != "LibreOffice" or product.ooSetupVersion <= 3.3:
+                if product.ooName != "LibreOffice" or LooseVersion(product.ooSetupVersion) <= LooseVersion('3.3'):
                     ooproc = subprocess.Popen([office.binary, "-headless", "-invisible", "-nocrashreport", "-nodefault", "-nofirststartwizard", "-nologo", "-norestore", "-accept=%s" % op.connection], env=os.environ)
                 else:
                     ooproc = subprocess.Popen([office.binary, "--headless", "--invisible", "--nocrashreport", "--nodefault", "--nofirststartwizard", "--nologo", "--norestore", "--accept=%s" % op.connection], env=os.environ)
@@ -905,7 +912,7 @@ class Listener:
         self.svcmgr = self.context.ServiceManager
         try:
             product = self.svcmgr.createInstance("com.sun.star.configuration.ConfigurationProvider").createInstanceWithArguments("com.sun.star.configuration.ConfigurationAccess", UnoProps(nodepath="/org.openoffice.Setup/Product"))
-            if product.ooName != "LibreOffice" or product.ooSetupVersion <= 3.3:
+            if product.ooName != "LibreOffice" or LooseVersion(product.ooSetupVersion) <= LooseVersion('3.3'):
                 subprocess.call([office.binary, "-headless", "-invisible", "-nocrashreport", "-nodefault", "-nologo", "-nofirststartwizard", "-norestore", "-accept=%s" % op.connection], env=os.environ)
             else:
                 subprocess.call([office.binary, "--headless", "--invisible", "--nocrashreport", "--nodefault", "--nologo", "--nofirststartwizard", "--norestore", "--accept=%s" % op.connection], env=os.environ)
