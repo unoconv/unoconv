@@ -114,16 +114,6 @@ def find_offices():
         else:
             continue
 
-        ### Windows does not provide or need a URE/lib directory ?
-        ure = 'error'
-        for sub in ('ure-link', 'ure', 'URE', ''):
-            if os.path.isfile(os.path.join(basepath, basis, sub, 'lib', 'unorc')):
-                ure = sub
-                info(3, "Found %s in %s" % ('unorc', os.path.join(basepath, basis, sub, 'lib')))
-                break
-        else:
-            continue
-
         ### MacOSX have soffice binaries installed in MacOS subdirectory, not program
         program = 'error'
         for sub in ('program', 'MacOS'):
@@ -138,6 +128,16 @@ def find_offices():
         else:
             continue
 
+        ### Windows does not provide or need a URE/lib directory ?
+        ure = 'error'
+        for sub in ('ure-link', 'ure', 'URE', ''):
+            if os.path.isfile(os.path.join(basepath, basis, sub, 'lib', 'unorc')):
+                ure = sub
+                info(3, "Found %s in %s" % ('unorc', os.path.join(basepath, basis, sub, 'lib')))
+                break
+        else:
+            continue
+
 #        if not os.path.isfile(os.path.join(basepath, program, officebinary)):
 #            continue
 #        info(3, "Found %s in %s" % (officebinary, os.path.join(basepath, program)))
@@ -146,6 +146,7 @@ def find_offices():
 #            continue
 
         if os.path.isfile(os.path.join(basepath, basis, program, pythonbinary)):
+            info(3, "Found %s in %s" % (pythonbinary, os.path.join(basepath, basis, program)))
             ret.append(Office(basepath,
                               os.path.join(basepath, basis, ure),
                               os.path.join(basepath, basis, program),
@@ -154,6 +155,7 @@ def find_offices():
                               os.path.join(basepath, basis, program, pythonbinary),
                               glob.glob(os.path.join(basepath, basis, program, 'python-core-*'))[0]))
         else:
+            info(3, "Considering %s" % basepath)
             ret.append(Office(basepath,
                               os.path.join(basepath, basis, ure),
                               os.path.join(basepath, basis, program),
@@ -200,7 +202,6 @@ def office_environ(office):
         sys.path.append(office.unopath)
 
 def debug_office():
-    print >>sys.stderr, 'DEBUG: sysname=%s, platform=%s, python=%s, python-version=%s' % (os.name, sys.platform, sys.executable, sys.version)
     if 'URE_BOOTSTRAP' in os.environ:
         print >>sys.stderr, 'URE_BOOTSTRAP=%s' % os.environ['URE_BOOTSTRAP']
     if 'UNO_PATH' in os.environ:
@@ -216,7 +217,6 @@ def debug_office():
         print >>sys.stderr, 'LD_LIBRARY_PATH=%s' % os.environ['LD_LIBRARY_PATH']
 
 def python_switch(office):
-#   print >>sys.stderr, "WARNING: It is recommended to use python %s to run unoconv" % office.python
     if office.pythonhome:
         os.environ['PYTHONHOME'] = office.pythonhome
         os.environ['PYTHONPATH'] = os.path.join(office.pythonhome, 'lib') + os.pathsep + \
@@ -227,7 +227,7 @@ def python_switch(office):
 
     os.environ['UNO_PATH'] = office.unopath
 
-    info(3, "-> Switching from python %s to %s" % (sys.executable, office.python))
+    info(3, "-> Switching from %s to %s" % (sys.executable, office.python))
     if os.name in ('nt', 'os2'):
         ### os.execv is broken on Windows and can't properly parse command line
         ### arguments and executable name if they contain whitespaces. subprocess
@@ -1018,6 +1018,8 @@ if __name__ == '__main__':
 
     op = Options(sys.argv[1:])
 
+    info(3, 'sysname=%s, platform=%s, python=%s, python-version=%s' % (os.name, sys.platform, sys.executable, sys.version))
+
     for of in find_offices():
         if of.python != sys.executable and not sys.executable.startswith(of.unopath):
             python_switch(of)
@@ -1074,8 +1076,8 @@ if __name__ == '__main__':
             props.append(prop)
         return tuple(props)
 
-#    info(2, "Office base location: %s" % office.basepath)
-#    info(2, "Office binary location: %s" % office.unopath)
+    info(2, "Using office base path: %s" % office.basepath)
+    info(2, "Using office binary path: %s" % office.unopath)
 
     try:
         main()
