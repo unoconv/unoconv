@@ -57,6 +57,7 @@ def find_offices():
         extrapaths += [ os.environ['UNO_PATH'],
                         os.path.dirname(os.environ['UNO_PATH']),
                         os.path.dirname(os.path.dirname(os.environ['UNO_PATH'])) ]
+
     else:
 
         if os.name in ( 'nt', 'os2' ):
@@ -101,27 +102,38 @@ def find_offices():
         for sub in ('basis-link', 'basis', ''):
             if os.path.isfile(os.path.join(basepath, sub, 'program', officelibrary)):
                 basis = sub
+                info(3, "Found %s in %s" % (officelibrary, os.path.join(basepath, sub, 'program')))
                 break
+        else:
+            continue
 
         ### Windows does not provide or need a URE/lib directory ?
         ure = 'error'
         for sub in ('ure-link', 'ure', 'URE', ''):
             if os.path.isfile(os.path.join(basepath, basis, sub, 'lib', 'unorc')):
                 ure = sub
+                info(3, "Found %s in %s" % ('unorc', os.path.join(basepath, basis, sub, 'lib')))
                 break
+        else:
+            continue
 
         ### MacOSX have soffice binaries installed in MacOS subdirectory, not program
         program = 'error'
         for sub in ('program', 'MacOS'):
             if os.path.isfile(os.path.join(basepath, basis, sub, officebinary)):
                 program = os.path.join(basis, sub)
+                info(3, "Found %s in %s" % (officebinary, os.path.join(basepath, basis, sub)))
                 break
             elif os.path.isfile(os.path.join(basepath, sub, officebinary)):
                 program = sub
+                info(3, "Found %s in %s" % (officebinary, os.path.join(basepath, sub)))
                 break
-
-        if not os.path.isfile(os.path.join(basepath, program, officebinary)):
+        else:
             continue
+
+#        if not os.path.isfile(os.path.join(basepath, program, officebinary)):
+#            continue
+#        info(3, "Found %s in %s" % (officebinary, os.path.join(basepath, program)))
 
 #        if not glob.glob(os.path.join(basepath, basis, program, 'python-core-*')):
 #            continue
@@ -181,26 +193,23 @@ def office_environ(office):
         sys.path.append(office.unopath)
 
 def debug_office():
-    print 'sysname=%s' % os.name
-    print 'platform=%s' % sys.platform
-    print 'python=%s' % sys.executable
-    print 'python-version=%s' % sys.version
+    print >>sys.stderr, 'DEBUG: sysname=%s, platform=%s, python=%s, python-version=%s' % (os.name, sys.platform, sys.executable, sys.version)
     if 'URE_BOOTSTRAP' in os.environ:
-        print 'URE_BOOTSTRAP=%s' % os.environ['URE_BOOTSTRAP']
+        print >>sys.stderr, 'URE_BOOTSTRAP=%s' % os.environ['URE_BOOTSTRAP']
     if 'UNO_PATH' in os.environ:
-        print 'UNO_PATH=%s' % os.environ['UNO_PATH']
+        print >>sys.stderr, 'UNO_PATH=%s' % os.environ['UNO_PATH']
     if 'UNO_TYPES' in os.environ:
-        print 'UNO_TYPES=%s' % os.environ['UNO_TYPES']
+        print >>sys.stderr, 'UNO_TYPES=%s' % os.environ['UNO_TYPES']
     print 'PATH=%s' % os.environ['PATH']
     if 'PYTHONHOME' in os.environ:
-        print 'PYTHONHOME=%s' % os.environ['PYTHONHOME']
+        print >>sys.stderr, 'PYTHONHOME=%s' % os.environ['PYTHONHOME']
     if 'PYTHONPATH' in os.environ:
-        print 'PYTHONPATH=%s' % os.environ['PYTHONPATH']
+        print >>sys.stderr, 'PYTHONPATH=%s' % os.environ['PYTHONPATH']
     if 'LD_LIBRARY_PATH' in os.environ:
-        print 'LD_LIBRARY_PATH=%s' % os.environ['LD_LIBRARY_PATH']
+        print >>sys.stderr, 'LD_LIBRARY_PATH=%s' % os.environ['LD_LIBRARY_PATH']
 
 def python_switch(office):
-#   print >>sys.stderr, "WARNING: It is recommended to use python %s to run unoconv" % pybin
+#   print >>sys.stderr, "WARNING: It is recommended to use python %s to run unoconv" % office.python
     if office.pythonhome:
         os.environ['PYTHONHOME'] = office.pythonhome
         os.environ['PYTHONPATH'] = os.path.join(office.pythonhome, 'lib') + os.pathsep + \
@@ -211,7 +220,7 @@ def python_switch(office):
 
     os.environ['UNO_PATH'] = office.unopath
 
-#    print >>sys.stderr, "Switching from python %s to %s" % (sys.executable, office.python)
+    info(3, "-> Switching from python %s to %s" % (sys.executable, office.python))
     if os.name in ('nt', 'os2'):
         ### os.execv is broken on Windows and can't properly parse command line
         ### arguments and executable name if they contain whitespaces. subprocess
@@ -455,6 +464,7 @@ fmts.add('presentation', 'xpm', 'xpm', 'X PixMap', 'impress_xpm_Export') ### 10
 class Options:
     def __init__(self, args):
         self.connection = None
+        self.debug = False
         self.doctype = None
         self.exportfilter = []
         self.filenames = []
@@ -463,6 +473,7 @@ class Options:
         self.listener = False
         self.nolaunch = False
         self.output = None
+        self.password = None
         self.pipe = None
         self.port = '2002'
         self.server = 'localhost'
@@ -475,10 +486,11 @@ class Options:
         ### Get options from the commandline
         try:
             opts, args = getopt.getopt (args, 'c:Dd:e:f:hi:Llo:np:s:T:t:v',
-                ['connection=', 'doctype=', 'export', 'format=', 'help',
-                 'import', 'listener', 'no-launch', 'output=', 'outputpath',
-                 'pipe=', 'port=', 'server=', 'timeout=', 'show', 'stdout',
-                 'template', 'verbose', 'version'] )
+                ['connection=', 'debug', 'doctype=', 'export', 'format=',
+                 'help', 'import', 'listener', 'no-launch', 'output=',
+                 'outputpath', 'password=', 'pipe=', 'port=', 'server=',
+                 'timeout=', 'show', 'stdout', 'template', 'verbose',
+                 'version'] )
         except getopt.error, exc:
             print 'unoconv: %s, try unoconv -h for a list of all the options' % str(exc)
             sys.exit(255)
@@ -491,6 +503,8 @@ class Options:
                 sys.exit(1)
             elif opt in ['-c', '--connection']:
                 self.connection = arg
+            elif opt in ['--debug']:
+                self.debug = True
             elif opt in ['-d', '--doctype']:
                 self.doctype = arg
             elif opt in ['-e', '--export']:
@@ -522,6 +536,8 @@ class Options:
             elif opt in ['--outputpath']:
                 print >>sys.stderr, 'Warning: This option is deprecated by --output.'
                 self.output = arg
+            elif opt in ['--password']:
+                self.password = arg
             elif opt in ['--pipe']:
                 self.pipe = arg
             elif opt in ['-p', '--port']:
@@ -543,8 +559,8 @@ class Options:
                 sys.exit(255)
 
         ### Enable verbosity
-        if self.verbose >= 3:
-            print >>sys.stderr, 'Verbosity set to level %d' % (self.verbose - 1)
+        if self.verbose >= 2:
+            print >>sys.stderr, 'Verbosity set to level %d' % self.verbose
 
         self.filenames = args
 
@@ -560,8 +576,6 @@ class Options:
 #               self.connection = "socket,host=%s,port=%s;urp;" % (self.server, self.port)
             else:
                 self.connection = "pipe,name=%s;urp;StarOffice.ComponentContext" % (self.pipe)
-            if self.verbose >=3:
-                print >>sys.stderr, 'Connection type: %s' % self.connection
 
         ### Make it easier for people to use a doctype (first letter is enough)
         if self.doctype:
@@ -621,13 +635,14 @@ unoconv options:
       --pipe=name          alternative method of connection using a pipe
   -p, --port=port          specify the port (default: 2002)
                              to be used by client or listener
+      --password=string    provide a password to decrypt the document
   -s, --server=server      specify the server address (default: localhost)
                              to be used by client or listener
       --show               list the available output formats
       --stdout             write output to stdout
   -t, --template=file      import the styles from template (.ott)
   -T, --timeout=secs       timeout after secs if connection to listener fails
-  -v, --verbose            be more and more verbose
+  -v, --verbose            be more and more verbose (-vvv for debugging)
 '''
 
 class Convertor:
@@ -641,6 +656,7 @@ class Convertor:
         resolver = self.svcmgr.createInstanceWithContext("com.sun.star.bridge.UnoUrlResolver", self.context)
 
         ### Test for an existing connection
+        info(3, 'Connection type: %s' % op.connection)
         try:
             unocontext = resolver.resolve("uno:%s" % op.connection)
         except NoConnectException, e:
@@ -754,6 +770,10 @@ class Convertor:
 
             ### Load inputfile
             inputprops = UnoProps(Hidden=True, ReadOnly=True, UpdateDocMode=QUIET_UPDATE, FilterOptions=op.importfilter)
+#            if op.password:
+#                info = UnoProps(algorithm-name="PBKDF2", salt="salt", iteration-count=1024, hash="hash")
+#                inputprops += UnoProps(ModifyPasswordInfo=info)
+
             inputurl = unohelper.absolutize(self.cwd, unohelper.systemPathToFileUrl(inputfn))
 #            print dir(self.desktop)
             document = self.desktop.loadComponentFromURL( inputurl , "_blank", 0, inputprops )
@@ -795,8 +815,8 @@ class Convertor:
                     indexes.getByIndex(i).update()
 
             info(1, "Selected output format: %s" % outputfmt)
-            info(1, "Selected office filter: %s" % outputfmt.filter)
-            info(1, "Used doctype: %s" % outputfmt.doctype)
+            info(2, "Selected office filter: %s" % outputfmt.filter)
+            info(2, "Used doctype: %s" % outputfmt.doctype)
 
             ### Export phase
             phase = "export"
@@ -900,7 +920,9 @@ def error(str):
 
 def info(level, str):
     "Output info message"
-    if not op.stdout and level <= op.verbose:
+    if op.verbose >= 3 and level >= 3:
+        print >>sys.stderr, "DEBUG:", str
+    elif not op.stdout and level <= op.verbose:
         print >>sys.stdout, str
     elif level <= op.verbose:
         print >>sys.stderr, str
@@ -987,6 +1009,8 @@ def main():
 if __name__ == '__main__':
     exitcode = 0
 
+    op = Options(sys.argv[1:])
+
     for of in find_offices():
         if of.python != sys.executable and not sys.executable.startswith(of.unopath):
             python_switch(of)
@@ -997,12 +1021,14 @@ if __name__ == '__main__':
             office = of
             break
         except:
+            if op.verbose >= 3:
+                debug_office()
             print >>sys.stderr, "unoconv: Cannot find a suitable pyuno library and python binary combination in %s" % of
-            print >>sys.stderr, "ERROR: Please locate this library and send your feedback to:"
-            print >>sys.stderr, "       http://github.com/dagwieers/unoconv/issues"
-            print >>sys.stderr, sys.exc_info()[1]
-            pass
+            print >>sys.stderr, "ERROR:", sys.exc_info()[1]
+            print >>sys.stderr
     else:
+        if op.verbose >= 3:
+            debug_office()
         print >>sys.stderr, "unoconv: Cannot find a suitable office installation on your system."
         print >>sys.stderr, "ERROR: Please locate your office installation and send your feedback to:"
         print >>sys.stderr, "       http://github.com/dagwieers/unoconv/issues"
@@ -1041,10 +1067,8 @@ if __name__ == '__main__':
             props.append(prop)
         return tuple(props)
 
-    op = Options(sys.argv[1:])
-
-    info(2, "Office base location: %s" % office.basepath)
-    info(2, "Office binary location: %s" % office.unopath)
+#    info(2, "Office base location: %s" % office.basepath)
+#    info(2, "Office binary location: %s" % office.unopath)
 
     try:
         main()
