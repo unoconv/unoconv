@@ -135,8 +135,6 @@ def find_offices():
                 ure = sub
                 info(3, "Found %s in %s" % ('unorc', os.path.join(basepath, basis, sub, 'lib')))
                 break
-        else:
-            continue
 
 #        if not os.path.isfile(os.path.join(basepath, program, officebinary)):
 #            continue
