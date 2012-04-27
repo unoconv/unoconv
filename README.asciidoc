@@ -9,6 +9,22 @@ non-interactive conversion of documents.
 _For practical reasons we mention LibreOffice, but OpenOffice is supported by
 unoconv as well._
 
+== Installing unoconv
+unoconv can be installed using packages coming from your distribution, or
+simply by copying the unoconv python script to your system.
+
+If you installed unoconv by hand, make sure you have the required LibreOffice
+or OpenOffice packages installed. A hard requirement is the UNO python bindings
+which are often inside a subpackage named +libreoffice-pyuno+ or
++libobasis3.5-pyuno+.
+
+Various sub-packages are needed for specific import or export filters, e.g.
+XML-based filters require the xsltfilter subpackage,
+e.g. +libobasis3.5-xsltfilter+.
+
+IMPORTANT: Neglecting these requirements will cause unoconv to fail with
+unhelpful and confusing error messages.
+
 
 == How does unoconv work ?
 unoconv starts its own office instance (if it cannot find an existing
