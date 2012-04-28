@@ -1,3 +1,5 @@
+= Using unoconv on a HTTP server
+
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           // 
 //    THIS BRIEF NOTE IS AIMED TO HELP THOSE WHO WANT TO INSTALL UNOCONV     // 
@@ -6,25 +8,28 @@
 //                                                                           // 
 ///////////////////////////////////////////////////////////////////////////////
 
-PREREQUISITES: It is implied that you have successfully installed Linux  system
+== Prerequisites
+It is implied that you have successfully installed Linux  system
 and Web server, as well as you have superuser [root] access.
 It is also implied that you have sucessfully  installed  OpenOffice/LibreOffice
 and Unoconv packages and Unoconv is working correctly from the console.
 
-[Since it is impossible to cover all webservers only Apache + PHP is described.]
+NOTE: Since it is impossible to cover all webservers only Apache + PHP is described.
 
-Apache Configuration:
+== Apache Configuration
 Make sure your server is not running in chroot environment, since  the  rest  of
 the system will be isolated.
 
-PHP Configuration:
+== PHP Configuration
 Make sure you server can perform system calls: you would need  to  use  commands
-like exec(), shell_exec(), passthru(), system() etc. Basically you need to check
-that in php.ini or script settings:
--safe_mode flag is off
--disable_functions value is empty
+like +exec()+, +shell_exec()+, +passthru()+, +system()+ etc. Basically you need
+to check that in 'php.ini' or script settings:
+
+ - safe_mode flag is off
+ - disable_functions value is empty
+
 If everything is OK, you should be able to run unoconv with statements like:
-exec("unoconv -f html -o target_dir $filename");
++exec("unoconv -f html -o target_dir $filename");+
 
 Possible trouble makers:
 
@@ -39,11 +44,12 @@ However most of the default settings on modern Linux  distributions  allow  free
 access to ports from the inside (localhost), so this should not cause a problem.
 If you still think it is iptables, try to disable  it  temporary  and  see  what
 happens (keep in mind you must be root): 
-[root@localhost ~]# service iptables stop
-Stopping iptables (via systemctl):                         [  OK  ]
-//try run unoconv and then
-[root@localhost ~]# service iptables start
-Starting iptables (via systemctl):                         [  OK  ]
+
+    [root@localhost ~]# service iptables stop
+    Stopping iptables (via systemctl):                         [  OK  ]
+    //try run unoconv and then
+    [root@localhost ~]# service iptables start
+    Starting iptables (via systemctl):                         [  OK  ]
 
 3. Linux File Permissions Problem. Possibility: Low.
 Well, if unoconv and LibreOffice installations was correct anybody on the system
@@ -60,54 +66,58 @@ running a "visudo" command. You would have to understand it syntax, though.
 4. Libreoffice-Headless. Possibility: Medium.
 It is possible that package libreoffice-headless was  not  initially  installed.
 This package is required by LibreOffice to run in console mode.
-//check whether it is installed
-[root@localhost ~]# yum info libreoffice-headless
-//if not - install it.
-[root@localhost ~]# yum install libreoffice-headless
+
+    //check whether it is installed
+    [root@localhost ~]# yum info libreoffice-headless
+    //if not - install it.
+    [root@localhost ~]# yum install libreoffice-headless
 
 5. Selinux. Possibility: VERY HIGH.
 Despite unindicative error messages this is the most probable culpruit of office
 services and consequently unoconv errors. Example error messages can look like:
 
-[Java framework] Error in function createSettingsDocument (elements.cxx). 
-javaldx failed!
-Failed to connect to /usr/bin/soffice (pid=4478) in 6 seconds. 
-Connector : couldn't connect to socket (Success) 
-Error: Unable to connect or start own listener. Aborting.
+    [Java framework] Error in function createSettingsDocument (elements.cxx). 
+    javaldx failed!
+    Failed to connect to /usr/bin/soffice (pid=4478) in 6 seconds. 
+    Connector : couldn't connect to socket (Success) 
+    Error: Unable to connect or start own listener. Aborting.
 
 To check whether it is truly SElinux problem turn off enforcing mode:
-[root@localhost ~]# setenforce 0
-//try to run unoconv here, once finished, restore enforcing mode
-[root@localhost ~]# setenforce 1
+
+    [root@localhost ~]# setenforce 0
+    //try to run unoconv here, once finished, restore enforcing mode
+    [root@localhost ~]# setenforce 1
 
 If SElinux was causing error we need to find what exactly happened.  Let's  look
 into logs: 
-[root@localhost ~]# tail /var/log/messages
+
+    [root@localhost ~]# tail /var/log/messages
 
 You would probably see some mesages, any of these can pop out:
 
-Jan  5 07:55:00 localhost setroubleshoot: SELinux is preventing /usr/bin/python 
- from name_connect access on the tcp_socket port 2002. For complete SELinux mess
-ages. run sealert -l 18e8ce5d-6a20-4de6-8e38-1f99f66f007a
+    Jan  5 07:55:00 localhost setroubleshoot: SELinux is preventing /usr/bin/python 
+    from name_connect access on the tcp_socket port 2002. For complete SELinux mess
+    ages. run sealert -l 18e8ce5d-6a20-4de6-8e38-1f99f66f007a
 
-Jan  6 04:26:28 localhost setroubleshoot: SELinux is preventing sudo from nlmsg_
-relay access on the netlink_audit_socket Unknown. For complete SELinux messages.
- run sealert -l a1dd5ddd-8bef-49a2-b0b1-8674e2f522aa
+    Jan  6 04:26:28 localhost setroubleshoot: SELinux is preventing sudo from nlmsg_
+    relay access on the netlink_audit_socket Unknown. For complete SELinux messages.
+     run sealert -l a1dd5ddd-8bef-49a2-b0b1-8674e2f522aa
 
-Jan  6 04:26:28 localhost setroubleshoot: SELinux is preventing /usr/bin/python 
-from read access on the file /root/.libreoffice/3/user/extensions/bundled/regist
-ry/com.sun.star.comp.deployment.component.PackageRegistryBackend/unorc. For comp
-lete SELinux messages. run sealert -l 7d7631c3-6b3f-4101-84e3-f3e46880af26
+    Jan  6 04:26:28 localhost setroubleshoot: SELinux is preventing /usr/bin/python 
+    from read access on the file /root/.libreoffice/3/user/extensions/bundled/regist
+    ry/com.sun.star.comp.deployment.component.PackageRegistryBackend/unorc. For comp
+    lete SELinux messages. run sealert -l 7d7631c3-6b3f-4101-84e3-f3e46880af26
 
-Jan  6 05:34:14 localhost setroubleshoot: SELinux is preventing /usr/lib64/libre
-office/program/soffice.bin from name_bind access on the tcp_socket port 2002. Fo
-r complete SELinux messages. run sealert -l 32267995-c70c-4d67-86f1-552f07ea7
-557
+    Jan  6 05:34:14 localhost setroubleshoot: SELinux is preventing /usr/lib64/libre
+    office/program/soffice.bin from name_bind access on the tcp_socket port 2002. Fo
+    r complete SELinux messages. run sealert -l 32267995-c70c-4d67-86f1-552f07ea7
+    557
 
 ... and so on and so forth. For those who is interested in SElinux specific info
 take a look at audit log:
-[root@localhost ~]# tail /var/log/audit/audit.log
-//this one is not easy to read though
+
+    [root@localhost ~]# tail /var/log/audit/audit.log
+    //this one is not easy to read though
 
 Whatever, we need to explain to our angry friend  we really want to use unoconv.
 
@@ -118,11 +128,12 @@ log to generate this automatically. The latter is far more simple, so  we  stick
 to this solution, though it has chances to open up some security holes.
 
 Anyway, run sealert with the parameters given in log:
-[root@localhost log]# sealert -l d9e5bd7c-50eb-4636-93dd-912ccf800a7e
-//you will get some explanations about error here and a proposal how to fix it
-//like for example "run the following":
-# grep systemd-tmpfile /var/log/audit/audit.log | audit2allow -M mypol
-# semodule -i mypol.pp
+
+    [root@localhost log]# sealert -l d9e5bd7c-50eb-4636-93dd-912ccf800a7e
+    //you will get some explanations about error here and a proposal how to fix it
+    //like for example "run the following":
+    # grep systemd-tmpfile /var/log/audit/audit.log | audit2allow -M mypol
+    # semodule -i mypol.pp
 
 Basically this is the way to go. However here comes the tricky part. If you  use
 this to generate several SElinux policy modules sequentially,  old  module  will
@@ -137,10 +148,8 @@ single policy module.
 In my case I had to do give permissions to unoconv, libreoffice and sudo (I used
 it from webserver, however it turned out it was not required later):
 
-[root@localhost ~]# grep "soffice.bin\|sudo\|unoconv" /var/log/audit/audit.log |
- audit2allow -M phpextpol && semodule -i phpextpol.pp
-//"phpextpol" - can be any name you give to your security module
+    [root@localhost ~]# grep "soffice.bin\|sudo\|unoconv" /var/log/audit/audit.log |
+     audit2allow -M phpextpol && semodule -i phpextpol.pp
+    //"phpextpol" - can be any name you give to your security module
 
 That's all for starters. Please, refer to manpages for details. Good luck.
-
-///////////////////////////////////////////////////////////////////////////////
