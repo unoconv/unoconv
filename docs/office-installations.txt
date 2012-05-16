@@ -39,7 +39,21 @@ pyuno.so:: /opt/libreoffice3.4/basis-link/program/pyuno.so
 python-core:: /opt/libreoffice3.4/basis-link/program/python-core-2.6.1/
 
 
-= MacOSX ?
+= MacOS X ?
+On MacOS X it is important to answer the following questions:
+
+ - Is there a symlink from 'Contents/program' to 'Contents/MacOSX' ? We prefer to
+   use the 'Contents/program' path but we need to make sure it exists in all
+   cases.
+
+ - Can you find a pyuno.so ? Or is there only a pyuno.dylib on your system ?
+
+ - What is the location of the python libraries as shipped by your office
+   installation ?
+
+ - Is there a 'python.bin' binary on your office installation ? Or is there
+   only a 'python' binary ? Also let us know if your office installation does
+   not ship with a python interpreter at all.
 
 == OpenOffice 3.3.0
 Reported by ghis182
