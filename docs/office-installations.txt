@@ -9,29 +9,29 @@ locations of each of these important bits.
 unoconv will keep on working with your existing installation.*
 
 
-= RHEL6
+== RHEL6
 
-== LibreOffice 3.4.5 (platform)
+=== LibreOffice 3.4.5 (platform)
 Reported by dagwieers
 soffice.bin:: /usr/lib64/libreoffice/program/soffice.bin
 python:: /usr/bin/python
 pyuno.so:: /usr/lib64/libreoffice/basis-link/program/pyuno.so
 
-== LibreOffice 3.4.6 (project)
+=== LibreOffice 3.4.6 (project)
 Reported by dagwieers
 soffice.bin:: /opt/libreoffice3.4/program/soffice.bin
 python:: /opt/libreoffice3.4/basis-link/program/python.bin
 pyuno.so:: /opt/libreoffice3.4/basis-link/program/pyuno.so
 python-core:: /opt/libreoffice3.4/basis-link/program/python-core-2.6.1/
 
-== LibreOffice 3.5.3 (project)
+=== LibreOffice 3.5.3 (project)
 Reported by dagwieers
 soffice.bin:: /opt/libreoffice3.5/program/soffice.bin
 python.bin:: /opt/libreoffice3.5/program/python.bin
 pyuno.so:: /opt/libreoffice3.5/program/pyuno.so
 python-core:: /opt/libreoffice3.5/program/python-core-2.6.1/
 
-== OpenOffice 3.4.0 (project)
+=== OpenOffice 3.4.0 (project)
 Reported by dagwieers
 soffice.bin:: /opt/openoffice.org3/program/soffice.bin
 python.bin:: /opt/libreoffice3.4/basis-link/program/python.bin
@@ -39,7 +39,7 @@ pyuno.so:: /opt/libreoffice3.4/basis-link/program/pyuno.so
 python-core:: /opt/libreoffice3.4/basis-link/program/python-core-2.6.1/
 
 
-= MacOS X ?
+== MacOS X ?
 On MacOS X it is important to answer the following questions:
 
  - Is there a symlink from 'Contents/program' to 'Contents/MacOSX' ? We prefer to
@@ -55,47 +55,44 @@ On MacOS X it is important to answer the following questions:
    only a 'python' binary ? Also let us know if your office installation does
    not ship with a python interpreter at all.
 
-== OpenOffice 3.3.0
+=== OpenOffice 3.3.0
 Reported by ghis182
 soffice.bin:: /Applications/OpenOffice.org.app/Contents/program/soffice.bin
 python:: no python interpreter ?
 pyuno.so:: /Applications/OpenOffice.org.app/Contents/basis-link/program/pyuno.so
 
-== LibreOffice ?
+=== LibreOffice ?
 Reported by bartbunting
 soffice.bin:: /Applications/LibreOffice.app/Contents/MacOS/soffice.bin
 
 
-= MacOSX Lion 10.7.2
+== MacOS X 10.6 (Snow Leopard)
 
-== OpenOffice 3.3.0
+=== LibreOffice 3.5.0
+Reported by sfermigier
+soffice.bin:: /Applications/LibreOffice.app/Contents/program/soffice.bin
+python:: /Applications/LibreOffice.app/Contents/program/python
+pyuno.dylib:: /Applications/LibreOffice.app/Contents/program/pyuno.dylib
+
+
+== MacOS X 10.7 (Lion)
+
+=== OpenOffice 3.3.0
 Reported by sotis
 soffice.bin:: /Applications/OpenOffice.org.app/Contents/MacOS/soffice.bin
 python:: no python interpreter ?
 pyuno.so:: /Applications/OpenOffice.org.app/Contents/basis-link/program/pyuno.so
 
-
-= MacOSX Lion 10.7.3
-
-== LibreOffice 3.5.2
+=== LibreOffice 3.5.2
 Reported by kungla
 soffice.bin:: /Applications/OpenOffice.org.app/Contents/program/soffice.bin
 python:: /Applications/LibreOffice.app/Contents/program/python (no .bin ?)
 pyuno.so:: /Applications/LibreOffice.app/Contents/program/pyuno.so
 
 
-= MacOS Snow Leopard
+== Windows 7 64bit
 
-== LibreOffice 3.5.0
-Reported by sfermigier
-soffice.bin:: /Applications/LibreOffice.app/Contents/MacOS/soffice.bin
-python:: /Applications/LibreOffice.app/Contents/program/python (no .bin ?)
-pyuno.so:: ?
-
-
-= Windows 7 64bit
-
-== LibreOffice 3.5.3
+=== LibreOffice 3.5.3
 Reported by dagwieers
 soffice.exe:: C:\Program Files (x86)\LibreOffice 3.5\program\soffice.exe
 python.exe:: C:\Program Files (x86)\LibreOffice 3.5\program\python.exe
