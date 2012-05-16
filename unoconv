@@ -109,14 +109,13 @@ def find_offices():
             pythonbinaries = ( 'python.bin', 'python', )
 
         ### Older LibreOffice/OpenOffice and Windows use basis-link/ or basis/
-        basis = 'error'
-        for sub in ( 'basis-link', 'basis', '' ):
+        libpath = 'error'
+        for basis in ( 'basis-link', 'basis', '' ):
             for lib in officelibraries:
-                if os.path.isfile(os.path.join(basepath, sub, 'program', lib)):
-                    basis = sub
-                    libpath = os.path.join(basepath, sub, 'program')
-                    officelibrary = os.path.join(basepath, sub, 'program', lib)
-                    info(3, "Found %s in %s" % (lib, os.path.join(basepath, sub, 'program')))
+                if os.path.isfile(os.path.join(basepath, basis, 'program', lib)):
+                    libpath = os.path.join(basepath, basis, 'program')
+                    officelibrary = os.path.join(libpath, lib)
+                    info(3, "Found %s in %s" % (lib, libpath))
                     # Break the inner loop...
                     break
             # Continue if the inner loop wasn't broken.
@@ -129,20 +128,12 @@ def find_offices():
 
         ### MacOSX have soffice binaries installed in MacOS subdirectory, not program
         unopath = 'error'
-        for sub in ( 'program', 'MacOS' ):
-            if unopath != 'error':
-                break
+        for basis in ( 'basis-link', 'basis', '' ):
             for bin in officebinaries:
-                if os.path.isfile(os.path.join(basepath, basis, sub, bin)):
-                    unopath = os.path.join(basepath, basis, sub)
-                    officebinary = os.path.join(basepath, basis, sub, bin)
-                    info(3, "Found %s in %s" % (bin, os.path.join(basepath, basis, sub)))
-                    # Break the inner loop...
-                    break
-                elif os.path.isfile(os.path.join(basepath, sub, bin)):
-                    unopath = os.path.join(basepath, sub)
-                    officebinary = os.path.join(basepath, sub, bin)
-                    info(3, "Found %s in %s" % (officebinary, os.path.join(basepath, sub)))
+                if os.path.isfile(os.path.join(basepath, basis, 'program', bin)):
+                    unopath = os.path.join(basepath, basis, 'program')
+                    officebinary = os.path.join(unopath, bin)
+                    info(3, "Found %s in %s" % (bin, unopath))
                     # Break the inner loop...
                     break
             # Continue if the inner loop wasn't broken.
@@ -155,11 +146,20 @@ def find_offices():
 
         ### Windows/MacOSX does not provide or need a URE/lib directory ?
         urepath = ''
-        for sub in ( 'ure-link', 'ure', 'URE', '' ):
-            if os.path.isfile(os.path.join(basepath, basis, sub, 'lib', 'unorc')):
-                urepath = os.path.join(basepath, basis, sub)
-                info(3, "Found %s in %s" % ('unorc', os.path.join(urepath, 'lib')))
-                break
+        for basis in ( 'basis-link', 'basis', '' ):
+            for ure in ( 'ure-link', 'ure', 'URE', '' ):
+                if os.path.isfile(os.path.join(basepath, basis, ure, 'lib', 'unorc')):
+                    urepath = os.path.join(basepath, basis, ure)
+                    info(3, "Found %s in %s" % ('unorc', os.path.join(urepath, 'lib')))
+                    # Break the inner loop...
+                    break
+            # Continue if the inner loop wasn't broken.
+            else:
+                continue
+            # Inner loop was broken, break the outer.
+            break
+        else:
+            continue
 
 #        if not os.path.isfile(os.path.join(basepath, program, officebinary)):
 #            continue
