@@ -93,47 +93,72 @@ def find_offices():
                           glob.glob('/usr/local/ooo*') + \
                           glob.glob('/usr/local/lib/libreoffice*')
 
-    ### Find a working set of pyuno module
+    ### Find a working set for python UNO bindings
     for basepath in extrapaths:
         if os.name in ( 'nt', 'os2' ):
-            officelibrary = 'pyuno.pyd'
-            officebinary = 'soffice.exe'
-            pythonbinary = 'python.exe'
+            officelibraries = ( 'pyuno.pyd', )
+            officebinaries = ( 'soffice.exe' ,)
+            pythonbinaries = ( 'python.exe', )
+        elif os.name in ( 'mac', ) or sys.platform in ( 'darwin', ):
+            officelibraries = ( 'pyuno.so', 'pyuno.dylib' )
+            officebinaries = ( 'soffice.bin', )
+            pythonbinaries = ( 'python.bin', 'python' )
         else:
-            officelibrary = 'pyuno.so'
-            officebinary = 'soffice.bin'
-            pythonbinary = 'python.bin'
+            officelibraries = ( 'pyuno.so', )
+            officebinaries = ( 'soffice.bin', )
+            pythonbinaries = ( 'python.bin', 'python', )
 
         ### Older LibreOffice/OpenOffice and Windows use basis-link/ or basis/
         basis = 'error'
-        for sub in ('basis-link', 'basis', ''):
-            if os.path.isfile(os.path.join(basepath, sub, 'program', officelibrary)):
-                basis = sub
-                info(3, "Found %s in %s" % (officelibrary, os.path.join(basepath, sub, 'program')))
-                break
+        for sub in ( 'basis-link', 'basis', '' ):
+            for lib in officelibraries:
+                if os.path.isfile(os.path.join(basepath, sub, 'program', lib)):
+                    basis = sub
+                    libpath = os.path.join(basepath, sub, 'program')
+                    officelibrary = os.path.join(basepath, sub, 'program', lib)
+                    info(3, "Found %s in %s" % (lib, os.path.join(basepath, sub, 'program')))
+                    # Break the inner loop...
+                    break
+            # Continue if the inner loop wasn't broken.
+            else:
+                continue
+            # Inner loop was broken, break the outer.
+            break
         else:
             continue
 
         ### MacOSX have soffice binaries installed in MacOS subdirectory, not program
-        program = 'error'
-        for sub in ('program', 'MacOS'):
-            if os.path.isfile(os.path.join(basepath, basis, sub, officebinary)):
-                program = os.path.join(basis, sub)
-                info(3, "Found %s in %s" % (officebinary, os.path.join(basepath, basis, sub)))
+        unopath = 'error'
+        for sub in ( 'program', 'MacOS' ):
+            if unopath != 'error':
                 break
-            elif os.path.isfile(os.path.join(basepath, sub, officebinary)):
-                program = sub
-                info(3, "Found %s in %s" % (officebinary, os.path.join(basepath, sub)))
-                break
+            for bin in officebinaries:
+                if os.path.isfile(os.path.join(basepath, basis, sub, bin)):
+                    unopath = os.path.join(basepath, basis, sub)
+                    officebinary = os.path.join(basepath, basis, sub, bin)
+                    info(3, "Found %s in %s" % (bin, os.path.join(basepath, basis, sub)))
+                    # Break the inner loop...
+                    break
+                elif os.path.isfile(os.path.join(basepath, sub, bin)):
+                    unopath = os.path.join(basepath, sub)
+                    officebinary = os.path.join(basepath, sub, bin)
+                    info(3, "Found %s in %s" % (officebinary, os.path.join(basepath, sub)))
+                    # Break the inner loop...
+                    break
+            # Continue if the inner loop wasn't broken.
+            else:
+                continue
+            # Inner loop was broken, break the outer.
+            break
         else:
             continue
 
-        ### Windows does not provide or need a URE/lib directory ?
-        ure = 'error'
-        for sub in ('ure-link', 'ure', 'URE', ''):
+        ### Windows/MacOSX does not provide or need a URE/lib directory ?
+        urepath = ''
+        for sub in ( 'ure-link', 'ure', 'URE', '' ):
             if os.path.isfile(os.path.join(basepath, basis, sub, 'lib', 'unorc')):
-                ure = sub
-                info(3, "Found %s in %s" % ('unorc', os.path.join(basepath, basis, sub, 'lib')))
+                urepath = os.path.join(basepath, basis, sub)
+                info(3, "Found %s in %s" % ('unorc', os.path.join(urepath, 'lib')))
                 break
 
 #        if not os.path.isfile(os.path.join(basepath, program, officebinary)):
@@ -143,25 +168,18 @@ def find_offices():
 #        if not glob.glob(os.path.join(basepath, basis, program, 'python-core-*')):
 #            continue
 
-        if os.path.isfile(os.path.join(basepath, basis, program, pythonbinary)):
-            info(3, "Found %s in %s" % (pythonbinary, os.path.join(basepath, basis, program)))
-            ret.append(Office(basepath,
-                              os.path.join(basepath, basis, ure),
-                              os.path.join(basepath, basis, program),
-                              os.path.join(basepath, basis, program, officelibrary),
-                              os.path.join(basepath, program, officebinary),
-                              os.path.join(basepath, basis, program, pythonbinary),
-                              glob.glob(os.path.join(basepath, basis, program, 'python-core-*'))[0]))
+        for pythonbinary in pythonbinaries:
+            print 'Test', os.path.join(unopath, pythonbinary)
+            if os.path.isfile(os.path.join(unopath, pythonbinary)):
+                info(3, "Found %s in %s" % (pythonbinary, unopath))
+                ret.append(Office(basepath, urepath, unopath, officelibrary, officebinary,
+                                  os.path.join(unopath, pythonbinary),
+                                  glob.glob(os.path.join(libpath, 'python-core-*'))[0]))
         else:
             info(3, "Considering %s" % basepath)
-            ret.append(Office(basepath,
-                              os.path.join(basepath, basis, ure),
-                              os.path.join(basepath, basis, program),
-                              os.path.join(basepath, basis, program, officelibrary),
-                              os.path.join(basepath, program, officebinary),
+            ret.append(Office(basepath, urepath, unopath, officelibrary, officebinary,
                               sys.executable,
                               None))
-
     return ret
 
 def office_environ(office):
