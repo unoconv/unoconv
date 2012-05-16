@@ -158,8 +158,6 @@ def find_offices():
                 continue
             # Inner loop was broken, break the outer.
             break
-        else:
-            continue
 
 #        if not os.path.isfile(os.path.join(basepath, program, officebinary)):
 #            continue
@@ -169,7 +167,6 @@ def find_offices():
 #            continue
 
         for pythonbinary in pythonbinaries:
-            print 'Test', os.path.join(unopath, pythonbinary)
             if os.path.isfile(os.path.join(unopath, pythonbinary)):
                 info(3, "Found %s in %s" % (pythonbinary, unopath))
                 ret.append(Office(basepath, urepath, unopath, officelibrary, officebinary,
