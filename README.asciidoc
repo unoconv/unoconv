@@ -57,21 +57,39 @@ mounted at the same location.
 
 
 == Python and pyuno incompatibilities
-Also beware that the pyuno python module needs to be compiled with the exact
+Beware that the pyuno python module needs to be compiled with the exact
 same version of python that you are using to load it. A lot of people that
 run into problems loading pyuno are actually using a precompiled LibreOffice
-that they downloaded somewhere and is incompatible with their python version.
-(Often the LibreOffice comes with its own python build that works flawlessly
-with their own pyuno)
+that they downloaded somewhere and is incompatible with the python version
+on their system.
+
+To solve this issue, the project's office suite ships with its own python
+interpreter located in the 'program' directory, this one should work
+flawlessly.
 
 The most recent unoconv works around this issue by automatically detecting
-incompatibilities, and restarting itself using a compatible python (the one
-that ships with LibreOffice).
+incompatibilities, and restarting itself using a compatible python (the same
+one that ships with LibreOffice).
 
-You can influence the automatic detection by setting the UNO_PATH environment
+You can influence the automatic detection by setting the +UNO_PATH+ environment
 variable to point to an alternative LibreOffice installation, e.g.:
 
-    UNO_PATH=/opt/libreoffice3.5 unoconv some-file.odt
+    UNO_PATH=/opt/libreoffice3.5 unoconv -f pdf some-file.odt
+
+But you can also force another python by using it to execute unoconv, e.g.:
+
+    /opt/libreoffice3.5/program/python.bin unoconv -f pdf some-file.odt
+
+or on MacOS X:
+
+    /Applications/LibreOffice.app/Contents/program/python unoconf -f pdf some-file.odt
+
+or on Windows:
+
+    C:\Program Files (x86)\LibreOffice 3.5\program\python.exe unoconv -f pdf some-file.odt
+
+NOTE: If you plan to use unoconv extensively (or in an automated fashion) it
+is more efficient to use the correct python interpreter directly.
 
 
 == Using unoconv with no X display
@@ -109,15 +127,20 @@ with import and export filters using PyUNO. We assume these are related
 to internal state or timing issues that under certain conditions fail
 to correctly work.
 
+If you can reproduce the problem on a specific file, please take the time to
+open the file in LibreOffice directly and export it to the desired format. If
+this fails, it needs to be reported to the LibreOffice project directly. If
+that works, we need to know !
+
 We are looking into this with the LibreOffice developers to:
 
  - Collaborate closer to find, report and fix unexpected failures
- - Allow end-users to increase debugging and reporting to the project
+ - Allow end-users to increase debugging and improve reporting to the project
 
 
 == Troubleshooting instructions
 If you encounter a problem with converting documents using unoconv, please
-consider that this could be to a number of things:
+consider that this could be caused by a number of things:
 
  - incomplete LibreOffice implementation
  - LibreOffice bug or regression specific to your version/distribution
@@ -128,7 +151,7 @@ consider that this could be to a number of things:
  - problem related to the python UNO bindings
  - problem related to the unoconv python script
 
-It is recommended to follow any of these steps to pinpoint the problem:
+It is recommended to follow all of the below steps to pinpoint the problem:
 
  - if this is the first time you are using LibreOffice/OpenOffice, make sure
    you have all the required sub-packages installed, depending on the
@@ -150,12 +173,12 @@ It is recommended to follow any of these steps to pinpoint the problem:
    https://github.com/dagwieers/unoconv/downloads
 
  - try the conversion by opening the file in LibreOffice and exporting
-   it through LibreOffice
+   it through LibreOffice directly
 
  - try unoconv with a different minor or major LibreOffice version to test
    whether it is a regression in LibreOffice
 
- - try to load the UNO bindings in python manually
+ - try to load the UNO bindings in python manually:
 
    * do this with the python executable that ships with the LibreOffice
      package/installer
@@ -166,6 +189,10 @@ It is recommended to follow any of these steps to pinpoint the problem:
      LibreOffice)
 
         # python -c 'import uno, unohelper'
+
+ - try unoconv with a different python interpreter manually:
+
+    # /opt/libreoffice3.5/program/python.bin unoconv -f pdf test-file.odt
 
 If all of the above worked, the issue might still be related to import/export
 filters, LibreOffice or unoconv, so please report any information to reproduce
