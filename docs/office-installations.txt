@@ -1,0 +1,89 @@
+= Office installations
+Dag Wieers <dag@wieers.com>
+
+Since the hardest part is making unoconv work with any permutation of
+platform, python and office suite I started to collect a number of known
+locations of each of these important bits.
+
+*Please provide this information for any new platform so we can make sure
+unoconv will keep on working with your existing installation.*
+
+
+= RHEL6
+
+== LibreOffice 3.4.5 (platform)
+Reported by dagwieers
+soffice.bin:: /usr/lib64/libreoffice/program/soffice.bin
+python:: /usr/bin/python
+pyuno.so:: /usr/lib64/libreoffice/basis-link/program/pyuno.so
+
+== LibreOffice 3.4.6 (project)
+Reported by dagwieers
+soffice.bin:: /opt/libreoffice3.4/program/soffice.bin
+python:: /opt/libreoffice3.4/basis-link/program/python.bin
+pyuno.so:: /opt/libreoffice3.4/basis-link/program/pyuno.so
+python-core:: /opt/libreoffice3.4/basis-link/program/python-core-2.6.1/
+
+== LibreOffice 3.5.3 (project)
+Reported by dagwieers
+soffice.bin:: /opt/libreoffice3.5/program/soffice.bin
+python.bin:: /opt/libreoffice3.5/program/python.bin
+pyuno.so:: /opt/libreoffice3.5/program/pyuno.so
+python-core:: /opt/libreoffice3.5/program/python-core-2.6.1/
+
+== OpenOffice 3.4.0 (project)
+Reported by dagwieers
+soffice.bin:: /opt/openoffice.org3/program/soffice.bin
+python.bin:: /opt/libreoffice3.4/basis-link/program/python.bin
+pyuno.so:: /opt/libreoffice3.4/basis-link/program/pyuno.so
+python-core:: /opt/libreoffice3.4/basis-link/program/python-core-2.6.1/
+
+
+= MacOSX ?
+
+== OpenOffice 3.3.0
+Reported by ghis182
+soffice.bin:: /Applications/OpenOffice.org.app/Contents/program/soffice.bin
+python:: no python interpreter ?
+pyuno.so:: /Applications/OpenOffice.org.app/Contents/basis-link/program/pyuno.so
+
+== LibreOffice ?
+Reported by bartbunting
+soffice.bin:: /Applications/LibreOffice.app/Contents/MacOS/soffice.bin
+
+
+= MacOSX Lion 10.7.2
+
+== OpenOffice 3.3.0
+Reported by sotis
+soffice.bin:: /Applications/OpenOffice.org.app/Contents/MacOS/soffice.bin
+python:: no python interpreter ?
+pyuno.so:: /Applications/OpenOffice.org.app/Contents/basis-link/program/pyuno.so
+
+
+= MacOSX Lion 10.7.3
+
+== LibreOffice 3.5.2
+Reported by kungla
+soffice.bin:: /Applications/OpenOffice.org.app/Contents/program/soffice.bin
+python:: /Applications/LibreOffice.app/Contents/program/python (no .bin ?)
+pyuno.so:: /Applications/LibreOffice.app/Contents/program/pyuno.so
+
+
+= MacOS Snow Leopard
+
+== LibreOffice 3.5.0
+Reported by sfermigier
+soffice.bin:: /Applications/LibreOffice.app/Contents/MacOS/soffice.bin
+python:: /Applications/LibreOffice.app/Contents/program/python (no .bin ?)
+pyuno.so:: ?
+
+
+= Windows 7 64bit
+
+== LibreOffice 3.5.3
+Reported by dagwieers
+soffice.exe:: C:\Program Files (x86)\LibreOffice 3.5\program\soffice.exe
+python.exe:: C:\Program Files (x86)\LibreOffice 3.5\program\python.exe
+pyuno.pyd:: C:\Program Files (x86)\LibreOffice 3.5\program\pyuno.pyd
+python-core:: C:\Program Files (x86)\LibreOffice 3.5\program\python-core-2.6.1\
