@@ -99,14 +99,17 @@ def find_offices():
             officelibraries = ( 'pyuno.pyd', )
             officebinaries = ( 'soffice.exe' ,)
             pythonbinaries = ( 'python.exe', )
+            pythonhomes = ()
         elif os.name in ( 'mac', ) or sys.platform in ( 'darwin', ):
             officelibraries = ( 'pyuno.so', 'pyuno.dylib' )
             officebinaries = ( 'soffice.bin', )
             pythonbinaries = ( 'python.bin', 'python' )
+            pythonhomes = ( 'OOoPython.framework/Versions/*/lib/python*', )
         else:
             officelibraries = ( 'pyuno.so', )
             officebinaries = ( 'soffice.bin', )
             pythonbinaries = ( 'python.bin', 'python', )
+            pythonhomes = ( 'python-core-*', )
 
         ### Older LibreOffice/OpenOffice and Windows use basis-link/ or basis/
         libpath = 'error'
@@ -159,6 +162,13 @@ def find_offices():
             # Inner loop was broken, break the outer.
             break
 
+        pythonhome = None
+        for home in pythonhomes:
+            if glob.glob(os.path.join(libpath, home)):
+                pythonhome = glob.glob(os.path.join(libpath, home))[0]
+                info(3, "Found %s in %s" % (home, pythonhome))
+                break
+
 #        if not os.path.isfile(os.path.join(basepath, program, officebinary)):
 #            continue
 #        info(3, "Found %s in %s" % (officebinary, os.path.join(basepath, program)))
@@ -170,13 +180,11 @@ def find_offices():
             if os.path.isfile(os.path.join(unopath, pythonbinary)):
                 info(3, "Found %s in %s" % (pythonbinary, unopath))
                 ret.append(Office(basepath, urepath, unopath, officelibrary, officebinary,
-                                  os.path.join(unopath, pythonbinary),
-                                  glob.glob(os.path.join(libpath, 'python-core-*'))[0]))
+                                  os.path.join(unopath, pythonbinary), pythonhome))
         else:
             info(3, "Considering %s" % basepath)
             ret.append(Office(basepath, urepath, unopath, officelibrary, officebinary,
-                              sys.executable,
-                              None))
+                              sys.executable, None))
     return ret
 
 def office_environ(office):
