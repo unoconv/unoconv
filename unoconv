@@ -55,6 +55,52 @@ class Office:
 ###
 ### See: http://user.services.openoffice.org/en/forum/viewtopic.php?f=45&t=36370&p=166783
 
+def cygpath(p):
+    ### Convert a Windows path to a Cygwin path
+    if p.startswith('-'):
+        p = '.\\' + p
+
+    return subprocess.Popen(["cygpath", p], stdout=subprocess.PIPE).communicate()[0].rstrip('\n')
+
+def uncygpath(p):
+    ### Convert a Cygwin path to a Windows path
+    if p.startswith('-'):
+        p = './' + p
+
+    return subprocess.Popen(["cygpath", "-w", p], stdout=subprocess.PIPE).communicate()[0].rstrip('\n')
+
+
+def uncygargs(args):
+    ### Convert all paths in the args to Windows paths, ready to be passed to a Windows python
+    outargs = []
+
+    try:
+        opts, args = getopt.getopt (args, 'c:Dd:e:f:hi:Llo:np:s:T:t:v',
+            ['connection=', 'debug', 'doctype=', 'export', 'format=',
+             'help', 'import', 'listener', 'no-launch', 'output=',
+             'outputpath', 'password=', 'pipe=', 'port=', 'server=',
+             'timeout=', 'show', 'stdout', 'template', 'verbose',
+             'version'] )
+    except getopt.error, exc:
+        ### This should have been caught by checking the args this time round
+        sys.exit(255)
+
+    for opt, arg in opts:
+        if opt in ['-o', '--output', '--outputpath', '--pipe', '-t', '--template']:
+            outargs.append(opt)
+            outargs.append(uncygpath(arg))
+        else:
+            outargs.append(opt)
+
+            if arg:
+                outargs.append(arg)
+
+    for arg in args:
+        outargs.append(uncygpath(arg))
+
+    return outargs
+
+
 def find_offices():
     ret = []
     extrapaths = []
@@ -76,6 +122,15 @@ def find_offices():
                 extrapaths += glob.glob(os.environ['PROGRAMFILES(X86)']+'\\LibreOffice*') + \
                               glob.glob(os.environ['PROGRAMFILES(X86)']+'\\OpenOffice.org*')
 
+        elif sys.platform in ( 'cygwin', ):
+            if 'PROGRAMFILES' in os.environ.keys():
+                extrapaths += glob.glob(cygpath(os.environ['PROGRAMFILES'])+'/LibreOffice*') + \
+                              glob.glob(cygpath(os.environ['PROGRAMFILES'])+'/OpenOffice.org*')
+
+            if 'PROGRAMFILES(X86)' in os.environ.keys():
+                extrapaths += glob.glob(cygpath(os.environ['PROGRAMFILES(X86)'])+'/LibreOffice*') + \
+                              glob.glob(cygpath(os.environ['PROGRAMFILES(X86)'])+'/OpenOffice.org*')
+
         elif os.name in ( 'mac', ) or sys.platform in ( 'darwin', ):
             extrapaths += [ '/Applications/LibreOffice.app/Contents',
                             '/Applications/NeoOffice.app/Contents',
@@ -95,7 +150,7 @@ def find_offices():
 
     ### Find a working set for python UNO bindings
     for basepath in extrapaths:
-        if os.name in ( 'nt', 'os2' ):
+        if os.name in ( 'nt', 'os2' ) or sys.platform in ( 'cygwin', ):
             officelibraries = ( 'pyuno.pyd', )
             officebinaries = ( 'soffice.exe' ,)
             pythonbinaries = ( 'python.exe', )
@@ -196,7 +251,7 @@ def office_environ(office):
 
     ### Set URE_BOOTSTRAP so that "uno.getComponentContext()" bootstraps a complete
     ### UNO environment
-    if os.name in ( 'nt', 'os2' ):
+    if os.name in ( 'nt', 'os2' ) or sys.platform in ( 'cygwin', ):
         os.environ['URE_BOOTSTRAP'] = 'vnd.sun.star.pathname:' + os.path.join(office.basepath, 'program', 'fundamental.ini')
     else:
         os.environ['URE_BOOTSTRAP'] = 'vnd.sun.star.pathname:' + os.path.join(office.basepath, 'program', 'fundamentalrc')
@@ -246,7 +301,10 @@ def python_switch(office):
                                    os.path.join(office.pythonhome, 'lib', 'site-packages') + os.pathsep + \
                                    office.unopath
 
-    os.environ['UNO_PATH'] = office.unopath
+    if sys.platform in ( 'cygwin', ):
+        os.environ['UNO_PATH'] = uncygpath(office.unopath)
+    else:
+        os.environ['UNO_PATH'] = office.unopath
 
     info(3, "-> Switching from %s to %s" % (sys.executable, office.python))
     if os.name in ('nt', 'os2'):
@@ -254,6 +312,13 @@ def python_switch(office):
         ### arguments and executable name if they contain whitespaces. subprocess
         ### fixes that behavior.
         ret = subprocess.call([office.python] + sys.argv[0:])
+        sys.exit(ret)
+    elif sys.platform in ( 'cygwin', ):
+        temp = [uncygpath(sys.argv[0])] + uncygargs(sys.argv[1:])
+        info(3, "About to launch Windows python")
+        info(3, "Original args: %s" % str(sys.argv))
+        info(3, "Windows args: %s" % str(temp))
+        ret = subprocess.call([office.python] + temp)
         sys.exit(ret)
     else:
 
