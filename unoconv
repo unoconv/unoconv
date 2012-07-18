@@ -1005,6 +1005,10 @@ def die(ret, str=None):
             info(3, 'Waiting for %s with pid %s to disappear.' % (ooproc.pid, product.ooName))
             ooproc.wait()
 
+    # allow Python GC to garbage collect pyuno object *before* exit call
+    # which avoids random segmentation faults --vpa
+    convertor = None
+
     sys.exit(ret)
 
 def main():
