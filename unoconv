@@ -133,8 +133,8 @@ def find_offices():
         unopath = 'error'
         for basis in ( 'basis-link', 'basis', '' ):
             for bin in officebinaries:
-                if os.path.isfile(os.path.join(basepath, basis, 'program', bin)):
-                    unopath = os.path.join(basepath, basis, 'program')
+                if os.path.isfile(os.path.join(basepath, basis, 'MacOS', bin)):
+                    unopath = os.path.join(basepath, basis, 'MacOS')
                     officebinary = os.path.join(unopath, bin)
                     info(3, "Found %s in %s" % (bin, unopath))
                     # Break the inner loop...

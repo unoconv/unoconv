@@ -32,8 +32,10 @@ docs-install:
 	$(MAKE) -C docs install
 
 install:
-	install -Dp -m0755 unoconv $(DESTDIR)$(bindir)/unoconv
-	install -Dp -m0644 docs/unoconv.1 $(DESTDIR)$(mandir)/man1/unoconv.1
+	mkdir -p $(DESTDIR)$(bindir)
+	mkdir -p $(DESTDIR)$(mandir)/man1
+	install -p -m0755 unoconv $(DESTDIR)$(bindir)/unoconv
+	install -p -m0644 docs/unoconv.1 $(DESTDIR)$(mandir)/man1/unoconv.1
 
 install-links: $(links)
 
