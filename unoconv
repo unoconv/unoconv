@@ -95,28 +95,33 @@ def find_offices():
 
     ### Find a working set for python UNO bindings
     for basepath in extrapaths:
+
         if os.name in ( 'nt', 'os2' ):
             officelibraries = ( 'pyuno.pyd', )
             officebinaries = ( 'soffice.exe' ,)
             pythonbinaries = ( 'python.exe', )
             pythonhomes = ()
+            program = 'program'
         elif os.name in ( 'mac', ) or sys.platform in ( 'darwin', ):
             officelibraries = ( 'pyuno.so', 'pyuno.dylib' )
             officebinaries = ( 'soffice.bin', )
             pythonbinaries = ( 'python.bin', 'python' )
             pythonhomes = ( 'OOoPython.framework/Versions/*/lib/python*', )
+            program = 'MacOS'
         else:
             officelibraries = ( 'pyuno.so', )
             officebinaries = ( 'soffice.bin', )
             pythonbinaries = ( 'python.bin', 'python', )
             pythonhomes = ( 'python-core-*', )
+            program = 'program'
 
         ### Older LibreOffice/OpenOffice and Windows use basis-link/ or basis/
         libpath = 'error'
+        
         for basis in ( 'basis-link', 'basis', '' ):
             for lib in officelibraries:
-                if os.path.isfile(os.path.join(basepath, basis, 'program', lib)):
-                    libpath = os.path.join(basepath, basis, 'program')
+                if os.path.isfile(os.path.join(basepath, basis, program, lib)):
+                    libpath = os.path.join(basepath, basis, program)
                     officelibrary = os.path.join(libpath, lib)
                     info(3, "Found %s in %s" % (lib, libpath))
                     # Break the inner loop...
@@ -129,12 +134,11 @@ def find_offices():
         else:
             continue
 
-        ### MacOSX have soffice binaries installed in MacOS subdirectory, not program
         unopath = 'error'
         for basis in ( 'basis-link', 'basis', '' ):
             for bin in officebinaries:
-                if os.path.isfile(os.path.join(basepath, basis, 'MacOS', bin)):
-                    unopath = os.path.join(basepath, basis, 'MacOS')
+                if os.path.isfile(os.path.join(basepath, basis, program, bin)):
+                    unopath = os.path.join(basepath, basis, program)
                     officebinary = os.path.join(unopath, bin)
                     info(3, "Found %s in %s" % (bin, unopath))
                     # Break the inner loop...
