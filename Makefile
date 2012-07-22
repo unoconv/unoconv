@@ -1,5 +1,15 @@
 name = unoconv
-version = $(shell awk '/^Version: / {print $$2}' $(name).spec)
+version := $(shell cat VERSION)
+#version := $(shell awk 'BEGIN { FS="=" } /^VERSION = / { print $$2}' $(name))
+
+### Get the branch information from git
+git_date := $(shell git log -n 1 --format="%ai")
+git_ref := $(shell git symbolic-ref -q HEAD)
+git_branch ?= $(lastword $(subst /, ,$(git_ref)))
+git_branch ?= HEAD
+
+date := $(shell date --date="$(git_date)" +%Y%m%d%H%M)
+release_date := $(shell date --date="$(git_date)" +%Y-%m-%d)
 
 prefix = /usr
 sysconfdir = /etc
@@ -9,6 +19,20 @@ libdir = $(prefix)/lib
 datadir = $(prefix)/share
 mandir = $(datadir)/man
 localstatedir = /var
+
+specfile = $(name).spec
+
+DESTDIR =
+OFFICIAL =
+
+distversion = $(version)
+debrelease = 0
+rpmrelease =
+ifeq ($(OFFICIAL),)
+    distversion = $(version)-git$(date)
+    debrelease = 0git$(date)
+    rpmrelease = .git$(date)
+endif
 
 .PHONY: all install docs clean
 
@@ -32,8 +56,10 @@ docs-install:
 	$(MAKE) -C docs install
 
 install:
-	install -Dp -m0755 unoconv $(DESTDIR)$(bindir)/unoconv
-	install -Dp -m0644 docs/unoconv.1 $(DESTDIR)$(mandir)/man1/unoconv.1
+	install -d -m0755 $(DESTDIR)$(bindir)
+	install -d -m0755 $(DESTDIR)$(mandir)/man1/
+	install -p -m0755 unoconv $(DESTDIR)$(bindir)/unoconv
+	install -p -m0644 docs/unoconv.1 $(DESTDIR)$(mandir)/man1/unoconv.1
 
 install-links: $(links)
 
@@ -43,12 +69,9 @@ $(filter %,$(links)):
 ### Remove odp because size > 300kB
 dist: clean
 	$(MAKE) -C docs dist
-	git ls-tree -r --name-only --full-tree $$(git branch --no-color 2>/dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/') | pax -d -w -x ustar -s ,^,$(name)-$(version)/, | bzip2 >../$(name)-$(version).tar.bz2
-#	svn list -R | grep -v '.odp$$' | pax -d -w -x ustar -s ',^.,$(name)-$(version),' | bzip2 >../$(name)-$(version).tar.bz2
-#	svn st -v --xml | \
-        xmlstarlet sel -t -m "/status/target/entry" -s A:T:U '@path' -i "wc-status[@revision]" -v "@path" -n | \
-        pax -d -w -x ustar -s ,^,$(name)-$(version)/, | \
-        bzip2 >../$(name)-$(version).tar.bz2
+	echo -e "\033[1m== Building archive $(name)-$(distversion) ==\033[0;0m"
+	git ls-tree -r --name-only --full-tree $(git_branch) | \
+		tar -czf $(name)-$(distversion).tar.gz --transform='s,^,$(name)-$(distversion)/,S' --files-from=-
 
 rpm: dist
 	rpmbuild -tb --clean --rmsource --rmspec --define "_rpmfilename %%{NAME}-%%{VERSION}-%%{RELEASE}.%%{ARCH}.rpm" --define "_rpmdir ../" ../$(name)-$(version).tar.bz2
