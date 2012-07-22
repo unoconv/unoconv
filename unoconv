@@ -95,7 +95,6 @@ def find_offices():
 
     ### Find a working set for python UNO bindings
     for basepath in extrapaths:
-
         if os.name in ( 'nt', 'os2' ):
             officelibraries = ( 'pyuno.pyd', )
             officebinaries = ( 'soffice.exe' ,)
@@ -117,7 +116,6 @@ def find_offices():
 
         ### Older LibreOffice/OpenOffice and Windows use basis-link/ or basis/
         libpath = 'error'
-        
         for basis in ( 'basis-link', 'basis', '' ):
             for lib in officelibraries:
                 if os.path.isfile(os.path.join(basepath, basis, program, lib)):
@@ -151,7 +149,7 @@ def find_offices():
         else:
             continue
 
-        ### Windows/MacOSX does not provide or need a URE/lib directory ?
+        ### Windows does not provide or need a URE/lib directory ?
         urepath = ''
         for basis in ( 'basis-link', 'basis', '' ):
             for ure in ( 'ure-link', 'ure', 'URE', '' ):
