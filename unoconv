@@ -1046,7 +1046,7 @@ if __name__ == '__main__':
     info(3, 'sysname=%s, platform=%s, python=%s, python-version=%s' % (os.name, sys.platform, sys.executable, sys.version))
 
     for of in find_offices():
-        if of.python != sys.executable and not sys.executable.startswith(of.unopath):
+        if of.python != sys.executable and not sys.executable.startswith(of.basepath):
             python_switch(of)
         office_environ(of)
 #        debug_office()
