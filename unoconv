@@ -932,7 +932,15 @@ class Listener:
         self.context = uno.getComponentContext()
         self.svcmgr = self.context.ServiceManager
         try:
+            resolver = self.svcmgr.createInstanceWithContext("com.sun.star.bridge.UnoUrlResolver", self.context)
             product = self.svcmgr.createInstance("com.sun.star.configuration.ConfigurationProvider").createInstanceWithArguments("com.sun.star.configuration.ConfigurationAccess", UnoProps(nodepath="/org.openoffice.Setup/Product"))
+            try:
+                unocontext = resolver.resolve("uno:%s" % op.connection)
+            except NoConnectException, e:
+                pass
+            else:
+                info(1, "Existing %s listener found, nothing to do." % product.ooName)
+                return
             if product.ooName != "LibreOffice" or LooseVersion(product.ooSetupVersion) <= LooseVersion('3.3'):
                 subprocess.call([office.binary, "-headless", "-invisible", "-nocrashreport", "-nodefault", "-nologo", "-nofirststartwizard", "-norestore", "-accept=%s" % op.connection], env=os.environ)
             else:
