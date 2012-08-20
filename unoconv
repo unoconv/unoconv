@@ -26,7 +26,7 @@ import time
 __version__ = "$Revision$"
 # $Source$
 
-VERSION = '0.5'
+VERSION = '0.6'
 
 doctypes = ('document', 'graphics', 'presentation', 'spreadsheet')
 
@@ -952,7 +952,9 @@ def error(str):
 
 def info(level, str):
     "Output info message"
-    if op.verbose >= 3 and level >= 3:
+    if 'op' not in globals():
+        pass
+    elif op.verbose >= 3 and level >= 3:
         print >>sys.stderr, "DEBUG:", str
     elif not op.stdout and level <= op.verbose:
         print >>sys.stdout, str
@@ -1045,8 +1047,6 @@ def main():
 if __name__ == '__main__':
     exitcode = 0
 
-    op = Options(sys.argv[1:])
-
     info(3, 'sysname=%s, platform=%s, python=%s, python-version=%s' % (os.name, sys.platform, sys.executable, sys.version))
 
     for of in find_offices():
@@ -1059,14 +1059,12 @@ if __name__ == '__main__':
             office = of
             break
         except:
-            if op.verbose >= 3:
-                debug_office()
+#            debug_office()
             print >>sys.stderr, "unoconv: Cannot find a suitable pyuno library and python binary combination in %s" % of
             print >>sys.stderr, "ERROR:", sys.exc_info()[1]
             print >>sys.stderr
     else:
-        if op.verbose >= 3:
-            debug_office()
+#        debug_office()
         print >>sys.stderr, "unoconv: Cannot find a suitable office installation on your system."
         print >>sys.stderr, "ERROR: Please locate your office installation and send your feedback to:"
         print >>sys.stderr, "       http://github.com/dagwieers/unoconv/issues"
@@ -1104,6 +1102,8 @@ if __name__ == '__main__':
             prop.Value = args[key]
             props.append(prop)
         return tuple(props)
+
+    op = Options(sys.argv[1:])
 
     info(2, "Using office base path: %s" % office.basepath)
     info(2, "Using office binary path: %s" % office.unopath)
