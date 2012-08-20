@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 
 ### This program is free software; you can redistribute it and/or modify
 ### it under the terms of the GNU General Public License as published by
@@ -549,8 +549,8 @@ class Options:
                         except ValueError:
                             self.exportfilter.append( PropertyValue( name, 0, value, 0 ) )
                 else:
-#                    print >>sys.stderr, 'Warning: Option %s cannot be parsed, ignoring.' % arg
-                    self.importfilter = arg
+                    print >>sys.stderr, 'Warning: Option %s cannot be parsed, ignoring.' % arg
+#                    self.exportfilter = arg
             elif opt in ['-f', '--format']:
                 self.format = arg
             elif opt in ['-i', '--import']:
@@ -848,8 +848,12 @@ class Convertor:
 
             ### Export phase
             phase = "export"
-            outputprops = UnoProps(FilterName=outputfmt.filter, OutputStream=OutputStream(), Overwrite=True, FilterData=tuple( op.exportfilter) )
+            outputprops = UnoProps(FilterName=outputfmt.filter, OutputStream=OutputStream(), Overwrite=True)
 #                PropertyValue( "FilterData" , 0, ( PropertyValue( "SelectPdfVersion" , 0, 1 , uno.getConstantByName( "com.sun.star.beans.PropertyState.DIRECT_VALUE" ) ) ), uno.getConstantByName( "com.sun.star.beans.PropertyState.DIRECT_VALUE" ) ),
+
+            ### Cannot use UnoProps for FilterData property
+            if op.exportfilter:
+                outputprops += ( PropertyValue( "FilterData", 0, uno.Any("[]com.sun.star.beans.PropertyValue", tuple( op.exportfilter ), ), 0 ), )
 
             if outputfmt.filter == 'Text (encoded)':
                 outputprops += UnoProps(FilterOptions="UTF8, LF")
@@ -1046,7 +1050,7 @@ if __name__ == '__main__':
     info(3, 'sysname=%s, platform=%s, python=%s, python-version=%s' % (os.name, sys.platform, sys.executable, sys.version))
 
     for of in find_offices():
-        if of.python != sys.executable and not sys.executable.startswith(of.unopath):
+        if of.python != sys.executable and not sys.executable.startswith(of.basepath):
             python_switch(of)
         office_environ(of)
 #        debug_office()
