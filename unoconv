@@ -358,7 +358,7 @@ fmts.add('document', 'sdw4', 'sdw', 'StarWriter 4.0', 'StarWriter 4.0') ### 2
 fmts.add('document', 'sdw3', 'sdw', 'StarWriter 3.0', 'StarWriter 3.0') ### 20
 fmts.add('document', 'stw', 'stw', 'Open Office.org 1.0 Text Document Template', 'writer_StarOffice_XML_Writer_Template') ### 9
 fmts.add('document', 'sxw', 'sxw', 'Open Office.org 1.0 Text Document', 'StarOffice XML (Writer)') ### 1
-fmts.add('document', 'text', 'txt', 'Text Encoded', 'Text (Encoded)') ### 26
+fmts.add('document', 'text', 'txt', 'Text Encoded', 'Text (encoded)') ### 26
 fmts.add('document', 'txt', 'txt', 'Text', 'Text') ### 34
 fmts.add('document', 'uot', 'uot', 'Unified Office Format text','UOF text') ### 27
 fmts.add('document', 'vor', 'vor', 'StarWriter 5.0 Template', 'StarWriter 5.0 Vorlage/Template') ### 6
