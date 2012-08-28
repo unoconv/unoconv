@@ -18,7 +18,6 @@ from distutils.version import LooseVersion
 import getopt
 import glob
 import os
-import socket
 import subprocess
 import sys
 import time
@@ -954,27 +953,27 @@ class Listener:
         else:
             info(1, "Existing %s listener found, nothing to do." % product.ooName)
 
-def error(str):
+def error(msg):
     "Output error message"
-    print >>sys.stderr, str
+    print >>sys.stderr, msg
 
-def info(level, str):
+def info(level, msg):
     "Output info message"
     if 'op' not in globals():
         pass
     elif op.verbose >= 3 and level >= 3:
-        print >>sys.stderr, "DEBUG:", str
+        print >>sys.stderr, "DEBUG:", msg
     elif not op.stdout and level <= op.verbose:
-        print >>sys.stdout, str
+        print >>sys.stdout, msg
     elif level <= op.verbose:
-        print >>sys.stderr, str
+        print >>sys.stderr, msg
 
-def die(ret, str=None):
+def die(ret, msg=None):
     "Print optional error and exit with errorcode"
     global convertor, ooproc, office
 
-    if str:
-        error('Error: %s' % str)
+    if msg:
+        error('Error: %s' % msg)
 
     ### Did we start our own listener instance ?
     if not op.listener and ooproc and convertor:
