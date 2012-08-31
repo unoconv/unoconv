@@ -505,7 +505,7 @@ class Options:
         self.password = None
         self.pipe = None
         self.port = '2002'
-        self.server = 'localhost'
+        self.server = '127.0.0.1'
         self.showlist = False
         self.stdout = False
         self.template = None
@@ -681,7 +681,7 @@ unoconv options:
   -p, --port=port          specify the port (default: 2002)
                              to be used by client or listener
       --password=string    provide a password to decrypt the document
-  -s, --server=server      specify the server address (default: localhost)
+  -s, --server=server      specify the server address (default: 127.0.0.1)
                              to be used by client or listener
       --show               list the available output formats
       --stdout             write output to stdout
@@ -1076,7 +1076,7 @@ def main():
             info(0, "Please start an LibreOffice instance on server '%s' by doing:\n\n    unoconv --listener --server %s --port %s\n\nor alternatively:\n\n    soffice -nologo -nodefault -accept=\"%s\"" % (op.server, op.server, op.port, op.connection))
         else:
             info(0, "Please start an LibreOffice instance on server '%s' by doing:\n\n    unoconv --listener --server %s --port %s\n\nor alternatively:\n\n    soffice -nologo -nodefault -accept=\"socket,host=%s,port=%s;urp;\"" % (op.server, op.server, op.port, op.server, op.port))
-            info(0, "Please start an soffice instance on server '%s' by doing:\n\n    soffice -nologo -nodefault -accept=\"socket,host=localhost,port=%s;urp;\"" % (op.server, op.port))
+            info(0, "Please start an soffice instance on server '%s' by doing:\n\n    soffice -nologo -nodefault -accept=\"socket,host=127.0.0.1,port=%s;urp;\"" % (op.server, op.port))
         exitcode = 1
 #    except UnboundLocalError:
 #        die(252, "Failed to connect to remote listener.")
