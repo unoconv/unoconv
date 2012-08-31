@@ -494,9 +494,11 @@ class Options:
         self.debug = False
         self.doctype = None
         self.exportfilter = []
+        self.exportfilteroptions = ""
         self.filenames = []
         self.format = None
-        self.importfilter = ""
+        self.importfilter = []
+        self.importfilteroptions = ""
         self.listener = False
         self.nolaunch = False
         self.output = None
@@ -538,7 +540,9 @@ class Options:
                 l = arg.split('=')
                 if len(l) == 2:
                     (name, value) = l
-                    if value in ('True', 'true'):
+                    if name in ('FilterOptions'):
+                        self.exportfilteroptions = value
+                    elif value in ('True', 'true'):
                         self.exportfilter.append( PropertyValue( name, 0, True, 0 ) )
                     elif value in ('False', 'false'):
                         self.exportfilter.append( PropertyValue( name, 0, False, 0 ) )
@@ -549,11 +553,25 @@ class Options:
                             self.exportfilter.append( PropertyValue( name, 0, value, 0 ) )
                 else:
                     print >>sys.stderr, 'Warning: Option %s cannot be parsed, ignoring.' % arg
-#                    self.exportfilter = arg
             elif opt in ['-f', '--format']:
                 self.format = arg
             elif opt in ['-i', '--import']:
-                self.importfilter = arg
+                l = arg.split('=')
+                if len(l) == 2:
+                    (name, value) = l
+                    if name in ('FilterOptions'):
+                        self.importfilteroptions = value
+                    elif value in ('True', 'true'):
+                        self.importfilter.append( PropertyValue( name, 0, True, 0 ) )
+                    elif value in ('False', 'false'):
+                        self.importfilter.append( PropertyValue( name, 0, False, 0 ) )
+                    else:
+                        try:
+                            self.importfilter.append( PropertyValue( name, 0, int(value), 0 ) )
+                        except ValueError:
+                            self.importfilter.append( PropertyValue( name, 0, value, 0 ) )
+                else:
+                    print >>sys.stderr, 'Warning: Option %s cannot be parsed, ignoring.' % arg
             elif opt in ['-l', '--listener']:
                 self.listener = True
             elif opt in ['-n', '--no-launch']:
@@ -796,13 +814,22 @@ class Convertor:
             phase = "import"
 
             ### Load inputfile
-            inputprops = UnoProps(Hidden=True, ReadOnly=True, UpdateDocMode=QUIET_UPDATE, FilterOptions=op.importfilter)
+            inputprops = UnoProps(Hidden=True, ReadOnly=True, UpdateDocMode=QUIET_UPDATE)
+
 #            if op.password:
 #                info = UnoProps(algorithm-name="PBKDF2", salt="salt", iteration-count=1024, hash="hash")
 #                inputprops += UnoProps(ModifyPasswordInfo=info)
 
+            ### Cannot use UnoProps for FilterData property
+            if op.importfilteroptions:
+#                print "Import filter options: %s" % op.importfilteroptions
+                inputprops += UnoProps(FilterOptions=op.importfilteroptions)
+
+            ### Cannot use UnoProps for FilterData property
+            if op.importfilter:
+                inputprops += ( PropertyValue( "FilterData", 0, uno.Any("[]com.sun.star.beans.PropertyValue", tuple( op.importfilter ), ), 0 ), )
+
             inputurl = unohelper.absolutize(self.cwd, unohelper.systemPathToFileUrl(inputfn))
-#            print dir(self.desktop)
             document = self.desktop.loadComponentFromURL( inputurl , "_blank", 0, inputprops )
 
             if not document:
@@ -847,21 +874,27 @@ class Convertor:
 
             ### Export phase
             phase = "export"
+
             outputprops = UnoProps(FilterName=outputfmt.filter, OutputStream=OutputStream(), Overwrite=True)
-#                PropertyValue( "FilterData" , 0, ( PropertyValue( "SelectPdfVersion" , 0, 1 , uno.getConstantByName( "com.sun.star.beans.PropertyState.DIRECT_VALUE" ) ) ), uno.getConstantByName( "com.sun.star.beans.PropertyState.DIRECT_VALUE" ) ),
+
+            ### Set default filter options
+            if op.exportfilteroptions:
+#                print "Export filter options: %s" % op.exportfilteroptions
+                outputprops += UnoProps(FilterOptions=op.exportfilteroptions)
+            else:
+                if outputfmt.filter == 'Text (encoded)':
+                    outputprops += UnoProps(FilterOptions="76,LF")
+
+                elif outputfmt.filter == 'Text':
+                    outputprops += UnoProps(FilterOptions="76")
+
+                elif outputfmt.filter == 'Text - txt - csv (StarCalc)':
+                    outputprops += UnoProps(FilterOptions="44,34,76")
+
 
             ### Cannot use UnoProps for FilterData property
             if op.exportfilter:
                 outputprops += ( PropertyValue( "FilterData", 0, uno.Any("[]com.sun.star.beans.PropertyValue", tuple( op.exportfilter ), ), 0 ), )
-
-            if outputfmt.filter == 'Text (encoded)':
-                outputprops += UnoProps(FilterOptions="UTF8, LF")
-
-            elif outputfmt.filter == 'Text':
-                outputprops += UnoProps(FilterOptions="UTF8")
-
-            elif outputfmt.filter == 'Text - txt - csv (StarCalc)':
-                outputprops += UnoProps(FilterOptions="44,34,0")
 
             if not op.stdout:
                 (outputfn, ext) = os.path.splitext(inputfn)
@@ -882,36 +915,36 @@ class Convertor:
             try:
                 document.storeToURL(outputurl, tuple(outputprops) )
             except IOException, e:
-                raise UnoException("Unable to store document to %s with properties %s. Exception: %s" % (outputurl, outputprops, e), None)
+                raise UnoException("Unable to store document to %s (ErrCode %d)\n\nProperties: %s" % (outputurl, e.ErrCode, outputprops), None)
 
             phase = "dispose"
             document.dispose()
             document.close(True)
 
         except SystemError, e:
-            error("unoconv: SystemError during %s phase: %s" % (phase, e))
+            error("unoconv: SystemError during %s phase:\n%s" % (phase, e))
             exitcode = 1
 
         except RuntimeException, e:
-            error("unoconv: RuntimeException during %s phase: Office probably died. %s" % (phase, e))
+            error("unoconv: RuntimeException during %s phase:\nOffice probably died. %s" % (phase, e))
             exitcode = 6
 
         except DisposedException, e:
-            error("unoconv: DisposedException during %s phase: Office probably died. %s" % (phase, e))
+            error("unoconv: DisposedException during %s phase:\nOffice probably died. %s" % (phase, e))
             exitcode = 7
 
         except IllegalArgumentException, e:
-            error("UNO IllegalArgument during %s phase: Source file cannot be read. %s" % (phase, e))
+            error("UNO IllegalArgument during %s phase:\nSource file cannot be read. %s" % (phase, e))
             exitcode = 8
 
         except IOException, e:
 #            for attr in dir(e): print '%s: %s', (attr, getattr(e, attr))
-            error("unoconv: IOException during %s phase: %s" % (phase, e.Message))
+            error("unoconv: IOException during %s phase:\n%s" % (phase, e.Message))
             exitcode = 3
 
         except CannotConvertException, e:
 #            for attr in dir(e): print '%s: %s', (attr, getattr(e, attr))
-            error("unoconv: CannotConvertException during %s phase: %s" % (phase, e.Message))
+            error("unoconv: CannotConvertException during %s phase:\n%s" % (phase, e.Message))
             exitcode = 4
 
         except UnoException, e:
@@ -920,7 +953,7 @@ class Convertor:
                 exitcode = e.ErrCode
                 pass
             if hasattr(e, 'Message'):
-                error("unoconv: UnoException during %s phase: %s" % (phase, e.Message))
+                error("unoconv: UnoException during %s phase:\n%s" % (phase, e.Message))
                 exitcode = 5
             else:
                 error("unoconv: UnoException during %s phase in %s" % (phase, repr(e.__class__)))

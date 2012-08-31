@@ -129,32 +129,46 @@ but we will look into some examples.
 
 == DEFAULT IMPORT FILTER OPTIONS
 The default import filter for many imports (eg. Lotus, dBase or DIF) accepts
-as the only argument the input encoding-type, so if you require utf-8 you
-can do:
+as the only argument the input encoding-type, so if you require utf-8 (76)
+you can do:
 
-    -i utf-8
+    -i FilterOptions=76
 
 For a list of posible encoding types, you can use the above link to find the
 possible options.
 
+  - FilterOptions
+
+
+== TEXT IMPORT FILTER OPTIONS
+The Text import filter accepts a FilterOptions setting holding the input
+encoding.
+
+  - FilterOptions
+
 
 == CSV IMPORT FILTER OPTIONS
-The CSV import filter accepts various arguments, the order is:
+The CSV import filter accepts a FilterOptions setting, the order is:
 'separator(s),text-delimiter,encoding,first-row,column-format'
 
-For example you might want to use this for a real comma-separated document:
+For example you might want to use this for a 'real' comma-separated document:
 
-    -i 44,34,utf-8,2,1/5/2/1/3/1/4/1
+    -i FilterOptions=44,34,76,2,1/5/2/1/3/1/4/1
 
 which will use a comma (44) as the field separator, a double quote (34) as the
-text delimiter, UTF-8 for the input encoding, start from the second row and
-use the specified formats for each column (1 means standard, 5 means YY/MM/DD
-date)
+text delimiter, UTF-8 (76) for the input encoding, start from the second row
+and use the specified formats for each column (1 means standard, 5 means
+YY/MM/DD date)
 
 If you like to use more than one separator (say a space or a tab) and use the
-system's encoding, but with no text-delimiter, you can do:
+system's encoding (9), but with no text-delimiter, you can do:
 
-    -i 9/32,,system,2
+    -i FilterOptions=9/32,,9,2
+
+For a list of posible encoding types, you can use the above link to find the
+possible options.
+
+  - FilterOptions
 
 
 == EXPORT FILTERS
@@ -162,6 +176,37 @@ In contrast to import filters, export filters can have multiple named options,
 although it is not always clear what options are available. It all depends on
 the version of LibreOffice. The export dialog you get in LibreOffice might give
 you a clue about what is possible, each of those widgets represents an option.
+
+
+== TEXT EXPORT FILTER OPTIONS
+The Text export filter accepts a FilterOptions setting holding the output
+encoding.
+
+  - FilterOptions
+
+
+== CSV EXPORT FILTER OPTIONS
+The CSV export filter accepts various arguments, the order is:
+'separator(s),text-delimiter,encoding'
+
+For example you might want to use this for a 'real' comma-separated document:
+
+    -e FilterOptions=44,34,76
+
+which will use a comma (44) as the field separator, a double quote (34) as the
+text delimiter, UTF-8 (76) for the export encoding, start from the second row and
+use the specified formats for each column (1 means standard, 5 means YY/MM/DD
+date)
+
+If you like to use more than one separator (say a space or a tab) and use the
+system's encoding (9), but with no text-delimiter, you can do:
+
+    -e FilterOptions=9/32,,9
+
+For a list of posible encoding types, you can use the above link to find the
+possible options.
+
+  - FilterOptions
 
 
 == PDF EXPORT FILTER OPTIONS
@@ -172,6 +217,54 @@ in a separate document, or on LibreOffice's wiki at:
 http://wiki.services.openoffice.org/wiki/API/Tutorials/PDF_export
 
 For example one can specify: +-e PageRange=1-2+
+
+Here is a list of all options, however for more details please look in
+'filters.txt':
+
+ - AllowDuplicateFieldNames
+ - CenterWindow
+ - Changes
+ - ConvertOOoTargetToPDFTarget
+ - DisplayPDFDocumentTitle
+ - DocumentOpenPassword
+ - EnableCopyingOfContent
+ - EnableTextAccessForAccessibilityTools
+ - EncryptFile
+ - ExportBookmarks
+ - ExportBookmarksToPDFDestination
+ - ExportFormFields
+ - ExportLinksRelativeFsys
+ - ExportNotes
+ - ExportNotesPages
+ - FirstPagOnLeft
+ - FormsType
+ - HideViewerMenubar
+ - HideViewerToolbar
+ - HideViewerWindowControls
+ - InitialPage
+ - InitialView
+ - IsAddStream
+ - IsSkipEmptyPages
+ - Magnification
+ - MaxImageResolution
+ - OpenBookmarkLevels
+ - OpenInFullScreenMode
+ - PageLayout
+ - PageRange
+ - PDFViewSelection
+ - PermissionPassword
+ - Printing
+ - Quality
+ - ReduceImageResolution
+ - ResizeWindowToInitialPage
+ - RestrictPermissionPassword
+ - Selection
+ - SelectPdfVersion
+ - UseLosslessCompression
+ - UseTaggedPDF
+ - UseTransitionEffects
+ - Watermark
+ - Zoom
 
 
 == EXAMPLES
