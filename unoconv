@@ -49,6 +49,15 @@ class Office:
     def __repr__(self):
         return self.basepath
 
+### Implement a path normalizer in order to make unoconv work on MacOS X
+### (on which 'program' is a symlink to 'MacOSX' which seems to break unoconv)
+def abspath(*args):
+    ''' Implement a combination of os.path.join() and os.path.abspath() in order to normalize path constructions '''
+    ret = ''
+    for arg in args:
+        ret = os.path.join(ret, arg)
+    return os.path.abspath(ret)
+
 ### The first thing we ought to do is find a suitable Office installation
 ### with a compatible pyuno library that we can import.
 ###
@@ -114,9 +123,9 @@ def find_offices():
         libpath = 'error'
         for basis in ( 'basis-link', 'basis', '' ):
             for lib in officelibraries:
-                if os.path.isfile(os.path.join(basepath, basis, 'program', lib)):
-                    libpath = os.path.join(basepath, basis, 'program')
-                    officelibrary = os.path.join(libpath, lib)
+                if os.path.isfile(abspath(basepath, basis, 'program', lib)):
+                    libpath = abspath(basepath, basis, 'program')
+                    officelibrary = abspath(libpath, lib)
                     info(3, "Found %s in %s" % (lib, libpath))
                     # Break the inner loop...
                     break
@@ -132,9 +141,9 @@ def find_offices():
         unopath = 'error'
         for basis in ( 'basis-link', 'basis', '' ):
             for bin in officebinaries:
-                if os.path.isfile(os.path.join(basepath, basis, 'program', bin)):
-                    unopath = os.path.join(basepath, basis, 'program')
-                    officebinary = os.path.join(unopath, bin)
+                if os.path.isfile(abspath(basepath, basis, 'program', bin)):
+                    unopath = abspath(basepath, basis, 'program')
+                    officebinary = abspath(unopath, bin)
                     info(3, "Found %s in %s" % (bin, unopath))
                     # Break the inner loop...
                     break
@@ -150,9 +159,9 @@ def find_offices():
         urepath = ''
         for basis in ( 'basis-link', 'basis', '' ):
             for ure in ( 'ure-link', 'ure', 'URE', '' ):
-                if os.path.isfile(os.path.join(basepath, basis, ure, 'lib', 'unorc')):
-                    urepath = os.path.join(basepath, basis, ure)
-                    info(3, "Found %s in %s" % ('unorc', os.path.join(urepath, 'lib')))
+                if os.path.isfile(abspath(basepath, basis, ure, 'lib', 'unorc')):
+                    urepath = abspath(basepath, basis, ure)
+                    info(3, "Found %s in %s" % ('unorc', abspath(urepath, 'lib')))
                     # Break the inner loop...
                     break
             # Continue if the inner loop wasn't broken.
@@ -163,23 +172,23 @@ def find_offices():
 
         pythonhome = None
         for home in pythonhomes:
-            if glob.glob(os.path.join(libpath, home)):
-                pythonhome = glob.glob(os.path.join(libpath, home))[0]
+            if glob.glob(abspath(libpath, home)):
+                pythonhome = glob.glob(abspath(libpath, home))[0]
                 info(3, "Found %s in %s" % (home, pythonhome))
                 break
 
-#        if not os.path.isfile(os.path.join(basepath, program, officebinary)):
+#        if not os.path.isfile(abspath(basepath, program, officebinary)):
 #            continue
-#        info(3, "Found %s in %s" % (officebinary, os.path.join(basepath, program)))
+#        info(3, "Found %s in %s" % (officebinary, abspath(basepath, program)))
 
-#        if not glob.glob(os.path.join(basepath, basis, program, 'python-core-*')):
+#        if not glob.glob(abspath(basepath, basis, program, 'python-core-*')):
 #            continue
 
         for pythonbinary in pythonbinaries:
-            if os.path.isfile(os.path.join(unopath, pythonbinary)):
+            if os.path.isfile(abspath(unopath, pythonbinary)):
                 info(3, "Found %s in %s" % (pythonbinary, unopath))
                 ret.append(Office(basepath, urepath, unopath, officelibrary, officebinary,
-                                  os.path.join(unopath, pythonbinary), pythonhome))
+                                  abspath(unopath, pythonbinary), pythonhome))
         else:
             info(3, "Considering %s" % basepath)
             ret.append(Office(basepath, urepath, unopath, officelibrary, officebinary,
@@ -188,7 +197,7 @@ def find_offices():
 
 def office_environ(office):
     ### Set PATH so that crash_report is found
-    os.environ['PATH'] = os.path.join(office.basepath, 'program') + os.pathsep + os.environ['PATH']
+    os.environ['PATH'] = abspath(office.basepath, 'program') + os.pathsep + os.environ['PATH']
 
     ### Set UNO_PATH so that "officehelper.bootstrap()" can find soffice executable:
     os.environ['UNO_PATH'] = office.unopath
@@ -196,24 +205,24 @@ def office_environ(office):
     ### Set URE_BOOTSTRAP so that "uno.getComponentContext()" bootstraps a complete
     ### UNO environment
     if os.name in ( 'nt', 'os2' ):
-        os.environ['URE_BOOTSTRAP'] = 'vnd.sun.star.pathname:' + os.path.join(office.basepath, 'program', 'fundamental.ini')
+        os.environ['URE_BOOTSTRAP'] = 'vnd.sun.star.pathname:' + abspath(office.basepath, 'program', 'fundamental.ini')
     else:
-        os.environ['URE_BOOTSTRAP'] = 'vnd.sun.star.pathname:' + os.path.join(office.basepath, 'program', 'fundamentalrc')
+        os.environ['URE_BOOTSTRAP'] = 'vnd.sun.star.pathname:' + abspath(office.basepath, 'program', 'fundamentalrc')
 
         ### Set LD_LIBRARY_PATH so that "import pyuno" finds libpyuno.so:
         if 'LD_LIBRARY_PATH' in os.environ:
             os.environ['LD_LIBRARY_PATH'] = office.unopath + os.pathsep + \
-                                            os.path.join(office.urepath, 'lib') + os.pathsep + \
+                                            abspath(office.urepath, 'lib') + os.pathsep + \
                                             os.environ['LD_LIBRARY_PATH']
         else:
             os.environ['LD_LIBRARY_PATH'] = office.unopath + os.pathsep + \
-                                            os.path.join(office.urepath, 'lib')
+                                            abspath(office.urepath, 'lib')
 
     if office.pythonhome:
-        for libpath in ( os.path.join(office.pythonhome, 'lib'),
-                         os.path.join(office.pythonhome, 'lib', 'lib-dynload'),
-                         os.path.join(office.pythonhome, 'lib', 'lib-tk'),
-                         os.path.join(office.pythonhome, 'lib', 'site-packages'),
+        for libpath in ( abspath(office.pythonhome, 'lib'),
+                         abspath(office.pythonhome, 'lib', 'lib-dynload'),
+                         abspath(office.pythonhome, 'lib', 'lib-tk'),
+                         abspath(office.pythonhome, 'lib', 'site-packages'),
                          office.unopath):
             sys.path.insert(0, libpath)
     else:
@@ -239,10 +248,10 @@ def debug_office():
 def python_switch(office):
     if office.pythonhome:
         os.environ['PYTHONHOME'] = office.pythonhome
-        os.environ['PYTHONPATH'] = os.path.join(office.pythonhome, 'lib') + os.pathsep + \
-                                   os.path.join(office.pythonhome, 'lib', 'lib-dynload') + os.pathsep + \
-                                   os.path.join(office.pythonhome, 'lib', 'lib-tk') + os.pathsep + \
-                                   os.path.join(office.pythonhome, 'lib', 'site-packages') + os.pathsep + \
+        os.environ['PYTHONPATH'] = abspath(office.pythonhome, 'lib') + os.pathsep + \
+                                   abspath(office.pythonhome, 'lib', 'lib-dynload') + os.pathsep + \
+                                   abspath(office.pythonhome, 'lib', 'lib-tk') + os.pathsep + \
+                                   abspath(office.pythonhome, 'lib', 'site-packages') + os.pathsep + \
                                    office.unopath
 
     os.environ['UNO_PATH'] = office.unopath
@@ -259,11 +268,11 @@ def python_switch(office):
         ### Set LD_LIBRARY_PATH so that "import pyuno" finds libpyuno.so:
         if 'LD_LIBRARY_PATH' in os.environ:
             os.environ['LD_LIBRARY_PATH'] = office.unopath + os.pathsep + \
-                                            os.path.join(office.urepath, 'lib') + os.pathsep + \
+                                            abspath(office.urepath, 'lib') + os.pathsep + \
                                             os.environ['LD_LIBRARY_PATH']
         else:
             os.environ['LD_LIBRARY_PATH'] = office.unopath + os.pathsep + \
-                                            os.path.join(office.urepath, 'lib')
+                                            abspath(office.urepath, 'lib')
 
         try:
             os.execvpe(office.python, [office.python, ] + sys.argv[0:], os.environ)
@@ -901,7 +910,7 @@ class Convertor:
                 if not op.output:
                     outputfn = outputfn + os.extsep + outputfmt.extension
                 elif os.path.isdir(op.output):
-                    outputfn = os.path.join(op.output, os.path.basename(outputfn) + os.extsep + outputfmt.extension)
+                    outputfn = abspath(op.output, os.path.basename(outputfn) + os.extsep + outputfmt.extension)
                 elif len(op.filenames) > 1:
                     outputfn = op.output + os.extsep + outputfmt.extension
                 else:
