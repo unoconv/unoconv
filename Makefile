@@ -8,8 +8,10 @@ git_ref := $(shell git symbolic-ref -q HEAD)
 git_branch ?= $(lastword $(subst /, ,$(git_ref)))
 git_branch ?= HEAD
 
-date := $(shell date --date="$(git_date)" +%Y%m%d%H%M)
-release_date := $(shell date --date="$(git_date)" +%Y-%m-%d)
+#date := $(shell date --date="$(git_date)" +%Y%m%d%H%M)
+#release_date := $(shell date --date="$(git_date)" +%Y-%m-%d)
+date := $(shell echo "$(git_date)" | sed -e 's/[-: ]//g'  | cut -c1-12)
+release_date := $(shell echo "$(git_date)" | cut -c1-10 )
 
 prefix = /usr
 sysconfdir = /etc
