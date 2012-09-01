@@ -155,7 +155,7 @@ def find_offices():
         else:
             continue
 
-        ### Windows/MacOSX does not provide or need a URE/lib directory ?
+        ### Windows does not provide or need a URE/lib directory ?
         urepath = ''
         for basis in ( 'basis-link', 'basis', '' ):
             for ure in ( 'ure-link', 'ure', 'URE', '' ):
