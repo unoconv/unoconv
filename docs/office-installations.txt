@@ -112,7 +112,7 @@ pyuno.so:: /Applications/LibreOffice.app/Contents/MacOS/pyuno.so
 
 == Windows 7 64bit
 
-=== LibreOffice 3.5.3
+=== LibreOffice 3.5.3 (32bit)
 Reported by dagwieers
 soffice.exe:: C:\Program Files (x86)\LibreOffice 3.5\program\soffice.exe
 python.exe:: C:\Program Files (x86)\LibreOffice 3.5\program\python.exe

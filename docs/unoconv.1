@@ -210,51 +210,145 @@ It is not always clear what import filter options you can provide, the import di
 The reference is LibreOffice\(cqs documentation, for spreadsheets it is described at: \m[blue]\fBhttp://wiki\&.services\&.openoffice\&.org/wiki/Documentation/DevGuide/Spreadsheets/Filter_Options\fR\m[] but we will look into some examples\&.
 .SH "DEFAULT IMPORT FILTER OPTIONS"
 .sp
-The default import filter for many imports (eg\&. Lotus, dBase or DIF) accepts as the only argument the input encoding\-type, so if you require utf\-8 you can do:
+The default import filter for many imports (eg\&. Lotus, dBase or DIF) accepts as the only argument the input encoding\-type, so if you require utf\-8 (76) you can do:
 .sp
 .if n \{\
 .RS 4
 .\}
 .nf
-\-i utf\-8
+\-i FilterOptions=76
 .fi
 .if n \{\
 .RE
 .\}
 .sp
 For a list of posible encoding types, you can use the above link to find the possible options\&.
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+FilterOptions
+.RE
+.SH "TEXT IMPORT FILTER OPTIONS"
+.sp
+The Text import filter accepts a FilterOptions setting holding the input encoding\&.
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+FilterOptions
+.RE
 .SH "CSV IMPORT FILTER OPTIONS"
 .sp
-The CSV import filter accepts various arguments, the order is: \fIseparator(s),text\-delimiter,encoding,first\-row,column\-format\fR
+The CSV import filter accepts a FilterOptions setting, the order is: \fIseparator(s),text\-delimiter,encoding,first\-row,column\-format\fR
 .sp
-For example you might want to use this for a real comma\-separated document:
-.sp
-.if n \{\
-.RS 4
-.\}
-.nf
-\-i 44,34,utf\-8,2,1/5/2/1/3/1/4/1
-.fi
-.if n \{\
-.RE
-.\}
-.sp
-which will use a comma (44) as the field separator, a double quote (34) as the text delimiter, UTF\-8 for the input encoding, start from the second row and use the specified formats for each column (1 means standard, 5 means YY/MM/DD date)
-.sp
-If you like to use more than one separator (say a space or a tab) and use the system\(cqs encoding, but with no text\-delimiter, you can do:
+For example you might want to use this for a \fIreal\fR comma\-separated document:
 .sp
 .if n \{\
 .RS 4
 .\}
 .nf
-\-i 9/32,,system,2
+\-i FilterOptions=44,34,76,2,1/5/2/1/3/1/4/1
 .fi
 .if n \{\
 .RE
 .\}
+.sp
+which will use a comma (44) as the field separator, a double quote (34) as the text delimiter, UTF\-8 (76) for the input encoding, start from the second row and use the specified formats for each column (1 means standard, 5 means YY/MM/DD date)
+.sp
+If you like to use more than one separator (say a space or a tab) and use the system\(cqs encoding (9), but with no text\-delimiter, you can do:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+\-i FilterOptions=9/32,,9,2
+.fi
+.if n \{\
+.RE
+.\}
+.sp
+For a list of posible encoding types, you can use the above link to find the possible options\&.
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+FilterOptions
+.RE
 .SH "EXPORT FILTERS"
 .sp
 In contrast to import filters, export filters can have multiple named options, although it is not always clear what options are available\&. It all depends on the version of LibreOffice\&. The export dialog you get in LibreOffice might give you a clue about what is possible, each of those widgets represents an option\&.
+.SH "TEXT EXPORT FILTER OPTIONS"
+.sp
+The Text export filter accepts a FilterOptions setting holding the output encoding\&.
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+FilterOptions
+.RE
+.SH "CSV EXPORT FILTER OPTIONS"
+.sp
+The CSV export filter accepts various arguments, the order is: \fIseparator(s),text\-delimiter,encoding\fR
+.sp
+For example you might want to use this for a \fIreal\fR comma\-separated document:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+\-e FilterOptions=44,34,76
+.fi
+.if n \{\
+.RE
+.\}
+.sp
+which will use a comma (44) as the field separator, a double quote (34) as the text delimiter, UTF\-8 (76) for the export encoding, start from the second row and use the specified formats for each column (1 means standard, 5 means YY/MM/DD date)
+.sp
+If you like to use more than one separator (say a space or a tab) and use the system\(cqs encoding (9), but with no text\-delimiter, you can do:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+\-e FilterOptions=9/32,,9
+.fi
+.if n \{\
+.RE
+.\}
+.sp
+For a list of posible encoding types, you can use the above link to find the possible options\&.
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+FilterOptions
+.RE
 .SH "PDF EXPORT FILTER OPTIONS"
 .sp
 The PDF export filter is likely the most advanced export filter in its kind with a myriad of options one can use\&. The export filter options are described in a separate document, or on LibreOffice\(cqs wiki at:
@@ -262,6 +356,492 @@ The PDF export filter is likely the most advanced export filter in its kind with
 \m[blue]\fBhttp://wiki\&.services\&.openoffice\&.org/wiki/API/Tutorials/PDF_export\fR\m[]
 .sp
 For example one can specify: \-e PageRange=1\-2
+.sp
+Here is a list of all options, however for more details please look in \fIfilters\&.txt\fR:
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+AllowDuplicateFieldNames
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+CenterWindow
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+Changes
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+ConvertOOoTargetToPDFTarget
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+DisplayPDFDocumentTitle
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+DocumentOpenPassword
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+EnableCopyingOfContent
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+EnableTextAccessForAccessibilityTools
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+EncryptFile
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+ExportBookmarks
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+ExportBookmarksToPDFDestination
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+ExportFormFields
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+ExportLinksRelativeFsys
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+ExportNotes
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+ExportNotesPages
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+FirstPagOnLeft
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+FormsType
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+HideViewerMenubar
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+HideViewerToolbar
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+HideViewerWindowControls
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+InitialPage
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+InitialView
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+IsAddStream
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+IsSkipEmptyPages
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+Magnification
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+MaxImageResolution
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+OpenBookmarkLevels
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+OpenInFullScreenMode
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+PageLayout
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+PageRange
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+PDFViewSelection
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+PermissionPassword
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+Printing
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+Quality
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+ReduceImageResolution
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+ResizeWindowToInitialPage
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+RestrictPermissionPassword
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+Selection
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+SelectPdfVersion
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+UseLosslessCompression
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+UseTaggedPDF
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+UseTransitionEffects
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+Watermark
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+Zoom
+.RE
 .SH "EXAMPLES"
 .sp
 You can use unoconv in standalone mode, this means that in absence of an LibreOffice listener, it will starts its own:
