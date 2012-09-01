@@ -107,6 +107,11 @@ to create a headless X display for ooffice.
  - http://ward.vandewege.net/writings/200510auto_doc_conv/
  - http://www.artofsolving.com/node/10
 
+== Using unoconv with MacOS X
+LibreOffice 3.6.0.1 or later is required to use unoconv under MacOS X.  This
+is the first version distributed with an internal python script that works.
+No version of OpenOffice for MacOS X (3.4 is the current version) works because
+the necessary internal files are not included inside the application.
 
 == Using unoconv with MacOS X
 LibreOffice 3.6.0.1 or later is required to use unoconv under MacOS X.  This
