@@ -44,16 +44,21 @@ On MacOS X it is important to answer the following questions:
 
  - Is there a symlink from 'Contents/program' to 'Contents/MacOSX' ? We prefer to
    use the 'Contents/program' path but we need to make sure it exists in all
-   cases.
+   cases. ANSWER: the symlink is present, but unoconv does not work if the
+   symlink is used.
 
  - Can you find a pyuno.so ? Or is there only a pyuno.dylib on your system ?
+   ANSWER: There is a pyuno.so in all distributions.  libpyuno.dylib is also
+   present, but unoconv works fine with pyuno.so instead.
 
  - What is the location of the python libraries as shipped by your office
    installation ?
 
  - Is there a 'python.bin' binary on your office installation ? Or is there
    only a 'python' binary ? Also let us know if your office installation does
-   not ship with a python interpreter at all.
+   not ship with a python interpreter at all.  ANSWER: python.bin is not present
+   in any MacOS distribution of LibreOffice.  Neither python.bin nor python are
+   present in any OpenOffice distribution (as of 3.4)
 
 === OpenOffice 3.3.0
 Reported by ghis182
@@ -88,6 +93,34 @@ Reported by kungla
 soffice.bin:: /Applications/OpenOffice.org.app/Contents/program/soffice.bin
 python:: /Applications/LibreOffice.app/Contents/program/python (no .bin ?)
 pyuno.so:: /Applications/LibreOffice.app/Contents/program/pyuno.so
+
+
+== MacOS X 10.8 (Mountain Lion)
+
+=== OpenOffice 3.4.0
+Reported by scottprahl
+soffice.bin:: /Applications/OpenOffice.org.app/Contents/MacOS/soffice.bin
+python:: no python interpreter ?
+pyuno.so::
+
+=== LibreOffice 3.5.5 and earlier
+Reported by scottprahl
+_Broken because DYLD_LIBRARY_PATH defined in python shell script_
+soffice.bin:: /Applications/LibreOffice.app/Contents/MacOS/soffice.bin
+python:: /Applications/LibreOffice.app/Contents/MacOS/python
+pyuno.so:: /Applications/LibreOffice.app/Contents/MacOS/pyuno.so
+
+=== LibreOffice 3.5.6 
+Reported by scottprahl
+soffice.bin:: /Applications/LibreOffice.app/Contents/MacOS/soffice.bin
+python:: /Applications/LibreOffice.app/Contents/MacOS/python
+pyuno.so:: /Applications/LibreOffice.app/Contents/MacOS/pyuno.so
+
+=== LibreOffice 3.6.0 
+Reported by scottprahl
+soffice.bin:: /Applications/LibreOffice.app/Contents/MacOS/soffice.bin
+python:: /Applications/LibreOffice.app/Contents/MacOS/python
+pyuno.so:: /Applications/LibreOffice.app/Contents/MacOS/pyuno.so
 
 
 == Windows 7 64bit
