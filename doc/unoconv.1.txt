@@ -184,10 +184,14 @@ encoding.
 
   - FilterOptions
 
+The order of the arguments is:
+'encoding,field-seperator,text-delimiter,quote-all-text-cells,save-cell-content-as-shown'
+
+
 
 == CSV EXPORT FILTER OPTIONS
 The CSV export filter accepts various arguments, the order is:
-'separator(s),text-delimiter,encoding'
+'field-seperator(s),text-delimiter,encoding'
 
 For example you might want to use this for a 'real' comma-separated document:
 
@@ -227,6 +231,7 @@ Here is a list of all options, however for more details please look in
  - ConvertOOoTargetToPDFTarget
  - DisplayPDFDocumentTitle
  - DocumentOpenPassword
+ - EmbedStandardFonts
  - EnableCopyingOfContent
  - EnableTextAccessForAccessibilityTools
  - EncryptFile
@@ -266,6 +271,35 @@ Here is a list of all options, however for more details please look in
  - Watermark
  - Zoom
 
+=== GRAPHICS EXPORT FILTER OPTIONS
+ - Height
+ - Resolution
+ - Width
+
+=== BMP EXPORT FILTER OPTIONS
+ - Compression
+ - RLEEncoding
+
+==== JPEG EXPORT FILTER OPTIONS
+ - ColorDepth
+ - Quality
+
+==== PBM/PGM/PPM EXPORT FILTER OPTIONS
+ - Encoding
+
+==== PNG EXPORT FILTER OPTIONS
+ - Compression
+ - InterlacedMode
+
+==== GIF EXPORT FILTER OPTIONS
+ - InterlacedMode
+ - Transparency
+
+==== EPS EXPORT FILTER OPTIONS
+ - ColorFormat
+ - Compression
+ - Preview
+ - Version
 
 == EXAMPLES
 You can use unoconv in standalone mode, this means that in absence of an

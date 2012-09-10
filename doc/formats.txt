@@ -3,7 +3,9 @@
     xmllint --format /opt/libreoffice3.5/share/registry/*.xcd
 
     xmlstarlet sel -T -t -m "/oor:data/oor:component-data/node[@oor:name='Filters']/node" \
-        -v "concat(prop[@oor:name='DocumentService'],'|',@oor:name,'|',prop[@oor:name='Flags'],'|',prop[@oor:name='UIName'],'|',prop[@oor:name='Extensions'],'|')"
+        -v
+"concat(prop[@oor:name='DocumentService'],'|',@oor:name,'|',prop[@oor:name='Flags'],'|',prop[@oor:name='UIName'],'|',prop[@oor:name='Extensions'],'|')"
+\
         -n /opt/libreoffice3.5/share/registry/*.xcd
 
 ### This is a current list of formats known by Openoffice:

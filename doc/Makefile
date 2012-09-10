@@ -5,9 +5,11 @@ mandir = $(datadir)/man
 txttargets = $(shell echo *.txt)
 htmltargets = $(patsubst %.txt, %.html, $(txttargets))
 
-all:
+all: docs
 
 dist: docs
+
+man: unoconv.1
 
 docs: unoconv.1 $(htmltargets)
 

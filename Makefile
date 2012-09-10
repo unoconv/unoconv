@@ -1,6 +1,13 @@
+# In some dists (e.g. Ubuntu) bash is not the default shell. Statements like·
+# #   cp -a etc/rear/{mappings,templates} ...
+# # assumes bash. So its better to set SHELL
+# SHELL=/bin/bash
+
+DESTDIR =
+OFFICIAL =
+
 name = unoconv
-version := $(shell cat VERSION)
-#version := $(shell awk 'BEGIN { FS="=" } /^VERSION = / { print $$2}' $(name))
+version := $(shell awk "/^VERSION *= */ { gsub(/^VERSION[ ]*=[ ']*|[ ']*$$/,\"\"); print}" $(name))
 
 ### Get the branch information from git
 git_date := $(shell git log -n 1 --format="%ai")
@@ -22,21 +29,18 @@ datadir = $(prefix)/share
 mandir = $(datadir)/man
 localstatedir = /var
 
-specfile = $(name).spec
-
-DESTDIR =
-OFFICIAL =
+specfile = packaging/rpm/$(name).spec
 
 distversion = $(version)
 debrelease = 0
-rpmrelease =
+rpmrelease = %nil
 ifeq ($(OFFICIAL),)
     distversion = $(version)-git$(date)
     debrelease = 0git$(date)
     rpmrelease = .git$(date)
 endif
 
-.PHONY: all install docs clean
+.PHONY: all install doc clean
 
 to_doc = odt2doc ooxml2doc
 to_html = odt2html
@@ -48,20 +52,66 @@ to_ppt = odp2ppt
 to_other = odt2rtf odt2txt odt2xhtml odt2xml odt2bib odt2docbook odt2lt odt2sdw odt2sxw
 links = $(to_doc) $(to_html) $(to_odp) $(to_ods) $(to_odt) $(to_pdf) $(to_ppt) $(to_other)
 
-all: docs
+all: doc
+	@echo "VERSION = $(version)"
 	@echo "There is nothing to be build. Try install !"
 
-docs:
-	$(MAKE) -C docs docs
+help:
+	@echo -e "unoconv make targets:\n\
+\n\
+  install         - Install Relax-and-Recover (may replace files)\n\
+  uninstall       - Uninstall Relax-and-Recover (may remove files)\n\
+  dist            - Create tar file\n\
+  deb             - Create DEB package\n\
+  rpm             - Create RPM package\n\
+  obs             - Initiate OBS builds\n\
+\n\
+unoconv make variables (optional):\n\
+\n\
+  DESTDIR=        - Location to install/uninstall\n\
+  OFFICIAL=       - Build an official release\n\
+"
 
-docs-install:
-	$(MAKE) -C docs install
+man:
+	@echo -e "\033[1m== Prepare manual ==\033[0;0m"
+	$(MAKE) -C doc man
+
+doc:
+	@echo -e "\033[1m== Prepare documentation ==\033[0;0m"
+	$(MAKE) -C doc docs
+
+ifneq ($(git_date),)
+rewrite:
+	@echo -e "\033[1m== Rewriting $(specfile) ==\033[0;0m"
+	sed -i.orig \
+		-e 's#^Source:.*#Source: $(name)-$(distversion).tar.gz#' \
+		-e 's#^Version:.*#Version: $(version)#' \
+		-e 's#^%define rpmrelease.*#%define rpmrelease $(rpmrelease)#' \
+		-e 's#^%setup.*#%setup -q -n $(name)-$(distversion)#' \
+		$(specfile)
+#	sed -i.orig \
+		-e 's#^Version:.*#Version: $(version)-$(debrelease)#' \
+		$(dscfile)
+
+restore:
+	@echo -e "\033[1m== Restoring $(specfile) and $(rearbin) ==\033[0;0m"
+	mv -f $(specfile).orig $(specfile)
+else
+rewrite:
+	@echo "Nothing to do."
+
+restore:
+	@echo "Nothing to do."
+endif
+
+doc-install:
+	$(MAKE) -C doc install
 
 install:
 	install -d -m0755 $(DESTDIR)$(bindir)
 	install -d -m0755 $(DESTDIR)$(mandir)/man1/
 	install -p -m0755 unoconv $(DESTDIR)$(bindir)/unoconv
-	install -p -m0644 docs/unoconv.1 $(DESTDIR)$(mandir)/man1/unoconv.1
+	install -p -m0644 doc/unoconv.1 $(DESTDIR)$(mandir)/man1/unoconv.1
 
 install-links: $(links)
 
@@ -69,17 +119,20 @@ $(filter %,$(links)):
 	ln -sf unoconv $(DESTDIR)$(bindir)/$@
 
 ### Remove odp because size > 300kB
-dist: clean
-	$(MAKE) -C docs dist
-	echo -e "\033[1m== Building archive $(name)-$(distversion) ==\033[0;0m"
+dist: clean man rewrite $(name)-$(distversion).tar.gz restore
+
+$(name)-$(distversion).tar.gz:
+	@echo -e "\033[1m== Building archive $(name)-$(distversion) ==\033[0;0m"
+	git checkout $(git_branch)
 	git ls-tree -r --name-only --full-tree $(git_branch) | \
 		tar -czf $(name)-$(distversion).tar.gz --transform='s,^,$(name)-$(distversion)/,S' --files-from=-
 
 rpm: dist
-	rpmbuild -tb --clean --rmsource --rmspec --define "_rpmfilename %%{NAME}-%%{VERSION}-%%{RELEASE}.%%{ARCH}.rpm" --define "_rpmdir ../" ../$(name)-$(version).tar.bz2
-
-srpm: dist
-	rpmbuild -ts --clean --rmsource --rmspec --define "_rpmfilename %%{NAME}-%%{VERSION}-%%{RELEASE}.%%{ARCH}.rpm" --define "_srcrpmdir ../" ../$(name)-$(version).tar.bz2
+	@echo -e "\033[1m== Building RPM package $(name)-$(distversion) ==\033[0;0m"
+	rpmbuild -tb --clean \
+		--define "_rpmfilename %%{NAME}-%%{VERSION}-%%{RELEASE}.%%{ARCH}.rpm" \
+		--define "debug_package %{nil}" \
+		--define "_rpmdir %(pwd)" $(name)-$(distversion).tar.gz
 
 clean:
 	rm -f README*.html

@@ -1,21 +1,16 @@
-# $Id$
-# Authority: dag
-# Upstream: Dag Wieers <dag$wieers,com>
-
 %{?el4:%define _with_openoffice.org2 1}
+
+%define rpmrelease %{nil}
 
 Summary: Tool to convert between any document format supported by LibreOffice
 Name: unoconv
-Version: 0.5git
-Release: 1
+Version: 0.6
+Release: 1%{?rpmrelease}%{?dist}
 License: GPL
 Group: System Environment/Base
 URL: http://dag.wieers.com/home-made/unoconv/
 
-Packager: Dag Wieers <dag@wieers.com>
-Vendor: Dag Apt Repository, http://dag.wieers.com/apt/
-
-Source: http://dag.wieers.com/home-made/unoconv/unoconv-%{version}.tar.bz2
+Source: https://github.com/downloads/dagwieers/unoconv/unoconv-%{version}.tar.gz
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root
 
 BuildArch: noarch
@@ -51,13 +46,13 @@ and many more...
 
 %files
 %defattr(-, root, root, 0755)
-%doc AUTHORS ChangeLog COPYING README* WISHLIST docs/ tests/
+%doc AUTHORS ChangeLog COPYING README* WISHLIST doc/ tests/
 %doc %{_mandir}/man1/unoconv.1*
 %{_bindir}/unoconv
 
 %changelog
-* Sat Apr 28 2012 Dag Wieers <dag@wieers.com> - 0.5git-1
-- Updated to release 0.5git.
+* Mon Sep 10 2012 Dag Wieers <dag@wieers.com> - 0.6-1
+- Updated to release 0.6.
 
 * Mon Apr 16 2012 Dag Wieers <dag@wieers.com> - 0.5-1
 - Updated to release 0.5.
