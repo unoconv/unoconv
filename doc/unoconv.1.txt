@@ -276,7 +276,7 @@ Here is a list of all options, however for more details please look in
  - Resolution
  - Width
 
-=== BMP EXPORT FILTER OPTIONS
+==== BMP EXPORT FILTER OPTIONS
  - Compression
  - RLEEncoding
 

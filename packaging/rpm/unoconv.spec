@@ -1,6 +1,6 @@
 %{?el4:%define _with_openoffice.org2 1}
 
-%define rpmrelease %{nil}
+%define rpmrelease %nil
 
 Summary: Tool to convert between any document format supported by LibreOffice
 Name: unoconv

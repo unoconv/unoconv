@@ -1,7 +1,19 @@
-* 0.6 - 20/8/2012
--
+* 0.6 - 10/09/2012
+- Implement debugging output (-vvv)
+- Fixes to office comparison
+- Documentation improvements
+- Improvements to Windows support (Volker Paulsen)
+- Improvements to MacOSX support (Scott Prahl)
+- Improvements to FreeBSD support (Peter)
+- Fix for random segfaults with OpenOffice/LibreOffice (Volker Paulsen)
+- Reliability check for unoconv listener (Volker Paulsen)
+- Fix Text Encoded filter definition (Samuele Kaplun)
+- Improve code quality according to pylint (Samuele Kaplun)
+- Fix for export plugin options (-e)
+- Change to how import plugin options (-i) work (incompatible change)
+- Use 127.0.0.1 instead of localhost to avoid potential resolver problems (Maik Penz)
 
-* 0.5 - 16/4/2012
+* 0.5 - 16/04/2012
 - Improve handling of LD_LIBRARY_PATH (Paul Polak)
 - Change to how -o/--output/--outputpath works (can now output to filenames too)
 - Added LibreOffice support (Hans de Graaff)

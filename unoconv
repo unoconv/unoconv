@@ -666,8 +666,8 @@ class Options:
         print 'platform %s/%s' % (os.name, sys.platform)
         print 'python %s' % sys.version
         print product.ooName, product.ooSetupVersion
-        print
-        print 'build revision $Rev$'
+#        print
+#        print 'build revision $Rev$'
 
     def usage(self):
         print >>sys.stderr, 'usage: unoconv [options] file [file2 ..]'

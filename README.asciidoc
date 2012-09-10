@@ -238,6 +238,9 @@ interesting sources:
 == Other implementations
 Other implementations using python and UNO:
 
+ - convwatch
+   http://cgit.freedesktop.org/libreoffice/core/tree/bin/convwatch.py
+
  - oooconv
    https://svn.infrae.com/oooconv/trunk/src/oooconv/filters.py
 
