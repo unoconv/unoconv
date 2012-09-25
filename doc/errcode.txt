@@ -18,20 +18,51 @@ List of SFX (?) related ErrCode classifications::
  - http://cgit.freedesktop.org/libreoffice/core/tree/svtools/inc/svtools/sfxecode.hxx
  - http://cgit.freedesktop.org/libreoffice/core/tree/svtools/inc/svtools/soerr.hxx
 
+----
+01234567012345670123456701234567
+||   ||          |||   ||      |
+Warning           ||   ||      |
+ |   ||           ||   ||      |
+ Dynamic          ||   ||      |
+      |           ||   ||      |
+      Subsystemarea|   ||      |
+                   |   ||      |
+                   |   ||      |
+                   |   ||      |
+                   Class|      |
+                        |      |
+                        |      |
+                        |      |
+                        Code
+----
+
 
 == UnoException ErrCode
 
 1287::
+Binary: 000:00101:00000111
+
     Area: 0 (ERRCODE_AREA_TOOLS)
     Class: 5 (ERRCODE_CLASS_ACCESS)
     Code: 7 (ERRCODE_IO_ACCESSDENIED)
 
 2074::
+Binary: 000:01000:00011010
+
     Area: 0 (ERRCODE_AREA_TOOLS)
     Class: 8 (ERRCODE_CLASS_PARAMETER)
     Code: 26 (ERRCODE_IO_INVALIDPARAMETER)
 
 3088::
+Binary: 000:01100:00010000
+
     Area: 0 (ERRCODE_AREA_TOOLS)
     Class: 12 (ERRCODE_CLASS_WRITE)
     Code: 16 (ERRCODE_IO_CANTWRITE)
+
+19468::
+Binary: 010:01100:00001100
+
+    Area: 2 (ERRCODE_AREA_SFX)
+    Class: 12 (ERRCODE_CLASS_WRITE)
+    Code: 12 (ERRCODE_IO_NOTSUPPORTED)
