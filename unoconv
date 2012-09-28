@@ -524,8 +524,8 @@ class Options:
 
         ### Get options from the commandline
         try:
-            opts, args = getopt.getopt (args, 'c:Dd:e:f:hi:Llo:np:s:T:t:v',
-                ['connection=', 'debug', 'doctype=', 'export', 'format=',
+            opts, args = getopt.getopt (args, 'c:Dd:e:f:hi:Llo:np:s:T:t:vV',
+                ['connection=', 'debug', 'doctype=', 'export=', 'format=',
                  'help', 'import', 'listener', 'no-launch', 'output=',
                  'outputpath', 'password=', 'pipe=', 'port=', 'server=',
                  'timeout=', 'show', 'stdout', 'template', 'verbose',
@@ -609,7 +609,7 @@ class Options:
                 self.timeout = int(arg)
             elif opt in ['-v', '--verbose']:
                 self.verbose = self.verbose + 1
-            elif opt in ['--version']:
+            elif opt in ['-V', '--version']:
                 self.version()
                 sys.exit(255)
 
