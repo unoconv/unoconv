@@ -77,13 +77,44 @@ def find_offices():
     else:
 
         if os.name in ( 'nt', 'os2' ):
-            if 'PROGRAMFILES' in os.environ.keys():
-                extrapaths += glob.glob(os.environ['PROGRAMFILES']+'\\LibreOffice*') + \
-                              glob.glob(os.environ['PROGRAMFILES']+'\\OpenOffice.org*')
-
-            if 'PROGRAMFILES(X86)' in os.environ.keys():
-                extrapaths += glob.glob(os.environ['PROGRAMFILES(X86)']+'\\LibreOffice*') + \
-                              glob.glob(os.environ['PROGRAMFILES(X86)']+'\\OpenOffice.org*')
+            pf32 = pf64 = None
+            pf = os.environ.get('PROGRAMFILES')
+            if 'PROGRAMW6432' in os.environ:
+                # only Windows >= 7
+                pf64 = os.environ['PROGRAMW6432']
+            else:
+                from platform import architecture
+                if architecture()[0] == '32bit':
+                    # braindamage: a 32 bit process does not get 64 bit
+                    # program files directory, trying harder --vpa
+                    try:
+                        from _winreg import (
+                            ConnectRegistry, OpenKey, QueryValueEx,
+                            HKEY_LOCAL_MACHINE, KEY_READ, KEY_WOW64_64KEY)
+                        hreg = ConnectRegistry(None, HKEY_LOCAL_MACHINE)
+                        hkey = OpenKey(
+                            hreg,
+                            r'SOFTWARE\Microsoft\Windows\CurrentVersion',
+                            0, KEY_READ|KEY_WOW64_64KEY)
+                        hval = QueryValueEx(hkey, 'ProgramFilesDir')
+                        if hval:
+                            pf64 = hval[0]  # unicode
+                    except: # WindowsError
+                        pass
+                else:
+                    pf64 = pf
+            if pf64:
+                extrapaths += (
+                    glob.glob(pf64+'\\LibreOffice*') +
+                    glob.glob(pf64+'\\OpenOffice.org*'))
+            if 'PROGRAMFILES(X86)' in os.environ:
+                pf32 = os.environ['PROGRAMFILES(X86)']
+            else:
+                pf32 = pf
+            if pf32:
+                extrapaths += (
+                    glob.glob(pf32+'\\LibreOffice*') +
+                    glob.glob(pf32+'\\OpenOffice.org*'))
 
         elif os.name in ( 'mac', ) or sys.platform in ( 'darwin', ):
             extrapaths += [ '/Applications/LibreOffice.app/Contents',
