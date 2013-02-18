@@ -134,7 +134,7 @@ you can do:
 
     -i FilterOptions=76
 
-For a list of posible encoding types, you can use the above link to find the
+For a list of possible encoding types, you can use the above link to find the
 possible options.
 
   - FilterOptions
@@ -165,7 +165,7 @@ system's encoding (9), but with no text-delimiter, you can do:
 
     -i FilterOptions=9/32,,9,2
 
-For a list of posible encoding types, you can use the above link to find the
+For a list of possible encoding types, you can use the above link to find the
 possible options.
 
   - FilterOptions
@@ -207,7 +207,7 @@ system's encoding (9), but with no text-delimiter, you can do:
 
     -e FilterOptions=9/32,,9
 
-For a list of posible encoding types, you can use the above link to find the
+For a list of possible encoding types, you can use the above link to find the
 possible options.
 
   - FilterOptions

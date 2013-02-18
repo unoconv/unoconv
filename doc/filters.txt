@@ -101,7 +101,7 @@ the window (cuts out margins) *4*:means with a zoom level given in the â€œZoomâ€
 property.
 |MaxImageResolution        |integer|300     |If the property
 If the property ReduceImageResolution is set to true all images will be reduced
-to the given value in DPI. Posible values: *75*, *150*, *300*, *600*, *1200*
+to the given value in DPI. Possible values: *75*, *150*, *300*, *600*, *1200*
 |OpenBookmarkLevels        |integer|-1      |Specifies how many bookmark
 levels should be opened in the reader application when the PDF gets opened. -1
 means all levels, non-negative numbers mean the respective number of levels.
