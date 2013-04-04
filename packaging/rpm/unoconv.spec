@@ -49,6 +49,8 @@ and many more...
 %doc AUTHORS ChangeLog COPYING README* WISHLIST doc/ tests/
 %doc %{_mandir}/man1/unoconv.1*
 %{_bindir}/unoconv
+%{_bindir}/unoconv2.py
+%{_bindir}/unoconv3.py
 
 %changelog
 * Mon Sep 10 2012 Dag Wieers <dag@wieers.com> - 0.6-1

@@ -111,6 +111,8 @@ install:
 	install -d -m0755 $(DESTDIR)$(bindir)
 	install -d -m0755 $(DESTDIR)$(mandir)/man1/
 	install -p -m0755 unoconv $(DESTDIR)$(bindir)/unoconv
+	install -p -m0755 unoconv2.py $(DESTDIR)$(bindir)/unoconv2.py
+	install -p -m0755 unoconv3.py $(DESTDIR)$(bindir)/unoconv3.py
 	install -p -m0644 doc/unoconv.1 $(DESTDIR)$(mandir)/man1/unoconv.1
 
 install-links: $(links)
