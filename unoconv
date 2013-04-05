@@ -867,18 +867,18 @@ class Convertor:
 
             ### Update document indexes
             phase = "update-indexes"
-            try:
-                document.refresh()
-                indexes = document.getDocumentIndexes()
-            except AttributeError:
-                # the document doesn't implement the XRefreshable and/or
-                # XDocumentIndexesSupplier interfaces
-                pass
-            else:
-                for ii in range(2):
-                    # At first update Table-of-Contents.
-                    # ToC grows, so page numbers grows too.
-                    # On second turn update page numbers in ToC.
+            for ii in range(2):
+                # At first update Table-of-Contents.
+                # ToC grows, so page numbers grows too.
+                # On second turn update page numbers in ToC.
+                try:
+                    document.refresh()
+                    indexes = document.getDocumentIndexes()
+                except AttributeError:
+                    # the document doesn't implement the XRefreshable and/or
+                    # XDocumentIndexesSupplier interfaces
+                    break
+                else:
                     for i in range(0, indexes.getCount()):
                         indexes.getByIndex(i).update()
 
