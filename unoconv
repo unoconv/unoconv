@@ -1105,7 +1105,10 @@ if __name__ == '__main__':
     exitcode = 0
 
     info(3, 'sysname=%s, platform=%s, python=%s, python-version=%s' % (os.name, sys.platform, sys.executable, sys.version))
-
+    
+    if "PATH" not in os.environ:
+        os.environ['PATH'] = ""
+    
     for of in find_offices():
         if of.python != sys.executable and not sys.executable.startswith(of.basepath):
             python_switch(of)
