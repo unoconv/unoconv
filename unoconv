@@ -520,7 +520,7 @@ fmts.add('presentation', 'xhtml', 'xml', 'XHTML', 'XHTML Impress File') ### 33
 fmts.add('presentation', 'xpm', 'xpm', 'X PixMap', 'impress_xpm_Export') ### 10
 
 class Options(object):
-    def __init__(self, args):
+    def __init__(self):
         self.connection = None
         self.debug = False
         self.doctype = None
@@ -544,9 +544,10 @@ class Options(object):
         self.verbose = 0
         self.stop_instance = True
         """ask for instance to be stopped after conversion"""
-        self.use_logging = False
-        """use logging module instead of print"""
 
+    def parse(self, args):
+        """parse command line arguments
+        """
 
         ### Get options from the commandline
         try:
@@ -639,6 +640,14 @@ class Options(object):
                 self.version()
                 sys.exit(255)
 
+        ### If no format was specified, probe it or provide it
+        if not self.format:
+            l = sys.argv[0].split('2')
+            if len(l) == 2:
+                self.format = l[1]
+            else:
+                self.format = 'pdf'
+
         ### Enable verbosity
         if self.verbose >= 2:
             print('Verbosity set to level %d' % self.verbose, file=sys.stderr)
@@ -649,6 +658,11 @@ class Options(object):
             print('unoconv: you have to provide a filename as argument', file=sys.stderr)
             print('Try `unoconv -h\' for more information.', file=sys.stderr)
             sys.exit(255)
+
+        self.complete_config()
+
+    def complete_config(self):
+        """various post config actions"""
 
         ### Set connection string
         if not self.connection:
@@ -663,23 +677,6 @@ class Options(object):
             for doctype in doctypes:
                 if doctype.startswith(self.doctype):
                     self.doctype = doctype
-
-        ### Check if the user request to see the list of formats
-        if self.showlist or self.format == 'list':
-            if self.doctype:
-                fmts.display(self.doctype)
-            else:
-                for t in doctypes:
-                    fmts.display(t)
-            sys.exit(0)
-
-        ### If no format was specified, probe it or provide it
-        if not self.format:
-            l = sys.argv[0].split('2')
-            if len(l) == 2:
-                self.format = l[1]
-            else:
-                self.format = 'pdf'
 
     def version(self):
         ### Get office product information
@@ -1198,7 +1195,7 @@ def run(job):
 if __name__ == '__main__':
     # init job right now to get options verbosity level for logging
     job = Job()
-    job.op = Options(sys.argv[1:])
+    job.op = Options().parse(sys.argv[1:])
     logging.config.dictConfig(setup_log(job.op))
 else:
     job = None
@@ -1277,7 +1274,16 @@ if __name__ == '__main__':
     job.office = office
 
     try:
-        run(job)
+        ### Check if the user request to see the list of formats
+        if job.op.showlist or job.op.format == 'list':
+            if job.op.doctype:
+                fmts.display(job.op.doctype)
+            else:
+                for t in doctypes:
+                    fmts.display(t)
+            job.exitcode = 0
+        else:
+            run(job)
     except KeyboardInterrupt as e:
         job.exitcode = 6
         die(job, 'Exiting on user request')
