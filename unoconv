@@ -1230,6 +1230,7 @@ else:
     print("ERROR: Please locate your office installation and send your feedback to:", file=sys.stderr)
     print("       http://github.com/dagwieers/unoconv/issues", file=sys.stderr)
     sys.exit(1)
+del of
 
 
 ### Now that we have found a working pyuno library, let's import some classes
