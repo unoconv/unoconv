@@ -767,7 +767,7 @@ class Convertor(object):
                     ### Is it already/still running ?
                     retcode = job.ooproc.poll()
                     if retcode != None:
-                        info(3, "Process %s (pid=%s) exited with %s." % (job.of.binary, job.ooproc.pid, retcode))
+                        info(3, "Process %s (pid=%s) exited with %s." % (job.office.binary, job.ooproc.pid, retcode))
                         break
                     try:
                         unocontext = resolver.resolve("uno:%s" % op.connection)
@@ -778,7 +778,7 @@ class Convertor(object):
                     except:
                         raise
                 else:
-                    error("Failed to connect to %s (pid=%s) in %d seconds.\n%s" % (job.of.binary, job.ooproc.pid, op.timeout, e))
+                    error("Failed to connect to %s (pid=%s) in %d seconds.\n%s" % (job.office.binary, job.ooproc.pid, op.timeout, e))
             except Exception as e:
                 raise
                 error("Launch of %s failed.\n%s" % (office.binary, e))
@@ -1029,11 +1029,11 @@ class Listener(object):
                 info(1, "Existing %s listener found, nothing to do." % job.product.ooName)
                 return
             if job.product.ooName != "LibreOffice" or LooseVersion(job.product.ooSetupVersion) <= LooseVersion('3.3'):
-                subprocess.call([job.of.binary, "-headless", "-invisible", "-nocrashreport", "-nodefault", "-nologo", "-nofirststartwizard", "-norestore", "-accept=%s" % op.connection], env=os.environ)
+                subprocess.call([job.office.binary, "-headless", "-invisible", "-nocrashreport", "-nodefault", "-nologo", "-nofirststartwizard", "-norestore", "-accept=%s" % op.connection], env=os.environ)
             else:
-                subprocess.call([job.of.binary, "--headless", "--invisible", "--nocrashreport", "--nodefault", "--nologo", "--nofirststartwizard", "--norestore", "--accept=%s" % op.connection], env=os.environ)
+                subprocess.call([job.office.binary, "--headless", "--invisible", "--nocrashreport", "--nodefault", "--nologo", "--nofirststartwizard", "--norestore", "--accept=%s" % op.connection], env=os.environ)
         except Exception as e:
-            error("Launch of %s failed.\n%s" % (job.of.binary, e))
+            error("Launch of %s failed.\n%s" % (job.office.binary, e))
         else:
             info(1, "xisting %s listener found, nothing to do." % job.product.ooName)
 
@@ -1274,7 +1274,7 @@ info(2, "Using office binary path: %s" % office.unopath)
 if __name__ == '__main__':
 
     # note : job was defined above
-    job.of = office
+    job.office = office
 
     try:
         run(job)
