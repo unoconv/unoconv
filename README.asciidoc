@@ -221,11 +221,13 @@ class Transformer:
           self.document = document
 
      def transform():
+          # sample api call to turn on line numbering
           self.document.LineNumberingProperties.IsOn = True
 ----
 
 And run unoconv with the --transform option
-     unoconv -f pdf --transform some-file.odt
+
+    unoconv -f pdf --transform some-file.odt
 
 == Interesting information
 If you're interested to help out with development, here are some pointers to
