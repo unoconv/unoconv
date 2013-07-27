@@ -113,7 +113,7 @@ def find_offices():
             pythonhomes = ()
         elif os.name in ( 'mac', ) or sys.platform in ( 'darwin', ):
             officelibraries = ( 'pyuno.so', 'libpyuno.dylib' )
-            officebinaries = ( 'soffice.bin', )
+            officebinaries = ( 'soffice.bin', 'soffice')
             pythonbinaries = ( 'python.bin', 'python' )
             pythonhomes = ( 'OOoPython.framework/Versions/*/lib/python*', )
         else:
