@@ -771,9 +771,6 @@ class Convertor:
     def analyze(self, inputfn):
         document = None
 
-        if op.verbose > 0:
-            print('Input file:', inputfn, file=sys.stderr)
-
         if not os.path.exists(inputfn):
             print('unoconv: file `%s\' does not exist.' % inputfn, file=sys.stderr)
             exitcode = 1
@@ -800,8 +797,10 @@ class Convertor:
 
             size = document.StyleFamilies.getByName("PageStyles").getByName(s);
 
+            print('Input file:', inputfn, file=sys.stderr)
             print("Page Size: %.2f x %.2f cm" % (size.Width/1000.0, size.Height/1000.0));
             print("Pages: %s" % document.CurrentController.PageCount);
+            print();
         finally:
             document.dispose()
             document.close(True)
