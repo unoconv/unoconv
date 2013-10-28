@@ -524,15 +524,16 @@ class Options:
         self.template = None
         self.timeout = 6
         self.verbose = 0
+        self.analyze = False
 
         ### Get options from the commandline
         try:
             opts, args = getopt.getopt (args, 'c:Dd:e:f:hi:Llo:np:s:T:t:vV',
-                ['connection=', 'debug', 'doctype=', 'export=', 'format=',
+                ['connection=','debug', 'doctype=', 'export=', 'format=',
                  'help', 'import', 'listener', 'no-launch', 'output=',
                  'outputpath', 'password=', 'pipe=', 'port=', 'server=',
                  'timeout=', 'show', 'stdout', 'template', 'verbose',
-                 'version'] )
+                 'analyze', 'version'] )
         except getopt.error as exc:
             print('unoconv: %s, try unoconv -h for a list of all the options' % str(exc))
             sys.exit(255)
@@ -610,6 +611,8 @@ class Options:
                 self.template = arg
             elif opt in ['-T', '--timeout']:
                 self.timeout = int(arg)
+            elif opt in ['--analyze']:
+                self.analyze = True
             elif opt in ['-v', '--verbose']:
                 self.verbose = self.verbose + 1
             elif opt in ['-V', '--version']:
@@ -622,7 +625,7 @@ class Options:
 
         self.filenames = args
 
-        if not self.listener and not self.showlist and self.doctype != 'list' and not self.filenames:
+        if not self.listener and not self.showlist and not self.analyze and self.doctype != 'list' and not self.filenames:
             print('unoconv: you have to provide a filename as argument', file=sys.stderr)
             print('Try `unoconv -h\' for more information.', file=sys.stderr)
             sys.exit(255)
@@ -700,6 +703,7 @@ unoconv options:
       --stdout             write output to stdout
   -t, --template=file      import the styles from template (.ott)
   -T, --timeout=secs       timeout after secs if connection to listener fails
+      --analyze            analyzes the file and outputs some informations
   -v, --verbose            be more and more verbose (-vvv for debugging)
 ''', file=sys.stderr)
 
@@ -763,6 +767,44 @@ class Convertor:
         unosvcmgr = unocontext.ServiceManager
         self.desktop = unosvcmgr.createInstanceWithContext("com.sun.star.frame.Desktop", unocontext)
         self.cwd = unohelper.systemPathToFileUrl( os.getcwd() )
+
+    def analyze(self, inputfn):
+        document = None
+
+        if op.verbose > 0:
+            print('Input file:', inputfn, file=sys.stderr)
+
+        if not os.path.exists(inputfn):
+            print('unoconv: file `%s\' does not exist.' % inputfn, file=sys.stderr)
+            exitcode = 1
+
+        try:
+            ### Load inputfile
+            inputprops = UnoProps(Hidden=True, ReadOnly=True, UpdateDocMode=QUIET_UPDATE)
+
+            ### Cannot use UnoProps for FilterData property
+            if op.importfilteroptions:
+#                print "Import filter options: %s" % op.importfilteroptions
+                inputprops += UnoProps(FilterOptions=op.importfilteroptions)
+
+            ### Cannot use UnoProps for FilterData property
+            if op.importfilter:
+                inputprops += ( PropertyValue( "FilterData", 0, uno.Any("[]com.sun.star.beans.PropertyValue", tuple( op.importfilter ), ), 0 ), )
+
+            inputurl = unohelper.absolutize(self.cwd, unohelper.systemPathToFileUrl(inputfn))
+            document = self.desktop.loadComponentFromURL( inputurl , "_blank", 0, inputprops )
+
+
+            xViewCursor = document.CurrentController.getViewCursor()
+            s = xViewCursor.PageStyleName
+
+            size = document.StyleFamilies.getByName("PageStyles").getByName(s);
+
+            print("Page Size: %.2f x %.2f cm" % (size.Width/1000.0, size.Height/1000.0));
+            print("Pages: %s" % document.CurrentController.PageCount);
+        finally:
+            document.dispose()
+            document.close(True)
 
         ### List all filters
 #        self.filters = unosvcmgr.createInstanceWithContext( "com.sun.star.document.FilterFactory", unocontext)
@@ -1079,13 +1121,17 @@ def main():
     convertor = None
 
     try:
+
         if op.listener:
             listener = Listener()
 
         if op.filenames:
             convertor = Convertor()
             for inputfn in op.filenames:
-                convertor.convert(inputfn)
+                if op.analyze:
+                    convertor.analyze(inputfn);
+                else:
+                    convertor.convert(inputfn)
 
     except NoConnectException as e:
         error("unoconv: could not find an existing connection to LibreOffice at %s:%s." % (op.server, op.port))
