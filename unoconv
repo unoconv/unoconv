@@ -768,6 +768,7 @@ class Convertor:
         self.desktop = unosvcmgr.createInstanceWithContext("com.sun.star.frame.Desktop", unocontext)
         self.cwd = unohelper.systemPathToFileUrl( os.getcwd() )
 
+        ### Analyzes a file and outputs some informations
     def analyze(self, inputfn):
         document = None
 
@@ -786,20 +787,16 @@ class Convertor:
 
             ### Cannot use UnoProps for FilterData property
             if op.importfilter:
-                inputprops += ( PropertyValue( "FilterData", 0, uno.Any("[]com.sun.star.beans.PropertyValue", tuple( op.importfilter ), ), 0 ), )
+                inputprops += (PropertyValue('FilterData', 0, uno.Any('[]com.sun.star.beans.PropertyValue', tuple(op.importfilter), ), 0),)
 
             inputurl = unohelper.absolutize(self.cwd, unohelper.systemPathToFileUrl(inputfn))
-            document = self.desktop.loadComponentFromURL( inputurl , "_blank", 0, inputprops )
-
-
-            xViewCursor = document.CurrentController.getViewCursor()
-            s = xViewCursor.PageStyleName
-
-            size = document.StyleFamilies.getByName("PageStyles").getByName(s);
+            document = self.desktop.loadComponentFromURL(inputurl , '_blank', 0, inputprops)
+            view = document.CurrentController.getViewCursor()
+            dimensions = document.StyleFamilies.getByName('PageStyles').getByName(view.PageStyleName);
 
             print('Input file:', inputfn, file=sys.stderr)
-            print("Page Size: %.2f x %.2f cm" % (size.Width/1000.0, size.Height/1000.0));
-            print("Pages: %s" % document.CurrentController.PageCount);
+            print('Page Size: %.2f x %.2f cm' % (dimensions.Width / 1000.0, dimensions.Height / 1000.0));
+            print('Pages: %s' % document.CurrentController.PageCount);
             print();
         finally:
             document.dispose()
