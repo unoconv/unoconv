@@ -1146,7 +1146,7 @@ if __name__ == '__main__':
             self.closed = 1
 
         def writeBytes( self, seq ):
-            sys.stdout.write( seq.value )
+            sys.stdout.buffer.write( seq.value )
 
         def flush( self ):
             pass
