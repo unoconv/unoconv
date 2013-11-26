@@ -122,7 +122,7 @@ is a list of probable causes:
  - X display issues (may require the headless subpackage)
  - Permission issues (unable to run or connect to LibreOffice or read/write)
  - SELinux issues (SELinux prevents you from connecting to LibreOffice)
-
+ - Nginx/PHP-FPM issues (You can execute unoconv in terminal, but nothing happens when you use a PHP script. You may need to declare your PATH. Read https://github.com/dagwieers/unoconv/issues/87#issuecomment-18800070) 
 
 == Conversion problems
 If you encounter problems converting files, it often helps to try again. If
