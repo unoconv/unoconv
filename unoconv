@@ -23,6 +23,9 @@ import os
 import subprocess
 import sys
 import time
+import logging
+import logging.config
+
 
 __version__ = "$Revision$"
 # $Source$
@@ -31,11 +34,23 @@ VERSION = '0.6'
 
 doctypes = ('document', 'graphics', 'presentation', 'spreadsheet')
 
-global convertor, office, ooproc, product
-ooproc = None
-exitcode = 0
 
-class Office:
+log = logging.getLogger('unoconv')
+
+
+class Job(object):
+
+    convertor = None
+    office = None
+    ooproc = None
+    product = None
+    op = None
+    """options"""
+    exitcode = 0
+    """exit code for the program"""
+
+
+class Office(object):
     def __init__(self, basepath, urepath, unopath, pyuno, binary, python, pythonhome):
         self.basepath = basepath
         self.urepath = urepath
@@ -249,6 +264,9 @@ def debug_office():
         print('LD_LIBRARY_PATH=%s' % os.environ['LD_LIBRARY_PATH'], file=sys.stderr)
 
 def python_switch(office):
+    """launch a subprocess using the python executable supporting uno,
+    with same options as our and exit
+    """
     if office.pythonhome:
         os.environ['PYTHONHOME'] = office.pythonhome
         os.environ['PYTHONPATH'] = realpath(office.pythonhome, 'lib') + os.pathsep + \
@@ -294,7 +312,7 @@ def python_switch(office):
             ret = os.spawnvpe(os.P_WAIT, office.python, [office.python, ] + sys.argv[0:], os.environ)
             sys.exit(ret)
 
-class Fmt:
+class Fmt(object):
     def __init__(self, doctype, name, extension, summary, filter):
         self.doctype = doctype
         self.name = name
@@ -308,7 +326,7 @@ class Fmt:
     def __repr__(self):
         return "%s/%s" % (self.name, self.doctype)
 
-class FmtList:
+class FmtList(object):
     def __init__(self):
         self.list = []
 
@@ -502,8 +520,8 @@ fmts.add('presentation', 'wmf', 'wmf', 'Windows Metafile', 'impress_wmf_Export')
 fmts.add('presentation', 'xhtml', 'xml', 'XHTML', 'XHTML Impress File') ### 33
 fmts.add('presentation', 'xpm', 'xpm', 'X PixMap', 'impress_xpm_Export') ### 10
 
-class Options:
-    def __init__(self, args):
+class Options(object):
+    def __init__(self):
         self.connection = None
         self.debug = False
         self.doctype = None
@@ -525,6 +543,12 @@ class Options:
         self.template = None
         self.timeout = 6
         self.verbose = 0
+        self.stop_instance = True
+        """ask for instance to be stopped after conversion"""
+
+    def parse(self, args):
+        """parse command line arguments
+        """
 
         ### Get options from the commandline
         try:
@@ -617,6 +641,14 @@ class Options:
                 self.version()
                 sys.exit(255)
 
+        ### If no format was specified, probe it or provide it
+        if not self.format:
+            l = sys.argv[0].split('2')
+            if len(l) == 2:
+                self.format = l[1]
+            else:
+                self.format = 'pdf'
+
         ### Enable verbosity
         if self.verbose >= 2:
             print('Verbosity set to level %d' % self.verbose, file=sys.stderr)
@@ -627,6 +659,11 @@ class Options:
             print('unoconv: you have to provide a filename as argument', file=sys.stderr)
             print('Try `unoconv -h\' for more information.', file=sys.stderr)
             sys.exit(255)
+
+        self.complete_config()
+
+    def complete_config(self):
+        """various post config actions"""
 
         ### Set connection string
         if not self.connection:
@@ -641,23 +678,6 @@ class Options:
             for doctype in doctypes:
                 if doctype.startswith(self.doctype):
                     self.doctype = doctype
-
-        ### Check if the user request to see the list of formats
-        if self.showlist or self.format == 'list':
-            if self.doctype:
-                fmts.display(self.doctype)
-            else:
-                for t in doctypes:
-                    fmts.display(t)
-            sys.exit(0)
-
-        ### If no format was specified, probe it or provide it
-        if not self.format:
-            l = sys.argv[0].split('2')
-            if len(l) == 2:
-                self.format = l[1]
-            else:
-                self.format = 'pdf'
 
     def version(self):
         ### Get office product information
@@ -704,14 +724,17 @@ unoconv options:
   -v, --verbose            be more and more verbose (-vvv for debugging)
 ''', file=sys.stderr)
 
-class Convertor:
-    def __init__(self):
-        global exitcode, ooproc, office, product
+
+class Convertor(object):
+
+    def __init__(self, job):
         unocontext = None
 
         ### Do the LibreOffice component dance
         self.context = uno.getComponentContext()
         self.svcmgr = self.context.ServiceManager
+        self.job = job
+        op = job.op
         resolver = self.svcmgr.createInstanceWithContext("com.sun.star.bridge.UnoUrlResolver", self.context)
 
         ### Test for an existing connection
@@ -723,25 +746,26 @@ class Convertor:
             info(3, "Existing listener not found.")
 
             if op.nolaunch:
-                die(113, "Existing listener not found. Unable start listener by parameters. Aborting.")
+                job.exitcode = 113
+                die(job, "Existing listener not found. Unable start listener by parameters. Aborting.")
 
             ### Start our own OpenOffice instance
             info(3, "Launching our own listener using %s." % office.binary)
             try:
-                product = self.svcmgr.createInstance("com.sun.star.configuration.ConfigurationProvider").createInstanceWithArguments("com.sun.star.configuration.ConfigurationAccess", UnoProps(nodepath="/org.openoffice.Setup/Product"))
-                if product.ooName not in ('LibreOffice', 'LOdev') or LooseVersion(product.ooSetupVersion) <= LooseVersion('3.3'):
-                    ooproc = subprocess.Popen([office.binary, "-headless", "-invisible", "-nocrashreport", "-nodefault", "-nofirststartwizard", "-nologo", "-norestore", "-accept=%s" % op.connection], env=os.environ)
+                job.product = self.svcmgr.createInstance("com.sun.star.configuration.ConfigurationProvider").createInstanceWithArguments("com.sun.star.configuration.ConfigurationAccess", UnoProps(nodepath="/org.openoffice.Setup/Product"))
+                if job.product.ooName not in ('LibreOffice', 'LOdev') or LooseVersion(job.product.ooSetupVersion) <= LooseVersion('3.3'):
+                    job.ooproc = subprocess.Popen([office.binary, "-headless", "-invisible", "-nocrashreport", "-nodefault", "-nofirststartwizard", "-nologo", "-norestore", "-accept=%s" % op.connection], env=os.environ)
                 else:
-                    ooproc = subprocess.Popen([office.binary, "--headless", "--invisible", "--nocrashreport", "--nodefault", "--nofirststartwizard", "--nologo", "--norestore", "--accept=%s" % op.connection], env=os.environ)
-                info(2, '%s listener successfully started. (pid=%s)' % (product.ooName, ooproc.pid))
+                    job.ooproc = subprocess.Popen([office.binary, "--headless", "--invisible", "--nocrashreport", "--nodefault", "--nofirststartwizard", "--nologo", "--norestore", "--accept=%s" % op.connection], env=os.environ)
+                info(2, '%s listener successfully started. (pid=%s)' % (job.product.ooName, job.ooproc.pid))
 
                 ### Try connection to it for op.timeout seconds (flakky OpenOffice)
                 timeout = 0
                 while timeout <= op.timeout:
                     ### Is it already/still running ?
-                    retcode = ooproc.poll()
+                    retcode = job.ooproc.poll()
                     if retcode != None:
-                        info(3, "Process %s (pid=%s) exited with %s." % (office.binary, ooproc.pid, retcode))
+                        info(3, "Process %s (pid=%s) exited with %s." % (job.office.binary, job.ooproc.pid, retcode))
                         break
                     try:
                         unocontext = resolver.resolve("uno:%s" % op.connection)
@@ -752,13 +776,14 @@ class Convertor:
                     except:
                         raise
                 else:
-                    error("Failed to connect to %s (pid=%s) in %d seconds.\n%s" % (office.binary, ooproc.pid, op.timeout, e))
+                    error("Failed to connect to %s (pid=%s) in %d seconds.\n%s" % (job.office.binary, job.ooproc.pid, op.timeout, e))
             except Exception as e:
                 raise
                 error("Launch of %s failed.\n%s" % (office.binary, e))
 
         if not unocontext:
-            die(251, "Unable to connect or start own listener. Aborting.")
+            job.exitcode = 251
+            die(job, "Unable to connect or start own listener. Aborting.")
 
         ### And some more LibreOffice magic
         unosvcmgr = unocontext.ServiceManager
@@ -773,6 +798,8 @@ class Convertor:
 
     def getformat(self, inputfn):
         doctype = None
+        job = self.job
+        op = job.op
 
         ### Get the output format from mapping
         if op.doctype:
@@ -806,12 +833,14 @@ class Convertor:
                 print('unoconv: format [%s/%s] is not known to unoconv.' % (op.doctype, op.format), file=sys.stderr)
             else:
                 print('unoconv: format [%s] is not known to unoconv.' % op.format, file=sys.stderr)
-            die(1)
+            job.exitcode = 1
+            die(job)
 
         return outputfmt
 
     def convert(self, inputfn):
-        global exitcode
+        job = self.job
+        op = self.job.op
 
         document = None
         outputfmt = self.getformat(inputfn)
@@ -821,7 +850,7 @@ class Convertor:
 
         if not os.path.exists(inputfn):
             print('unoconv: file `%s\' does not exist.' % inputfn, file=sys.stderr)
-            exitcode = 1
+            job.exitcode = 1
 
         try:
             ### Import phase
@@ -859,7 +888,7 @@ class Convertor:
                     document.StyleFamilies.loadStylesFromURL(templateurl, templateprops)
                 else:
                     print('unoconv: template file `%s\' does not exist.' % op.template, file=sys.stderr)
-                    exitcode = 1
+                    job.exitcode = 1
 
             ### Update document links
             phase = "update-links"
@@ -939,152 +968,211 @@ class Convertor:
 
         except SystemError as e:
             error("unoconv: SystemError during %s phase:\n%s" % (phase, e))
-            exitcode = 1
+            job.exitcode = 1
 
         except RuntimeException as e:
             error("unoconv: RuntimeException during %s phase:\nOffice probably died. %s" % (phase, e))
-            exitcode = 6
+            job.exitcode = 6
 
         except DisposedException as e:
             error("unoconv: DisposedException during %s phase:\nOffice probably died. %s" % (phase, e))
-            exitcode = 7
+            job.exitcode = 7
 
         except IllegalArgumentException as e:
             error("UNO IllegalArgument during %s phase:\nSource file cannot be read. %s" % (phase, e))
-            exitcode = 8
+            job.exitcode = 8
 
         except IOException as e:
 #            for attr in dir(e): print '%s: %s', (attr, getattr(e, attr))
             error("unoconv: IOException during %s phase:\n%s" % (phase, e.Message))
-            exitcode = 3
+            job.exitcode = 3
 
         except CannotConvertException as e:
 #            for attr in dir(e): print '%s: %s', (attr, getattr(e, attr))
             error("unoconv: CannotConvertException during %s phase:\n%s" % (phase, e.Message))
-            exitcode = 4
+            job.exitcode = 4
 
         except UnoException as e:
             if hasattr(e, 'ErrCode'):
                 error("unoconv: UnoException during %s phase in %s (ErrCode %d)" % (phase, repr(e.__class__), e.ErrCode))
-                exitcode = e.ErrCode
+                job.exitcode = e.ErrCode
                 pass
             if hasattr(e, 'Message'):
                 error("unoconv: UnoException during %s phase:\n%s" % (phase, e.Message))
-                exitcode = 5
+                job.exitcode = 5
             else:
                 error("unoconv: UnoException during %s phase in %s" % (phase, repr(e.__class__)))
-                exitcode = 2
+                job.exitcode = 2
                 pass
 
-class Listener:
-    def __init__(self):
-        global product
+
+class Listener(object):
+
+    def __init__(self, job):
+        op = job.op
 
         info(1, "Start listener on %s:%s" % (op.server, op.port))
         self.context = uno.getComponentContext()
         self.svcmgr = self.context.ServiceManager
         try:
             resolver = self.svcmgr.createInstanceWithContext("com.sun.star.bridge.UnoUrlResolver", self.context)
-            product = self.svcmgr.createInstance("com.sun.star.configuration.ConfigurationProvider").createInstanceWithArguments("com.sun.star.configuration.ConfigurationAccess", UnoProps(nodepath="/org.openoffice.Setup/Product"))
+            job.product = self.svcmgr.createInstance("com.sun.star.configuration.ConfigurationProvider").createInstanceWithArguments("com.sun.star.configuration.ConfigurationAccess", UnoProps(nodepath="/org.openoffice.Setup/Product"))
             try:
-                unocontext = resolver.resolve("uno:%s" % op.connection)
+                unocontext = resolver.resolve("uno:%s" % job.op.connection)
             except NoConnectException as e:
                 pass
             else:
-                info(1, "Existing %s listener found, nothing to do." % product.ooName)
+                info(1, "Existing %s listener found, nothing to do." % job.product.ooName)
                 return
-            if product.ooName != "LibreOffice" or LooseVersion(product.ooSetupVersion) <= LooseVersion('3.3'):
-                subprocess.call([office.binary, "-headless", "-invisible", "-nocrashreport", "-nodefault", "-nologo", "-nofirststartwizard", "-norestore", "-accept=%s" % op.connection], env=os.environ)
+            if job.product.ooName != "LibreOffice" or LooseVersion(job.product.ooSetupVersion) <= LooseVersion('3.3'):
+                subprocess.call([job.office.binary, "-headless", "-invisible", "-nocrashreport", "-nodefault", "-nologo", "-nofirststartwizard", "-norestore", "-accept=%s" % op.connection], env=os.environ)
             else:
-                subprocess.call([office.binary, "--headless", "--invisible", "--nocrashreport", "--nodefault", "--nologo", "--nofirststartwizard", "--norestore", "--accept=%s" % op.connection], env=os.environ)
+                subprocess.call([job.office.binary, "--headless", "--invisible", "--nocrashreport", "--nodefault", "--nologo", "--nofirststartwizard", "--norestore", "--accept=%s" % op.connection], env=os.environ)
         except Exception as e:
-            error("Launch of %s failed.\n%s" % (office.binary, e))
+            error("Launch of %s failed.\n%s" % (job.office.binary, e))
         else:
-            info(1, "Existing %s listener found, nothing to do." % product.ooName)
+            info(1, "xisting %s listener found, nothing to do." % job.product.ooName)
+
+
+class WarningToInfoFilter(object):
+    @staticmethod
+    def filter(record):
+        return logging.INFO <= record.levelno <= logging.ERROR  
+
+
+class NotWarningToInfoFilter(object):
+    @staticmethod
+    def filter(record):
+        return not (logging.INFO <= record.levelno <= logging.ERROR)
+
+
+def unoconv_to_logging_level(level):
+    return {0: logging.ERROR, 1: logging.WARNING, 2: logging.INFO}.get(
+        level, logging.DEBUG)
+
+
+def setup_log(op):
+    """return a dict to setup logging according to op
+
+    :ptype op: Options"""
+    level = unoconv_to_logging_level(op.verbose)
+
+    if not op.stdout:
+        # complex handling, critical and debug goes to stderr,
+        # warning to error goes to stdout
+        filters = {'in_warn_to_info': {'()': WarningToInfoFilter},
+            'not_in_warn_to_info': {'()': NotWarningToInfoFilter}}
+        handlers = {
+            'out':{
+                'class': 'logging.StreamHandler',
+                'level':  max(level, logging.INFO),
+                'stream': sys.stdout,
+                'filters': ['in_warn_to_info']},
+            'err':{
+                'class': 'logging.StreamHandler',
+                'level':  level,
+                'stream': sys.stderr,
+                'filters': ['not_in_warn_to_info']}}
+    else:
+        # all message goes to stderr, we just have to set level
+        handlers = {
+            'err':{
+                'class': 'logging.StreamHandler',
+                'level':  level,
+                'stream': sys.stderr,
+            }}
+        filters = {}
+
+    return {'version': 1,
+        'handlers': handlers,
+        'loggers':{
+            'unoconv': {'handlers': list(handlers.keys()), 'level':  level}},
+        'filters': filters}
+
 
 def error(msg):
     "Output error message"
-    print(msg, file=sys.stderr)
+    log.critical(msg)
 
-def info(level, msg):
+
+def info(level, msg, job_=None):
     "Output info message"
-    if 'op' not in globals():
-        pass
-    elif op.verbose >= 3 and level >= 3:
-        print("DEBUG:", msg, file=sys.stderr)
-    elif not op.stdout and level <= op.verbose:
-        print(msg, file=sys.stdout)
-    elif level <= op.verbose:
-        print(msg, file=sys.stderr)
+    log.log(unoconv_to_logging_level(level), msg)
 
-def die(ret, msg=None):
-    "Print optional error and exit with errorcode"
-    global convertor, ooproc, office
+
+def die(job, msg=None):
+    """Print optional error and exit with job.exitcode
+
+    if job.op.stop_instance is true, also stop instance.
+    """
 
     if msg:
         error('Error: %s' % msg)
 
     ### Did we start our own listener instance ?
-    if not op.listener and ooproc and convertor:
+    if job.op.stop_instance and not job.op.listener and job.ooproc and job.convertor:
 
         ### If there is a GUI now attached to the instance, disable listener
-        if convertor.desktop.getCurrentFrame():
-            info(2, 'Trying to stop %s GUI listener.' % product.ooName)
+        if job.convertor.desktop.getCurrentFrame():
+            info(2, 'Trying to stop %s GUI listener.' % job.product.ooName)
             try:
-                if product.ooName != "LibreOffice" or product.ooSetupVersion <= 3.3:
-                    subprocess.Popen([office.binary, "-headless", "-invisible", "-nocrashreport", "-nodefault", "-nofirststartwizard", "-nologo", "-norestore", "-unaccept=%s" % op.connection], env=os.environ)
+                if job.product.ooName != "LibreOffice" or job.product.ooSetupVersion <= 3.3:
+                    subprocess.Popen([job.office.binary, "-headless", "-invisible", "-nocrashreport", "-nodefault", "-nofirststartwizard", "-nologo", "-norestore", "-unaccept=%s" % job.op.connection], env=os.environ)
                 else:
-                    subprocess.Popen([office.binary, "--headless", "--invisible", "--nocrashreport", "--nodefault", "--nofirststartwizard", "--nologo", "--norestore", "--unaccept=%s" % op.connection], env=os.environ)
-                ooproc.wait()
-                info(2, '%s listener successfully disabled.' % product.ooName)
+                    subprocess.Popen([job.office.binary, "--headless", "--invisible", "--nocrashreport", "--nodefault", "--nofirststartwizard", "--nologo", "--norestore", "--unaccept=%s" % job.op.connection], env=os.environ)
+                job.ooproc.wait()
+                info(2, '%s listener successfully disabled.' % job.product.ooName)
             except Exception as e:
-                error("Terminate using %s failed.\n%s" % (office.binary, e))
+                error("Terminate using %s failed.\n%s" % (job.office.binary, e))
 
         ### If there is no GUI attached to the instance, terminate instance
         else:
-            info(3, 'Terminating %s instance.' % product.ooName)
+            info(3, 'Terminating %s instance.' % job.product.ooName)
             try:
-                convertor.desktop.terminate()
+                job.convertor.desktop.terminate()
             except DisposedException:
-                info(2, '%s instance unsuccessfully closed, sending TERM signal.' % product.ooName)
+                info(2, '%s instance unsuccessfully closed, sending TERM signal.' % job.product.ooName)
                 try:
-                    ooproc.terminate()
+                    job.ooproc.terminate()
                 except AttributeError:
-                    os.kill(ooproc.pid, 15)
-            info(3, 'Waiting for %s instance to exit.' % product.ooName)
-            ooproc.wait()
+                    os.kill(job.ooproc.pid, 15)
+            info(3, 'Waiting for %s instance to exit.' % job.product.ooName)
+            job.ooproc.wait()
 
         ### LibreOffice processes may get stuck and we have to kill them
         ### Is it still running ?
-        if ooproc.poll() == None:
-            info(1, '%s instance still running, please investigate...' % product.ooName)
-            ooproc.wait()
-            info(2, '%s instance unsuccessfully terminated, sending KILL signal.' % product.ooName)
+        if job.ooproc.poll() == None:
+            info(1, '%s instance still running, please investigate...' % job.product.ooName)
+            job.ooproc.wait()
+            info(2, '%s instance unsuccessfully terminated, sending KILL signal.' % job.product.ooName)
             try:
-                ooproc.kill()
+                job.ooproc.kill()
             except AttributeError:
-                os.kill(ooproc.pid, 9)
-            info(3, 'Waiting for %s with pid %s to disappear.' % (ooproc.pid, product.ooName))
-            ooproc.wait()
+                os.kill(job.ooproc.pid, 9)
+            info(3, 'Waiting for %s with pid %s to disappear.' % (job.ooproc.pid, job.product.ooName))
+            job.ooproc.wait()
 
     # allow Python GC to garbage collect pyuno object *before* exit call
     # which avoids random segmentation faults --vpa
-    convertor = None
+    job.convertor = None
 
-    sys.exit(ret)
+    sys.exit(job.exitcode)
 
-def main():
-    global convertor, exitcode
-    convertor = None
+
+def run(job):
+
+    op = job.op
 
     try:
-        if op.listener:
-            listener = Listener()
+        if op.listener and job.listener is None:
+            job.listener = Listener(job)
 
         if op.filenames:
-            convertor = Convertor()
+            if job.convertor is None:
+                job.convertor = Convertor(job)
+
             for inputfn in op.filenames:
-                convertor.convert(inputfn)
+                job.convertor.convert(inputfn)
 
     except NoConnectException as e:
         error("unoconv: could not find an existing connection to LibreOffice at %s:%s." % (op.server, op.port))
@@ -1093,79 +1181,109 @@ def main():
         else:
             info(0, "Please start an LibreOffice instance on server '%s' by doing:\n\n    unoconv --listener --server %s --port %s\n\nor alternatively:\n\n    soffice -nologo -nodefault -accept=\"socket,host=%s,port=%s;urp;\"" % (op.server, op.server, op.port, op.server, op.port))
             info(0, "Please start an soffice instance on server '%s' by doing:\n\n    soffice -nologo -nodefault -accept=\"socket,host=127.0.0.1,port=%s;urp;\"" % (op.server, op.port))
-        exitcode = 1
+        job.exitcode = 1
 #    except UnboundLocalError:
-#        die(252, "Failed to connect to remote listener.")
+#        job.exitcode = 252
+#        die(job, "Failed to connect to remote listener.")
     except OSError:
         error("Warning: failed to launch Office suite. Aborting.")
+        job.exitcode = 1
+    return job
 
-### Main entrance
+
 if __name__ == '__main__':
-    exitcode = 0
+    # init job right now to get options verbosity level for logging
+    job = Job()
+    job.op = Options().parse(sys.argv[1:])
+    logging.config.dictConfig(setup_log(job.op))
+else:
+    job = None
 
-    info(3, 'sysname=%s, platform=%s, python=%s, python-version=%s' % (os.name, sys.platform, sys.executable, sys.version))
 
-    for of in find_offices():
-        if of.python != sys.executable and not sys.executable.startswith(of.basepath):
-            python_switch(of)
-        office_environ(of)
-#        debug_office()
-        try:
-            import uno, unohelper
-            office = of
-            break
-        except:
-#            debug_office()
-            print("unoconv: Cannot find a suitable pyuno library and python binary combination in %s" % of, file=sys.stderr)
-            print("ERROR:", sys.exc_info()[1], file=sys.stderr)
-            print(file=sys.stderr)
-    else:
-#        debug_office()
-        print("unoconv: Cannot find a suitable office installation on your system.", file=sys.stderr)
-        print("ERROR: Please locate your office installation and send your feedback to:", file=sys.stderr)
-        print("       http://github.com/dagwieers/unoconv/issues", file=sys.stderr)
-        sys.exit(1)
+### Trying to get a suitable UNO environment
 
-    ### Now that we have found a working pyuno library, let's import some classes
-    from com.sun.star.beans import PropertyValue
-    from com.sun.star.connection import NoConnectException
-    from com.sun.star.document.UpdateDocMode import QUIET_UPDATE
-    from com.sun.star.lang import DisposedException, IllegalArgumentException
-    from com.sun.star.io import IOException, XOutputStream
-    from com.sun.star.script import CannotConvertException
-    from com.sun.star.uno import Exception as UnoException
-    from com.sun.star.uno import RuntimeException
+info(3, 'sysname=%s, platform=%s, python=%s, python-version=%s' % (os.name, sys.platform, sys.executable, sys.version))
 
-    ### And now that we have those classes, build on them
-    class OutputStream( unohelper.Base, XOutputStream ):
-        def __init__( self ):
-            self.closed = 0
+for of in find_offices():
+    if of.python != sys.executable and not sys.executable.startswith(of.basepath):
+        python_switch(of)  # END OF THE STORY !
 
-        def closeOutput(self):
-            self.closed = 1
 
-        def writeBytes( self, seq ):
-            sys.stdout.write( seq.value )
+    office_environ(of)
+    # debug_office()
+    try:
+        import uno, unohelper
+        office = of
+        break
+    except:
+        # debug_office()
+        error("unoconv: Cannot find a suitable pyuno library " +
+            "and python binary combination in %s\n" % of +
+            "ERROR:" + repr(sys.exc_info()[1]) + "\n")
+else:
+    # debug_office()
+    print("unoconv: Cannot find a suitable office installation on your system.", file=sys.stderr)
+    print("ERROR: Please locate your office installation and send your feedback to:", file=sys.stderr)
+    print("       http://github.com/dagwieers/unoconv/issues", file=sys.stderr)
+    sys.exit(1)
+del of
 
-        def flush( self ):
-            pass
 
-    def UnoProps(**args):
-        props = []
-        for key in args:
-            prop = PropertyValue()
-            prop.Name = key
-            prop.Value = args[key]
-            props.append(prop)
-        return tuple(props)
+### Now that we have found a working pyuno library, let's import some classes
+from com.sun.star.beans import PropertyValue
+from com.sun.star.connection import NoConnectException
+from com.sun.star.document.UpdateDocMode import QUIET_UPDATE
+from com.sun.star.lang import DisposedException, IllegalArgumentException
+from com.sun.star.io import IOException, XOutputStream
+from com.sun.star.script import CannotConvertException
+from com.sun.star.uno import Exception as UnoException
+from com.sun.star.uno import RuntimeException
 
-    op = Options(sys.argv[1:])
+### And now that we have those classes, build on them
+class OutputStream( unohelper.Base, XOutputStream ):
+    def __init__( self ):
+        self.closed = 0
 
-    info(2, "Using office base path: %s" % office.basepath)
-    info(2, "Using office binary path: %s" % office.unopath)
+    def closeOutput(self):
+        self.closed = 1
+
+    def writeBytes( self, seq ):
+        sys.stdout.write( seq.value )
+
+    def flush( self ):
+        pass
+
+def UnoProps(**args):
+    props = []
+    for key in args:
+        prop = PropertyValue()
+        prop.Name = key
+        prop.Value = args[key]
+        props.append(prop)
+    return tuple(props)
+
+info(2, "Using office base path: %s" % office.basepath)
+info(2, "Using office binary path: %s" % office.unopath)
+
+
+# main entrance
+if __name__ == '__main__':
+
+    # note : job was defined above
+    job.office = office
 
     try:
-        main()
+        ### Check if the user request to see the list of formats
+        if job.op.showlist or job.op.format == 'list':
+            if job.op.doctype:
+                fmts.display(job.op.doctype)
+            else:
+                for t in doctypes:
+                    fmts.display(t)
+            job.exitcode = 0
+        else:
+            run(job)
     except KeyboardInterrupt as e:
-        die(6, 'Exiting on user request')
-    die(exitcode)
+        job.exitcode = 6
+        die(job, 'Exiting on user request')
+    die(job)
