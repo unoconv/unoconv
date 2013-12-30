@@ -1145,7 +1145,10 @@ if __name__ == '__main__':
             self.closed = 1
 
         def writeBytes( self, seq ):
-            sys.stdout.buffer.write( seq.value )
+            try:
+                sys.stdout.buffer.write( seq.value )
+            except AttributeError:
+                sys.stdout.write( seq.value )
 
         def flush( self ):
             pass
