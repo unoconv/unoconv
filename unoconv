@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 
 ### This program is free software; you can redistribute it and/or modify
 ### it under the terms of the GNU General Public License as published by
@@ -519,7 +519,7 @@ class Options:
         self.password = None
         self.pipe = None
         self.port = '2002'
-        self.preservetimestamp = False
+        self.preserve = False
         self.server = '127.0.0.1'
         self.showlist = False
         self.stdout = False
@@ -532,7 +532,7 @@ class Options:
             opts, args = getopt.getopt (args, 'c:Dd:e:f:hi:Llo:np:s:T:t:vV',
                 ['connection=', 'debug', 'doctype=', 'export=', 'format=',
                  'help', 'import', 'listener', 'no-launch', 'output=',
-                 'outputpath', 'password=', 'pipe=', 'port=', 'preserve-timestamp',
+                 'outputpath', 'password=', 'pipe=', 'port=', 'preserve',
                  'server=', 'timeout=', 'show', 'stdout', 'template',
                  'verbose', 'version'] )
         except getopt.error as exc:
@@ -602,8 +602,8 @@ class Options:
                 self.pipe = arg
             elif opt in ['-p', '--port']:
                 self.port = arg
-            elif opt in ['--preserve-timestamp']:
-                self.preservetimestamp = True
+            elif opt in ['--preserve']:
+                self.preserve = True
             elif opt in ['-s', '--server']:
                 self.server = arg
             elif opt in ['--show']:
@@ -698,7 +698,7 @@ unoconv options:
   -p, --port=port          specify the port (default: 2002)
                              to be used by client or listener
       --password=string    provide a password to decrypt the document
-      --preserve-timestamp keep timestamp of the original document
+      --preserve           keep timestamp and permissions of the original document
   -s, --server=server      specify the server address (default: 127.0.0.1)
                              to be used by client or listener
       --show               list the available output formats
@@ -814,15 +814,19 @@ class Convertor:
 
         return outputfmt
 
-    def copytimestamp(self, inputfn, outputfn):
+    def preserve(self, inputfn, outputfn):
         # Get timestamp of input file
         s = os.stat(inputfn)
         times = (s.st_atime, s.st_mtime)
+        mode = s.st_mode
         # Set it to output file
         with open(outputfn, "a") as f:
             os.utime(f.fileno()
                      if hasattr(os, "supports_fd") and os.utime in os.supports_fd else inputfn,
                      times=times)
+            os.chmod(f.fileno()
+                     if hasattr(os, "supports_fd") and os.chmod in os.supports_fd else inputfn,
+                     mode)
 
     def convert(self, inputfn):
         global exitcode
@@ -950,8 +954,8 @@ class Convertor:
             phase = "dispose"
             document.dispose()
             document.close(True)
-            if not op.stdout and op.preservetimestamp:
-                self.copytimestamp(inputfn, outputfn)
+            if not op.stdout and op.preserve:
+                self.preserve(inputfn, outputfn)
 
         except SystemError as e:
             error("unoconv: SystemError during %s phase:\n%s" % (phase, e))
