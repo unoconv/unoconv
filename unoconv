@@ -524,6 +524,7 @@ class Options:
         self.stdout = False
         self.template = None
         self.timeout = 6
+        self.transformer = False
         self.verbose = 0
 
         ### Get options from the commandline
@@ -532,7 +533,7 @@ class Options:
                 ['connection=', 'debug', 'doctype=', 'export=', 'format=',
                  'help', 'import', 'listener', 'no-launch', 'output=',
                  'outputpath', 'password=', 'pipe=', 'port=', 'server=',
-                 'timeout=', 'show', 'stdout', 'template', 'verbose',
+                 'timeout=', 'show', 'stdout', 'template', 'transformer', 'verbose',
                  'version'] )
         except getopt.error as exc:
             print('unoconv: %s, try unoconv -h for a list of all the options' % str(exc))
@@ -611,6 +612,8 @@ class Options:
                 self.template = arg
             elif opt in ['-T', '--timeout']:
                 self.timeout = int(arg)
+            elif opt in ['--transformer']:
+                self.transformer = True
             elif opt in ['-v', '--verbose']:
                 self.verbose = self.verbose + 1
             elif opt in ['-V', '--version']:
@@ -701,6 +704,7 @@ unoconv options:
       --stdout             write output to stdout
   -t, --template=file      import the styles from template (.ott)
   -T, --timeout=secs       timeout after secs if connection to listener fails
+      --transformer        use transformer
   -v, --verbose            be more and more verbose (-vvv for debugging)
 ''', file=sys.stderr)
 
@@ -860,6 +864,15 @@ class Convertor:
                 else:
                     print('unoconv: template file `%s\' does not exist.' % op.template, file=sys.stderr)
                     exitcode = 1
+
+            phase = "transform"
+            if op.transformer:
+               try:
+                    from Transformer import Transformer
+                    transformer = Transformer(document)
+                    transformer.transform()
+               except ImportError:
+                    print('unoconv: skipping transform as transformer not implemented')
 
             ### Update document links
             phase = "update-links"
