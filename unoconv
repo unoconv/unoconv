@@ -33,6 +33,7 @@ doctypes = ('document', 'graphics', 'presentation', 'spreadsheet')
 
 global convertor, office, ooproc, product
 ooproc = None
+uno = unohelper = None
 exitcode = 0
 
 class Office:
@@ -79,13 +80,15 @@ def find_offices():
     else:
 
         if os.name in ( 'nt', 'os2' ):
-            if 'PROGRAMFILES' in list(os.environ.keys()):
-                extrapaths += glob.glob(os.environ['PROGRAMFILES']+'\\LibreOffice*') + \
-                              glob.glob(os.environ['PROGRAMFILES']+'\\OpenOffice.org*')
-
-            if 'PROGRAMFILES(X86)' in list(os.environ.keys()):
-                extrapaths += glob.glob(os.environ['PROGRAMFILES(X86)']+'\\LibreOffice*') + \
-                              glob.glob(os.environ['PROGRAMFILES(X86)']+'\\OpenOffice.org*')
+            programfiles = set(filter(None, (
+                os.environ.get('PROGRAMFILES'),
+                os.environ.get('PROGRAMFILES(X86)')
+            )))
+            for path in programfiles:
+                # glob for 'OpenOffice*' instead of 'OpenOffice.org*', since
+                # AOO 4.0 installs as 'OpenOffice 4' now --vpa
+                extrapaths += glob.glob(path + '\\LibreOffice*') + \
+                              glob.glob(path + '\\OpenOffice*')
 
         elif os.name in ( 'mac', ) or sys.platform in ( 'darwin', ):
             extrapaths += [ '/Applications/LibreOffice.app/Contents',
@@ -188,10 +191,11 @@ def find_offices():
 #            continue
 
         for pythonbinary in pythonbinaries:
-            if os.path.isfile(realpath(unopath, pythonbinary)):
+            pythonpath = realpath(unopath, pythonbinary)
+            if os.path.isfile(pythonpath):
                 info(3, "Found %s in %s" % (pythonbinary, unopath))
-                ret.append(Office(basepath, urepath, unopath, officelibrary, officebinary,
-                                  realpath(unopath, pythonbinary), pythonhome))
+                ret.append(Office(basepath, urepath, unopath, officelibrary,
+                    officebinary, pythonpath, pythonhome))
         else:
             info(3, "Considering %s" % basepath)
             ret.append(Office(basepath, urepath, unopath, officelibrary, officebinary,
@@ -525,6 +529,7 @@ class Options:
         self.template = None
         self.timeout = 6
         self.verbose = 0
+        self.show_version = False
 
         ### Get options from the commandline
         try:
@@ -614,12 +619,7 @@ class Options:
             elif opt in ['-v', '--verbose']:
                 self.verbose = self.verbose + 1
             elif opt in ['-V', '--version']:
-                self.version()
-                sys.exit(255)
-
-        ### Enable verbosity
-        if self.verbose >= 2:
-            print('Verbosity set to level %d' % self.verbose, file=sys.stderr)
+                self.show_version = True
 
         self.filenames = args
 
@@ -660,16 +660,16 @@ class Options:
                 self.format = 'pdf'
 
     def version(self):
-        ### Get office product information
-        product = uno.getComponentContext().ServiceManager.createInstance("com.sun.star.configuration.ConfigurationProvider").createInstanceWithArguments("com.sun.star.configuration.ConfigurationAccess", UnoProps(nodepath="/org.openoffice.Setup/Product"))
-
         print('unoconv %s' % VERSION)
         print('Written by Dag Wieers <dag@wieers.com>')
         print('Homepage at http://dag.wieers.com/home-made/unoconv/')
         print()
         print('platform %s/%s' % (os.name, sys.platform))
         print('python %s' % sys.version)
-        print(product.ooName, product.ooSetupVersion)
+        if uno:
+            ### Get office product information
+            product = uno.getComponentContext().ServiceManager.createInstance("com.sun.star.configuration.ConfigurationProvider").createInstanceWithArguments("com.sun.star.configuration.ConfigurationAccess", UnoProps(nodepath="/org.openoffice.Setup/Product"))
+            print(product.ooName, product.ooSetupVersion)
 #        print
 #        print 'build revision $Rev$'
 
@@ -1101,7 +1101,7 @@ def main():
 
 ### Main entrance
 if __name__ == '__main__':
-    exitcode = 0
+    op = Options(sys.argv[1:])
 
     info(3, 'sysname=%s, platform=%s, python=%s, python-version=%s' % (os.name, sys.platform, sys.executable, sys.version))
 
@@ -1109,7 +1109,8 @@ if __name__ == '__main__':
         if of.python != sys.executable and not sys.executable.startswith(of.basepath):
             python_switch(of)
         office_environ(of)
-#        debug_office()
+        if op.verbose >= 4:
+            debug_office()
         try:
             import uno, unohelper
             office = of
@@ -1159,7 +1160,12 @@ if __name__ == '__main__':
             props.append(prop)
         return tuple(props)
 
-    op = Options(sys.argv[1:])
+    if op.show_version:
+        op.version()
+        sys.exit(255)
+
+    if op.verbose >= 2:
+        print('Verbosity set to level %d' % op.verbose, file=sys.stderr)
 
     info(2, "Using office base path: %s" % office.basepath)
     info(2, "Using office binary path: %s" % office.unopath)
