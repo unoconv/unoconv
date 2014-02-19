@@ -623,6 +623,9 @@ class Options:
 
         self.filenames = args
 
+        if self.show_version:
+            return
+
         if not self.listener and not self.showlist and self.doctype != 'list' and not self.filenames:
             print('unoconv: you have to provide a filename as argument', file=sys.stderr)
             print('Try `unoconv -h\' for more information.', file=sys.stderr)
