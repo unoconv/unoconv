@@ -52,6 +52,53 @@ class Office:
     def __repr__(self):
         return self.basepath
 
+def which_cmd(fname, allloc=False):
+    """Return the full pathname(s) of the file(s) (or link(s)) which could be
+       executed in the current environment. If allloc is True all found
+       pathnames are returned as list, otherwise the first found pathname
+       is returned --vpa
+    """
+    if allloc:
+        locs = []
+    for path in os.environ.get('PATH', '').split(os.pathsep):
+        fpath = os.path.join(path, fname)
+        if (os.path.exists(fpath)
+                and os.path.isfile(fpath)
+                and os.access(fpath, os.X_OK)):
+            fpath = os.path.abspath(fpath)
+            if allloc:
+                locs.append(fpath)
+            else:
+                return fpath
+    if allloc:
+        return locs
+
+def find_python(majorversion, omitself=True):
+    """Return list of all found Python <majorversion> interpreter binaries
+       in search path (PATH)
+       (If <omitself> is True, the executing (this) interpreter
+       is omitted) --vpa
+    """
+    minors = ['9', '8', '7', '6', '5', '4', '3', '2', '1', '0']
+    majorversion = str(majorversion)
+    selfmajor = sys.version[0]
+    selfminor = sys.version[2]
+    if omitself and selfmajor == majorversion:
+        try:
+            minors.remove(selfminor)
+        except ValueError:
+            pass
+    execs = []
+    for minor in minors:
+        pyexe = which_cmd('python%s.%s' % (majorversion, minor))
+        if pyexe:
+            execs.append(pyexe)
+    if selfmajor != majorversion and not execs:
+        pyexe = which_cmd('python' + majorversion)
+        if pyexe:
+            execs.append(pyexe)
+    return execs
+
 ### Implement a path normalizer in order to make unoconv work on MacOS X
 ### (on which 'program' is a symlink to 'MacOSX' which seems to break unoconv)
 def realpath(*args):
@@ -1108,22 +1155,41 @@ if __name__ == '__main__':
 
     info(3, 'sysname=%s, platform=%s, python=%s, python-version=%s' % (os.name, sys.platform, sys.executable, sys.version))
 
+    found = False
+    python3exes = find_python(3)
     for of in find_offices():
-        if of.python != sys.executable and not sys.executable.startswith(of.basepath):
-            python_switch(of)
-        office_environ(of)
-        if op.verbose >= 4:
-            debug_office()
-        try:
-            import uno, unohelper
-            office = of
-            break
-        except:
-#            debug_office()
-            print("unoconv: Cannot find a suitable pyuno library and python binary combination in %s" % of, file=sys.stderr)
-            print("ERROR:", sys.exc_info()[1], file=sys.stderr)
-            print(file=sys.stderr)
-    else:
+        while True:
+            ### Switch python interpreter to AOO/LO builtin python
+            ### (Windows) or to system Python 3 (Posix)
+            if (of.python != sys.executable
+                    and not sys.executable.startswith(of.basepath)):
+                python_switch(of)
+            office_environ(of)
+            if op.verbose >= 4:
+                debug_office()
+            try:
+                import uno, unohelper
+                office = of
+                found = True
+                break
+            except:
+                pass
+
+            ### While Windows AOO/LO bring their own python interpreter,
+            ### Posix distribution AOO/LO use the system python interpreter.
+            ### Unfortunately if you run on Posix 'unoconv' with Python 2 it
+            ### would need to switch to the system Python 3 interpreter
+            ### for LO > 4
+            try:
+                of.python = python3exes.pop(0)
+            except IndexError:
+#                debug_office()
+                print("unoconv: Cannot find a suitable pyuno library and python binary combination in %s" % of, file=sys.stderr)
+                print("ERROR:", sys.exc_info()[1], file=sys.stderr)
+                print(file=sys.stderr)
+                break
+        break
+    if not found:
 #        debug_office()
         print("unoconv: Cannot find a suitable office installation on your system.", file=sys.stderr)
         print("ERROR: Please locate your office installation and send your feedback to:", file=sys.stderr)
