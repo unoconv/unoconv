@@ -507,6 +507,7 @@ class Options:
         self.connection = None
         self.debug = False
         self.doctype = None
+        self.environment = None
         self.exportfilter = []
         self.exportfilteroptions = ""
         self.filenames = []
@@ -528,8 +529,8 @@ class Options:
 
         ### Get options from the commandline
         try:
-            opts, args = getopt.getopt (args, 'c:Dd:e:f:hi:Llo:np:s:T:t:vV',
-                ['connection=', 'debug', 'doctype=', 'export=', 'format=',
+            opts, args = getopt.getopt (args, 'c:Dd:e:E:f:hi:Llo:np:s:T:t:vV',
+                ['connection=', 'debug', 'doctype=', 'export=', 'environment=', 'format=',
                  'help', 'import', 'listener', 'no-launch', 'output=',
                  'outputpath', 'password=', 'pipe=', 'port=', 'server=',
                  'timeout=', 'show', 'stdout', 'template', 'verbose',
@@ -567,6 +568,8 @@ class Options:
                             self.exportfilter.append( PropertyValue( name, 0, value, 0 ) )
                 else:
                     print('Warning: Option %s cannot be parsed, ignoring.' % arg, file=sys.stderr)
+            elif opt in ['-E', '--environment']:
+                self.environment = arg
             elif opt in ['-f', '--format']:
                 self.format = arg
             elif opt in ['-i', '--import']:
@@ -685,6 +688,7 @@ unoconv options:
                              (document, graphics, presentation, spreadsheet)
   -e, --export=name=value  set export filter options
                              eg. -e PageRange=1-2
+  -E, --environment=value  set the environment to start the listener in
   -f, --format=format      specify the output format
   -i, --import=string      set import filter option string
                              eg. -i utf8
@@ -732,7 +736,11 @@ class Convertor:
                 if product.ooName not in ('LibreOffice', 'LOdev') or LooseVersion(product.ooSetupVersion) <= LooseVersion('3.3'):
                     ooproc = subprocess.Popen([office.binary, "-headless", "-invisible", "-nocrashreport", "-nodefault", "-nofirststartwizard", "-nologo", "-norestore", "-accept=%s" % op.connection], env=os.environ)
                 else:
-                    ooproc = subprocess.Popen([office.binary, "--headless", "--invisible", "--nocrashreport", "--nodefault", "--nofirststartwizard", "--nologo", "--norestore", "--accept=%s" % op.connection], env=os.environ)
+                    argv = [office.binary, "--headless", "--invisible", "--nocrashreport", "--nodefault", "--nofirststartwizard", "--nologo", "--norestore", "--accept=%s" % op.connection]
+                    if op.environment:
+                        argv.append("-env:UserInstallation=file://" + op.environment)
+
+                    ooproc = subprocess.Popen(argv, env=os.environ)
                 info(2, '%s listener successfully started. (pid=%s)' % (product.ooName, ooproc.pid))
 
                 ### Try connection to it for op.timeout seconds (flakky OpenOffice)
@@ -996,7 +1004,10 @@ class Listener:
             if product.ooName != "LibreOffice" or LooseVersion(product.ooSetupVersion) <= LooseVersion('3.3'):
                 subprocess.call([office.binary, "-headless", "-invisible", "-nocrashreport", "-nodefault", "-nologo", "-nofirststartwizard", "-norestore", "-accept=%s" % op.connection], env=os.environ)
             else:
-                subprocess.call([office.binary, "--headless", "--invisible", "--nocrashreport", "--nodefault", "--nologo", "--nofirststartwizard", "--norestore", "--accept=%s" % op.connection], env=os.environ)
+                argv = [office.binary, "--headless", "--invisible", "--nocrashreport", "--nodefault", "--nofirststartwizard", "--nologo", "--norestore", "--accept=%s" % op.connection]
+                if op.environment:
+                    argv.append("-env:UserInstallation=file://" + op.environment)
+                subprocess.call(argv, env=os.environ)
         except Exception as e:
             error("Launch of %s failed.\n%s" % (office.binary, e))
         else:
@@ -1034,7 +1045,10 @@ def die(ret, msg=None):
                 if product.ooName != "LibreOffice" or product.ooSetupVersion <= 3.3:
                     subprocess.Popen([office.binary, "-headless", "-invisible", "-nocrashreport", "-nodefault", "-nofirststartwizard", "-nologo", "-norestore", "-unaccept=%s" % op.connection], env=os.environ)
                 else:
-                    subprocess.Popen([office.binary, "--headless", "--invisible", "--nocrashreport", "--nodefault", "--nofirststartwizard", "--nologo", "--norestore", "--unaccept=%s" % op.connection], env=os.environ)
+                    argv = [office.binary, "--headless", "--invisible", "--nocrashreport", "--nodefault", "--nofirststartwizard", "--nologo", "--norestore", "--unaccept=%s" % op.connection]
+                    if op.environment:
+                        argv.append("-env:UserInstallation=file://" + op.environment)
+                    subprocess.Popen(argv, env=os.environ)
                 ooproc.wait()
                 info(2, '%s listener successfully disabled.' % product.ooName)
             except Exception as e:
