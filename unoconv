@@ -709,6 +709,8 @@ unoconv options:
 ''', file=sys.stderr)
 
 class Convertor:
+    EXIT_CODE_NEW_INSTALLATION = 81
+
     def __init__(self):
         global exitcode, ooproc, office, product
         unocontext = None
@@ -731,39 +733,7 @@ class Convertor:
 
             ### Start our own OpenOffice instance
             info(3, "Launching our own listener using %s." % office.binary)
-            try:
-                product = self.svcmgr.createInstance("com.sun.star.configuration.ConfigurationProvider").createInstanceWithArguments("com.sun.star.configuration.ConfigurationAccess", UnoProps(nodepath="/org.openoffice.Setup/Product"))
-                if product.ooName not in ('LibreOffice', 'LOdev') or LooseVersion(product.ooSetupVersion) <= LooseVersion('3.3'):
-                    ooproc = subprocess.Popen([office.binary, "-headless", "-invisible", "-nocrashreport", "-nodefault", "-nofirststartwizard", "-nologo", "-norestore", "-accept=%s" % op.connection], env=os.environ)
-                else:
-                    argv = [office.binary, "--headless", "--invisible", "--nocrashreport", "--nodefault", "--nofirststartwizard", "--nologo", "--norestore", "--accept=%s" % op.connection]
-                    if op.environment:
-                        argv.append("-env:UserInstallation=file://" + op.environment)
-
-                    ooproc = subprocess.Popen(argv, env=os.environ)
-                info(2, '%s listener successfully started. (pid=%s)' % (product.ooName, ooproc.pid))
-
-                ### Try connection to it for op.timeout seconds (flakky OpenOffice)
-                timeout = 0
-                while timeout <= op.timeout:
-                    ### Is it already/still running ?
-                    retcode = ooproc.poll()
-                    if retcode != None:
-                        info(3, "Process %s (pid=%s) exited with %s." % (office.binary, ooproc.pid, retcode))
-                        break
-                    try:
-                        unocontext = resolver.resolve("uno:%s" % op.connection)
-                        break
-                    except NoConnectException:
-                        time.sleep(0.5)
-                        timeout += 0.5
-                    except:
-                        raise
-                else:
-                    error("Failed to connect to %s (pid=%s) in %d seconds.\n%s" % (office.binary, ooproc.pid, op.timeout, e))
-            except Exception as e:
-                raise
-                error("Launch of %s failed.\n%s" % (office.binary, e))
+            unocontext = self.connect(resolver)
 
         if not unocontext:
             die(251, "Unable to connect or start own listener. Aborting.")
@@ -778,6 +748,53 @@ class Convertor:
 #        for filter in self.filters.getElementNames():
 #            print filter
 #            #print dir(filter), dir(filter.format)
+
+    def connect(self, resolver):
+        global ooproc, product, office
+        unocontext = None
+
+        try:
+            product = self.svcmgr.createInstance("com.sun.star.configuration.ConfigurationProvider").createInstanceWithArguments("com.sun.star.configuration.ConfigurationAccess", UnoProps(nodepath="/org.openoffice.Setup/Product"))
+            if product.ooName not in ('LibreOffice', 'LOdev') or LooseVersion(product.ooSetupVersion) <= LooseVersion('3.3'):
+                ooproc = subprocess.Popen([office.binary, "-headless", "-invisible", "-nocrashreport", "-nodefault", "-nofirststartwizard", "-nologo", "-norestore", "-accept=%s" % op.connection], env=os.environ)
+            else:
+                argv = [office.binary, "--headless", "--invisible", "--nocrashreport", "--nodefault", "--nofirststartwizard", "--nologo", "--norestore", "--accept=%s" % op.connection]
+                if op.environment:
+                    info(3, "Using user installation path %s" % op.environment)
+                    argv.append("-env:UserInstallation=file://%s" % op.environment)
+
+                ooproc = subprocess.Popen(argv, env=os.environ)
+            info(2, '%s listener successfully started. (pid=%s)' % (product.ooName, ooproc.pid))
+
+            ### Try connection to it for op.timeout seconds (flakky OpenOffice)
+            timeout = 0
+            while timeout <= op.timeout:
+                ### Is it already/still running ?
+                retcode = ooproc.poll()
+
+                if retcode == self.EXIT_CODE_NEW_INSTALLATION:
+                    info(3, "Caught exit code 81 (new installation). Restarting listener.")
+                    return self.connect(resolver)
+                    break
+                elif retcode != None:
+                    info(3, "Process %s (pid=%s) exited with %s." % (office.binary, ooproc.pid, retcode))
+                    break
+
+                try:
+                    unocontext = resolver.resolve("uno:%s" % op.connection)
+                    break
+                except NoConnectException:
+                    time.sleep(0.5)
+                    timeout += 0.5
+                except:
+                    raise
+            else:
+                error("Failed to connect to %s (pid=%s) in %d seconds.\n%s" % (office.binary, ooproc.pid, op.timeout, e))
+        except Exception as e:
+            raise
+            error("Launch of %s failed.\n%s" % (office.binary, e))
+            
+        return unocontext
 
     def getformat(self, inputfn):
         doctype = None
