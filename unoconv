@@ -876,8 +876,13 @@ class Convertor:
             ### Replace variables
             phase = "replace-fields"
             for f in op.fields:
-              field = document.TextFieldMasters.getByName("com.sun.star.text.fieldmaster.SetExpression.%s" % f)
-              field.DependentTextFields[0].setPropertyValue('Content', op.fields[f])
+              try:
+                field = document.TextFieldMasters.getByName("com.sun.star.text.fieldmaster.SetExpression.%s" % f)
+                field.DependentTextFields[0].setPropertyValue('Content', op.fields[f])
+              except UnoException:
+                print("unoconv: failed to replace variable '%s' with value '%s' in the document." % (f, op.fields[f]))
+                pass
+                
 
             ### Update document indexes
             phase = "update-indexes"
