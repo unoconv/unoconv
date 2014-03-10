@@ -690,6 +690,8 @@ unoconv options:
   -e, --export=name=value  set export filter options
                              eg. -e PageRange=1-2
   -f, --format=format      specify the output format
+  -F, --field=name=value   replace user-defined text field with value
+                             eg. -F Client_Name="Oracle"
   -i, --import=string      set import filter option string
                              eg. -i utf8
   -l, --listener           start a permanent listener to use by unoconv clients
