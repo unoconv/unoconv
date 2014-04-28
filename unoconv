@@ -375,7 +375,7 @@ fmts.add('document', 'uot', 'uot', 'Unified Office Format text','UOF text') ### 
 fmts.add('document', 'vor', 'vor', 'StarWriter 5.0 Template', 'StarWriter 5.0 Vorlage/Template') ### 6
 fmts.add('document', 'vor4', 'vor', 'StarWriter 4.0 Template', 'StarWriter 4.0 Vorlage/Template') ### 5
 fmts.add('document', 'vor3', 'vor', 'StarWriter 3.0 Template', 'StarWriter 3.0 Vorlage/Template') ### 4
-fmts.add('document', 'wps', 'wps', 'Microsoft Works', 'MS_Works') 
+fmts.add('document', 'wps', 'wps', 'Microsoft Works', 'MS_Works')
 fmts.add('document', 'xhtml', 'html', 'XHTML Document', 'XHTML Writer File') ### 33
 
 ### WebDocument
@@ -395,7 +395,8 @@ fmts.add('web', 'vor4', 'vor', 'StarWriter/Web 4.0 Template', 'StarWriter/Web 4.
 fmts.add('web', 'vor', 'vor', 'StarWriter/Web 5.0 Template', 'StarWriter/Web 5.0 Vorlage/Template') ### 7
 
 ### Spreadsheet
-fmts.add('spreadsheet', 'csv', 'csv', 'Text CSV', 'Text - txt - csv (StarCalc)') ### 16
+fmts.add('spreadsheet', 'csv', 'csv', 'Text CSV, first worksheet only', 'Text - txt - csv (StarCalc)') ### 16
+fmts.add('spreadsheet', 'csvsheets', 'csv', 'Text CSV, one file per worksheet', 'Text - txt - csv (StarCalc)') ### 16
 fmts.add('spreadsheet', 'dbf', 'dbf', 'dBASE', 'dBase') ### 22
 fmts.add('spreadsheet', 'dif', 'dif', 'Data Interchange Format', 'DIF') ### 5
 fmts.add('spreadsheet', 'fods', 'fods', 'OpenDocument Spreadsheet (Flat XML)', 'OpenDocument Spreadsheet Flat XML')
@@ -828,7 +829,10 @@ class Convertor:
             phase = "import"
 
             ### Load inputfile
-            inputprops = UnoProps(Hidden=True, ReadOnly=True, UpdateDocMode=QUIET_UPDATE)
+            #inputprops = UnoProps(Hidden=True, ReadOnly=True, UpdateDocMode=QUIET_UPDATE)
+            #To save individual CSV files from spreadsheets hidden needs to be turned off
+            hidden =  (outputfmt.name != 'csvsheets')
+            inputprops = UnoProps(Hidden= hidden, ReadOnly=True, UpdateDocMode=QUIET_UPDATE)
 
 #            if op.password:
 #                info = UnoProps(algorithm-name="PBKDF2", salt="salt", iteration-count=1024, hash="hash")
@@ -927,9 +931,21 @@ class Convertor:
                 info(1, "Output file: %s" % outputfn)
             else:
                 outputurl = "private:stream"
-
+            ## Try to export sheets
             try:
-                document.storeToURL(outputurl, tuple(outputprops) )
+                controller = document.getCurrentController()
+                sheets = document.getSheets()
+                # iterate on all the spreadsheets in the document
+                enumeration = sheets.createEnumeration()
+                if outputfmt.name == 'csvsheets' and sheets.getCount() > 0:
+                  while enumeration.hasMoreElements():
+                      sheet = enumeration.nextElement()
+                      name = sheet.getName()
+                      controller.setActiveSheet(sheet)
+                      outfilename =  "%s-%s.csv" % (outputurl, name.replace(' ', '_'))
+                      document.storeToURL(outfilename, outputprops)
+                else:
+                      document.storeToURL(outputurl, outputprops)
             except IOException as e:
                 raise UnoException("Unable to store document to %s (ErrCode %d)\n\nProperties: %s" % (outputurl, e.ErrCode, outputprops), None)
 
