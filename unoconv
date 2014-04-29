@@ -829,8 +829,8 @@ class Convertor:
             phase = "import"
 
             ### Load inputfile
-            #inputprops = UnoProps(Hidden=True, ReadOnly=True, UpdateDocMode=QUIET_UPDATE)
-            #To save individual CSV files from spreadsheets hidden needs to be turned off
+            
+            #To save individual CSV files from spreadsheets hidden property needs to be turned off
             hidden =  (outputfmt.name != 'csvsheets')
             inputprops = UnoProps(Hidden= hidden, ReadOnly=True, UpdateDocMode=QUIET_UPDATE)
 
@@ -943,9 +943,9 @@ class Convertor:
                       name = sheet.getName()
                       controller.setActiveSheet(sheet)
                       outfilename =  "%s-%s.csv" % (outputurl, name.replace(' ', '_'))
-                      document.storeToURL(outfilename, outputprops)
+                      document.storeToURL(outfilename, tuple(outputprops))
                 else:
-                      document.storeToURL(outputurl, outputprops)
+                      document.storeToURL(outputurl, tuple(outputprops))
             except IOException as e:
                 raise UnoException("Unable to store document to %s (ErrCode %d)\n\nProperties: %s" % (outputurl, e.ErrCode, outputprops), None)
 
