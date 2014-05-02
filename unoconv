@@ -934,18 +934,20 @@ class Convertor:
             ## Try to export sheets
             try:
                 controller = document.getCurrentController()
-                sheets = document.getSheets()
+                
                 # iterate on all the spreadsheets in the document
-                enumeration = sheets.createEnumeration()
-                if outputfmt.name == 'csvsheets' and sheets.getCount() > 0:
-                  while enumeration.hasMoreElements():
-                      sheet = enumeration.nextElement()
-                      name = sheet.getName()
-                      controller.setActiveSheet(sheet)
-                      outfilename =  "%s-%s.csv" % (outputurl, name.replace(' ', '_'))
-                      document.storeToURL(outfilename, tuple(outputprops))
+                
+                if outputfmt.name == 'csvsheets': #TODO, check that format is spreadsheet
+                    sheets = document.getSheets()              
+                    enumeration = sheets.createEnumeration()
+                    while enumeration.hasMoreElements():
+                        sheet = enumeration.nextElement()
+                        name = sheet.getName()
+                        controller.setActiveSheet(sheet)
+                        outfilename =  "%s-%s.csv" % (outputurl, name.replace(' ', '_'))
+                        document.storeToURL(outfilename, tuple(outputprops))
                 else:
-                      document.storeToURL(outputurl, tuple(outputprops))
+                    document.storeToURL(outputurl, tuple(outputprops))
             except IOException as e:
                 raise UnoException("Unable to store document to %s (ErrCode %d)\n\nProperties: %s" % (outputurl, e.ErrCode, outputprops), None)
 
