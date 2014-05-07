@@ -530,9 +530,9 @@ class Options:
         ### Get options from the commandline
         try:
             opts, args = getopt.getopt (args, 'rc:Dd:e:f:hi:Llo:np:s:T:t:vV',
-                ['remote', 'connection=', 'debug', 'doctype=', 'export=', 'format=',
+                ['connection=', 'debug', 'doctype=', 'export=', 'format=',
                  'help', 'import', 'listener', 'no-launch', 'output=',
-                 'outputpath', 'password=', 'pipe=', 'port=', 'server=',
+                 'outputpath', 'password=', 'pipe=', 'port=', 'remote', 'server=',
                  'timeout=', 'show', 'stdout', 'template', 'verbose',
                  'version'] )
         except getopt.error as exc:
@@ -547,8 +547,6 @@ class Options:
                 sys.exit(1)
             elif opt in ['-c', '--connection']:
                 self.connection = arg
-            elif opt in ['-r', '--remote']:
-                self.remote = True
             elif opt in ['--debug']:
                 self.debug = True
             elif opt in ['-d', '--doctype']:
@@ -604,6 +602,8 @@ class Options:
                 self.pipe = arg
             elif opt in ['-p', '--port']:
                 self.port = arg
+            elif opt in ['-r', '--remote']:
+                self.remote = True
             elif opt in ['-s', '--server']:
                 self.server = arg
             elif opt in ['--show']:
