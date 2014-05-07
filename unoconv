@@ -375,7 +375,7 @@ fmts.add('document', 'uot', 'uot', 'Unified Office Format text','UOF text') ### 
 fmts.add('document', 'vor', 'vor', 'StarWriter 5.0 Template', 'StarWriter 5.0 Vorlage/Template') ### 6
 fmts.add('document', 'vor4', 'vor', 'StarWriter 4.0 Template', 'StarWriter 4.0 Vorlage/Template') ### 5
 fmts.add('document', 'vor3', 'vor', 'StarWriter 3.0 Template', 'StarWriter 3.0 Vorlage/Template') ### 4
-fmts.add('document', 'wps', 'wps', 'Microsoft Works', 'MS_Works') 
+fmts.add('document', 'wps', 'wps', 'Microsoft Works', 'MS_Works')
 fmts.add('document', 'xhtml', 'html', 'XHTML Document', 'XHTML Writer File') ### 33
 
 ### WebDocument
@@ -1145,7 +1145,7 @@ if __name__ == '__main__':
             self.closed = 1
 
         def writeBytes( self, seq ):
-            sys.stdout.buffer.write( seq.value )
+            sys.stdout.write( seq.value )
 
         def flush( self ):
             pass
