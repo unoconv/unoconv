@@ -519,6 +519,7 @@ class Options:
         self.password = None
         self.pipe = None
         self.port = '2002'
+        self.remote = False
         self.server = '127.0.0.1'
         self.showlist = False
         self.stdout = False
@@ -528,10 +529,10 @@ class Options:
 
         ### Get options from the commandline
         try:
-            opts, args = getopt.getopt (args, 'c:Dd:e:f:hi:Llo:np:s:T:t:vV',
+            opts, args = getopt.getopt (args, 'rc:Dd:e:f:hi:Llo:np:s:T:t:vV',
                 ['connection=', 'debug', 'doctype=', 'export=', 'format=',
                  'help', 'import', 'listener', 'no-launch', 'output=',
-                 'outputpath', 'password=', 'pipe=', 'port=', 'server=',
+                 'outputpath', 'password=', 'pipe=', 'port=', 'remote', 'server=',
                  'timeout=', 'show', 'stdout', 'template', 'verbose',
                  'version'] )
         except getopt.error as exc:
@@ -601,6 +602,8 @@ class Options:
                 self.pipe = arg
             elif opt in ['-p', '--port']:
                 self.port = arg
+            elif opt in ['-r', '--remote']:
+                self.remote = True
             elif opt in ['-s', '--server']:
                 self.server = arg
             elif opt in ['--show']:
@@ -695,6 +698,7 @@ unoconv options:
   -p, --port=port          specify the port (default: 2002)
                              to be used by client or listener
       --password=string    provide a password to decrypt the document
+  -r, --remote             use with remote input url (http://example.com/file.docx)
   -s, --server=server      specify the server address (default: 127.0.0.1)
                              to be used by client or listener
       --show               list the available output formats
@@ -819,9 +823,10 @@ class Convertor:
         if op.verbose > 0:
             print('Input file:', inputfn, file=sys.stderr)
 
-        if not os.path.exists(inputfn):
-            print('unoconv: file `%s\' does not exist.' % inputfn, file=sys.stderr)
-            exitcode = 1
+        if not op.remote:
+            if not os.path.exists(inputfn):
+                print('unoconv: file `%s\' does not exist.' % inputfn, file=sys.stderr)
+                exitcode = 1
 
         try:
             ### Import phase
@@ -843,8 +848,11 @@ class Convertor:
             if op.importfilter:
                 inputprops += ( PropertyValue( "FilterData", 0, uno.Any("[]com.sun.star.beans.PropertyValue", tuple( op.importfilter ), ), 0 ), )
 
-            inputurl = unohelper.absolutize(self.cwd, unohelper.systemPathToFileUrl(inputfn))
-            document = self.desktop.loadComponentFromURL( inputurl , "_blank", 0, inputprops )
+            if op.remote:
+                document = self.desktop.loadComponentFromURL( inputfn , "_blank", 0, inputprops )
+            else:
+                inputurl = unohelper.absolutize(self.cwd, unohelper.systemPathToFileUrl(inputfn))
+                document = self.desktop.loadComponentFromURL( inputurl , "_blank", 0, inputprops )
 
             if not document:
                 raise UnoException("The document '%s' could not be opened." % inputurl, None)
@@ -909,10 +917,9 @@ class Convertor:
                 elif outputfmt.filter == 'Text - txt - csv (StarCalc)':
                     outputprops += UnoProps(FilterOptions="44,34,76")
 
-
             ### Cannot use UnoProps for FilterData property
             if op.exportfilter:
-                outputprops += ( PropertyValue( "FilterData", 0, uno.Any("[]com.sun.star.beans.PropertyValue", tuple( op.exportfilter ), ), 0 ), )
+                outputprops += ( PropertyValue( "FilterData", 0, uno.Any("[]com.sun.star.beans.PropertyValue", tuple( op.exportfilter ), ), 0 ), )            
 
             if not op.stdout:
                 (outputfn, ext) = os.path.splitext(inputfn)
@@ -922,9 +929,11 @@ class Convertor:
                     outputfn = op.output + os.extsep + outputfmt.extension
                 else:
                     outputfn = realpath(op.output, os.path.basename(outputfn) + os.extsep + outputfmt.extension)
-
-                outputurl = unohelper.absolutize( self.cwd, unohelper.systemPathToFileUrl(outputfn) )
-                info(1, "Output file: %s" % outputfn)
+                if not op.remote:
+                    outputurl = unohelper.absolutize( self.cwd, unohelper.systemPathToFileUrl(outputfn) )
+                else: 
+                    outputurl = unohelper.absolutize( self.cwd, unohelper.systemPathToFileUrl(os.path.basename(outputfn)) )
+                    info(1, "Output file: %s" % outputurl)
             else:
                 outputurl = "private:stream"
 
@@ -1145,7 +1154,10 @@ if __name__ == '__main__':
             self.closed = 1
 
         def writeBytes( self, seq ):
-            sys.stdout.buffer.write( seq.value )
+            if sys.version_info.major < 3:
+                sys.stdout.write( seq.value )
+            else:
+                sys.stdout.buffer.write( seq.value )
 
         def flush( self ):
             pass
