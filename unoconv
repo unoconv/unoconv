@@ -845,10 +845,10 @@ class Convertor:
 
             ### Cannot use UnoProps for FilterData property
             if op.importfilter:
-		inputprops += ( PropertyValue( "FilterData", 0, uno.Any("[]com.sun.star.beans.PropertyValue", tuple( op.importfilter ), ), 0 ), )
+                inputprops += ( PropertyValue( "FilterData", 0, uno.Any("[]com.sun.star.beans.PropertyValue", tuple( op.importfilter ), ), 0 ), )
 
 	    if op.remote:
-		document = self.desktop.loadComponentFromURL( inputfn , "_blank", 0, inputprops )
+                document = self.desktop.loadComponentFromURL( inputfn , "_blank", 0, inputprops )
 
 	    if op.stdin:
 		inputStream = self.svcmgr.createInstanceWithContext("com.sun.star.io.SequenceInputStream", self.context)
@@ -942,7 +942,7 @@ class Convertor:
             else:
                 outputurl = "private:stream"
 
-	    try:
+            try:
                 document.storeToURL(outputurl, tuple(outputprops) )
             except IOException as e:
                 raise UnoException("Unable to store document to %s (ErrCode %d)\n\nProperties: %s" % (outputurl, e.ErrCode, outputprops), None)
