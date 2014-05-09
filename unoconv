@@ -23,7 +23,6 @@ import os
 import subprocess
 import sys
 import time
-import tempfile
 
 __version__ = "$Revision$"
 # $Source$
@@ -839,21 +838,22 @@ class Convertor:
             ### Load inputfile
             inputprops = UnoProps(Hidden=True, ReadOnly=True, UpdateDocMode=QUIET_UPDATE)
 
-#            if op.password:
-#                info = UnoProps(algorithm-name="PBKDF2", salt="salt", iteration-count=1024, hash="hash")
-#                inputprops += UnoProps(ModifyPasswordInfo=info)
 
             ### Cannot use UnoProps for FilterData property
             if op.importfilteroptions:
-#                print "Import filter options: %s" % op.importfilteroptions
-                inputprops += UnoProps(FilterOptions=op.importfilteroptions)
+		inputprops += UnoProps(FilterOptions=op.importfilteropti
 
             ### Cannot use UnoProps for FilterData property
             if op.importfilter:
-                inputprops += ( PropertyValue( "FilterData", 0, uno.Any("[]com.sun.star.beans.PropertyValue", tuple( op.importfilter ), ), 0 ), )
+		inputprops += ( PropertyValue( "FilterData", 0, uno.Any("[]com.sun.star.beans.PropertyValue", tuple( op.importfilter ), ), 0 ), )
 
-            if op.remote:
-               document = self.desktop.loadComponentFromURL( inputfn , "_blank", 0, inputprops )
+	    if op.remote:
+		document = self.desktop.loadComponentFromURL( inputfn , "_blank", 0, inputprops )
+
+	    if op.stdin:
+		inputStream = self.svcmgr.createInstanceWithContext("com.sun.star.io.SequenceInputStream", self.context)
+		inputStream.initialize((uno.ByteSequence(sys.stdin.read()),))
+		document = self.desktop.loadComponentFromURL('private:stream', "_blank", 0, UnoProps(InputStream=inputStream, ReadOnly=True, Hidden=True))
             else:
                 inputurl = unohelper.absolutize(self.cwd, unohelper.systemPathToFileUrl(inputfn))
                 document = self.desktop.loadComponentFromURL( inputurl , "_blank", 0, inputprops )
@@ -942,7 +942,7 @@ class Convertor:
             else:
                 outputurl = "private:stream"
 
-            try:
+	    try:
                 document.storeToURL(outputurl, tuple(outputprops) )
             except IOException as e:
                 raise UnoException("Unable to store document to %s (ErrCode %d)\n\nProperties: %s" % (outputurl, e.ErrCode, outputprops), None)
@@ -1100,10 +1100,7 @@ def main():
 
         if op.stdin:
             convertor = Convertor()
-            temp_file = tempfile.NamedTemporaryFile()
-            temp_file.write(sys.stdin.read())
-            temp_file.flush()
-            convertor.convert(temp_file.name)
+            convertor.convert(sys.stdin.read())
         elif op.filenames:
             convertor = Convertor()
             for inputfn in op.filenames:
