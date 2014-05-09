@@ -841,19 +841,19 @@ class Convertor:
 
             ### Cannot use UnoProps for FilterData property
             if op.importfilteroptions:
-		inputprops += UnoProps(FilterOptions=op.importfilteropti
+                inputprops += UnoProps(FilterOptions=op.importfilteroptions)
 
             ### Cannot use UnoProps for FilterData property
             if op.importfilter:
                 inputprops += ( PropertyValue( "FilterData", 0, uno.Any("[]com.sun.star.beans.PropertyValue", tuple( op.importfilter ), ), 0 ), )
 
-	    if op.remote:
+            if op.remote:
                 document = self.desktop.loadComponentFromURL( inputfn , "_blank", 0, inputprops )
 
-	    if op.stdin:
-		inputStream = self.svcmgr.createInstanceWithContext("com.sun.star.io.SequenceInputStream", self.context)
-		inputStream.initialize((uno.ByteSequence(sys.stdin.read()),))
-		document = self.desktop.loadComponentFromURL('private:stream', "_blank", 0, UnoProps(InputStream=inputStream, ReadOnly=True, Hidden=True))
+            if op.stdin:
+                inputStream = self.svcmgr.createInstanceWithContext("com.sun.star.io.SequenceInputStream", self.context)
+                inputStream.initialize((uno.ByteSequence(sys.stdin.read()),))
+                document = self.desktop.loadComponentFromURL('private:stream', "_blank", 0, UnoProps(InputStream=inputStream, ReadOnly=True, Hidden=True))
             else:
                 inputurl = unohelper.absolutize(self.cwd, unohelper.systemPathToFileUrl(inputfn))
                 document = self.desktop.loadComponentFromURL( inputurl , "_blank", 0, inputprops )
