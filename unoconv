@@ -375,7 +375,7 @@ fmts.add('document', 'uot', 'uot', 'Unified Office Format text','UOF text') ### 
 fmts.add('document', 'vor', 'vor', 'StarWriter 5.0 Template', 'StarWriter 5.0 Vorlage/Template') ### 6
 fmts.add('document', 'vor4', 'vor', 'StarWriter 4.0 Template', 'StarWriter 4.0 Vorlage/Template') ### 5
 fmts.add('document', 'vor3', 'vor', 'StarWriter 3.0 Template', 'StarWriter 3.0 Vorlage/Template') ### 4
-fmts.add('document', 'wps', 'wps', 'Microsoft Works', 'MS_Works') 
+fmts.add('document', 'wps', 'wps', 'Microsoft Works', 'MS_Works')
 fmts.add('document', 'xhtml', 'html', 'XHTML Document', 'XHTML Writer File') ### 33
 
 ### WebDocument
@@ -519,8 +519,10 @@ class Options:
         self.password = None
         self.pipe = None
         self.port = '2002'
+        self.remote = False
         self.server = '127.0.0.1'
         self.showlist = False
+        self.stdin = False
         self.stdout = False
         self.template = None
         self.timeout = 6
@@ -528,11 +530,11 @@ class Options:
 
         ### Get options from the commandline
         try:
-            opts, args = getopt.getopt (args, 'c:Dd:e:f:hi:Llo:np:s:T:t:vV',
+            opts, args = getopt.getopt (args, 'rc:Dd:e:f:hi:Llo:np:s:T:t:vV',
                 ['connection=', 'debug', 'doctype=', 'export=', 'format=',
                  'help', 'import', 'listener', 'no-launch', 'output=',
-                 'outputpath', 'password=', 'pipe=', 'port=', 'server=',
-                 'timeout=', 'show', 'stdout', 'template', 'verbose',
+                 'outputpath', 'password=', 'pipe=', 'port=', 'remote', 'server=',
+                 'timeout=', 'show', 'stdin', 'stdout', 'template', 'verbose',
                  'version'] )
         except getopt.error as exc:
             print('unoconv: %s, try unoconv -h for a list of all the options' % str(exc))
@@ -601,10 +603,14 @@ class Options:
                 self.pipe = arg
             elif opt in ['-p', '--port']:
                 self.port = arg
+            elif opt in ['-r', '--remote']:
+                self.remote = True
             elif opt in ['-s', '--server']:
                 self.server = arg
             elif opt in ['--show']:
                 self.showlist = True
+            elif opt in ['--stdin']:
+                self.stdin = True
             elif opt in ['--stdout']:
                 self.stdout = True
             elif opt in ['-t', '--template']:
@@ -623,8 +629,8 @@ class Options:
 
         self.filenames = args
 
-        if not self.listener and not self.showlist and self.doctype != 'list' and not self.filenames:
-            print('unoconv: you have to provide a filename as argument', file=sys.stderr)
+        if not self.listener and not self.showlist and not self.stdin and self.doctype != 'list' and not self.filenames:
+            print('unoconv: you have to provide a filename or url as argument', file=sys.stderr)
             print('Try `unoconv -h\' for more information.', file=sys.stderr)
             sys.exit(255)
 
@@ -695,9 +701,11 @@ unoconv options:
   -p, --port=port          specify the port (default: 2002)
                              to be used by client or listener
       --password=string    provide a password to decrypt the document
+  -r, --remote             use with remote input url (http://example.com/file.docx)
   -s, --server=server      specify the server address (default: 127.0.0.1)
                              to be used by client or listener
       --show               list the available output formats
+      --stdin              read from stdin (filenames ignored if provided)
       --stdout             write output to stdout
   -t, --template=file      import the styles from template (.ott)
   -T, --timeout=secs       timeout after secs if connection to listener fails
@@ -819,7 +827,7 @@ class Convertor:
         if op.verbose > 0:
             print('Input file:', inputfn, file=sys.stderr)
 
-        if not os.path.exists(inputfn):
+        if not op.remote and not op.stdin and not os.path.exists(inputfn):
             print('unoconv: file `%s\' does not exist.' % inputfn, file=sys.stderr)
             exitcode = 1
 
@@ -843,8 +851,16 @@ class Convertor:
             if op.importfilter:
                 inputprops += ( PropertyValue( "FilterData", 0, uno.Any("[]com.sun.star.beans.PropertyValue", tuple( op.importfilter ), ), 0 ), )
 
-            inputurl = unohelper.absolutize(self.cwd, unohelper.systemPathToFileUrl(inputfn))
-            document = self.desktop.loadComponentFromURL( inputurl , "_blank", 0, inputprops )
+            if op.remote:
+                document = self.desktop.loadComponentFromURL( inputfn , "_blank", 0, inputprops )
+
+            if op.stdin:
+                inputStream = self.svcmgr.createInstanceWithContext("com.sun.star.io.SequenceInputStream", self.context)
+                inputStream.initialize((uno.ByteSequence(sys.stdin.read()),))
+                document = self.desktop.loadComponentFromURL('private:stream', "_blank", 0, UnoProps(InputStream=inputStream, ReadOnly=True, Hidden=True))
+            else:
+                inputurl = unohelper.absolutize(self.cwd, unohelper.systemPathToFileUrl(inputfn))
+                document = self.desktop.loadComponentFromURL( inputurl , "_blank", 0, inputprops )
 
             if not document:
                 raise UnoException("The document '%s' could not be opened." % inputurl, None)
@@ -922,9 +938,11 @@ class Convertor:
                     outputfn = op.output + os.extsep + outputfmt.extension
                 else:
                     outputfn = realpath(op.output, os.path.basename(outputfn) + os.extsep + outputfmt.extension)
-
-                outputurl = unohelper.absolutize( self.cwd, unohelper.systemPathToFileUrl(outputfn) )
-                info(1, "Output file: %s" % outputfn)
+                if not op.remote:
+                    outputurl = unohelper.absolutize( self.cwd, unohelper.systemPathToFileUrl(outputfn) )
+                    info(1, "Output file: %s" % outputurl)
+                else:
+                    outputurl = unohelper.absolutize( self.cwd, unohelper.systemPathToFileUrl(os.path.basename(outputfn)) )
             else:
                 outputurl = "private:stream"
 
@@ -1081,7 +1099,13 @@ def main():
         if op.listener:
             listener = Listener()
 
-        if op.filenames:
+        if not op.output:
+            op.stdout = True
+
+        if op.stdin:
+            convertor = Convertor()
+            convertor.convert(sys.stdin.read())
+        elif op.filenames:
             convertor = Convertor()
             for inputfn in op.filenames:
                 convertor.convert(inputfn)
@@ -1145,7 +1169,10 @@ if __name__ == '__main__':
             self.closed = 1
 
         def writeBytes( self, seq ):
-            sys.stdout.buffer.write( seq.value )
+            if sys.version_info.major < 3:
+                sys.stdout.write( seq.value )
+            else:
+                sys.stdout.buffer.write( seq.value )
 
         def flush( self ):
             pass
