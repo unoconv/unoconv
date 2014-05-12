@@ -853,11 +853,10 @@ class Convertor:
 
             if op.remote:
                 document = self.desktop.loadComponentFromURL( inputfn , "_blank", 0, inputprops )
-
-            if op.stdin:
+            elif op.stdin:
                 inputStream = self.svcmgr.createInstanceWithContext("com.sun.star.io.SequenceInputStream", self.context)
-                inputStream.initialize((uno.ByteSequence(sys.stdin.read()),))
-                document = self.desktop.loadComponentFromURL('private:stream', "_blank", 0, UnoProps(InputStream=inputStream, ReadOnly=True, Hidden=True))
+                inputStream.initialize((uno.ByteSequence(inputfn),))
+                document = self.desktop.loadComponentFromURL('private:stream', "_blank", 0, UnoProps(InputStream=inputStream, ReadOnly=True, Hidden=True))            
             else:
                 inputurl = unohelper.absolutize(self.cwd, unohelper.systemPathToFileUrl(inputfn))
                 document = self.desktop.loadComponentFromURL( inputurl , "_blank", 0, inputprops )
@@ -1103,8 +1102,9 @@ def main():
             op.stdout = True
 
         if op.stdin:
+            inputfn = sys.stdin.read()
             convertor = Convertor()
-            convertor.convert(sys.stdin.read())
+            convertor.convert(inputfn)
         elif op.filenames:
             convertor = Convertor()
             for inputfn in op.filenames:
