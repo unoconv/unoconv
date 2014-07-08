@@ -208,6 +208,17 @@ at: https://github.com/dagwieers/unoconv/issues
 
 And do mention that you already tried the above hints to troubleshoot the issue.
 
+== Plugins
+During the conversion process, you may want to run plugins against the document using
+the LibreOffice api. To do so, you need to create your own class that implments a run method,
+and place your class in the PYTHONPATH (or adding your path to the PYTHONPATH).
+
+See the SamplePlugin.py file for trival example
+
+And run unoconv with the --plugins= option
+
+ unoconv -f pdf --plugins=SamplePlugin
+
 
 == Interesting information
 If you're interested to help out with development, here are some pointers to

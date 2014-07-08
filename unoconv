@@ -23,6 +23,7 @@ import os
 import subprocess
 import sys
 import time
+import importlib
 
 __version__ = "$Revision$"
 # $Source$
@@ -518,6 +519,7 @@ class Options:
         self.output = None
         self.password = None
         self.pipe = None
+        self.plugins = []
         self.port = '2002'
         self.server = '127.0.0.1'
         self.showlist = False
@@ -531,7 +533,7 @@ class Options:
             opts, args = getopt.getopt (args, 'c:Dd:e:f:hi:Llo:np:s:T:t:vV',
                 ['connection=', 'debug', 'doctype=', 'export=', 'format=',
                  'help', 'import', 'listener', 'no-launch', 'output=',
-                 'outputpath', 'password=', 'pipe=', 'port=', 'server=',
+                 'outputpath', 'password=', 'pipe=', 'plugins=', 'port=', 'server=',
                  'timeout=', 'show', 'stdout', 'template', 'verbose',
                  'version'] )
         except getopt.error as exc:
@@ -599,6 +601,8 @@ class Options:
                 self.password = arg
             elif opt in ['--pipe']:
                 self.pipe = arg
+            elif opt in ['--plugins']:
+                self.plugins = arg.split(',')                
             elif opt in ['-p', '--port']:
                 self.port = arg
             elif opt in ['-s', '--server']:
@@ -692,6 +696,7 @@ unoconv options:
   -n, --no-launch          fail if no listener is found (default: launch one)
   -o, --output=name        output basename, filename or directory
       --pipe=name          alternative method of connection using a pipe
+      --plugins=plugins    list of plugin names to run, comma seperated
   -p, --port=port          specify the port (default: 2002)
                              to be used by client or listener
       --password=string    provide a password to decrypt the document
@@ -860,6 +865,19 @@ class Convertor:
                 else:
                     print('unoconv: template file `%s\' does not exist.' % op.template, file=sys.stderr)
                     exitcode = 1
+
+            ### Run plugins
+            phase = "plugins"
+            if len(op.plugins) > 0:
+                for plugin_name in op.plugins:
+                    try:
+                        module = importlib.import_module("%s" % plugin_name)
+                        instance = getattr(module, plugin_name)()
+                        instance.run(document)
+                    except ImportError:
+                        print("unoconv: skipping plugin '%s', could not import" % plugin_name)
+                    except AttributeError:
+                        print("unoconv: plugin '%s', does not implement run method" % plugin_name)
 
             ### Update document links
             phase = "update-links"
