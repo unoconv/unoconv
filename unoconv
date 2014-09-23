@@ -702,6 +702,7 @@ unoconv options:
   -t, --template=file      import the styles from template (.ott)
   -T, --timeout=secs       timeout after secs if connection to listener fails
   -v, --verbose            be more and more verbose (-vvv for debugging)
+      --version            display version number of unoconv, OOo/LO and platform details
 ''', file=sys.stderr)
 
 class Convertor:
