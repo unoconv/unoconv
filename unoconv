@@ -375,7 +375,7 @@ fmts.add('document', 'uot', 'uot', 'Unified Office Format text','UOF text') ### 
 fmts.add('document', 'vor', 'vor', 'StarWriter 5.0 Template', 'StarWriter 5.0 Vorlage/Template') ### 6
 fmts.add('document', 'vor4', 'vor', 'StarWriter 4.0 Template', 'StarWriter 4.0 Vorlage/Template') ### 5
 fmts.add('document', 'vor3', 'vor', 'StarWriter 3.0 Template', 'StarWriter 3.0 Vorlage/Template') ### 4
-fmts.add('document', 'wps', 'wps', 'Microsoft Works', 'MS_Works') 
+fmts.add('document', 'wps', 'wps', 'Microsoft Works', 'MS_Works')
 fmts.add('document', 'xhtml', 'html', 'XHTML Document', 'XHTML Writer File') ### 33
 
 ### WebDocument
@@ -525,15 +525,16 @@ class Options:
         self.template = None
         self.timeout = 6
         self.verbose = 0
+        self.pidfile = None
 
         ### Get options from the commandline
         try:
-            opts, args = getopt.getopt (args, 'c:Dd:e:f:hi:Llo:np:s:T:t:vV',
+            opts, args = getopt.getopt (args, 'c:Dd:e:f:hi:Llo:np:s:T:t:vVP:',
                 ['connection=', 'debug', 'doctype=', 'export=', 'format=',
                  'help', 'import', 'listener', 'no-launch', 'output=',
                  'outputpath', 'password=', 'pipe=', 'port=', 'server=',
                  'timeout=', 'show', 'stdout', 'template', 'verbose',
-                 'version'] )
+                 'version', 'pidfile='] )
         except getopt.error as exc:
             print('unoconv: %s, try unoconv -h for a list of all the options' % str(exc))
             sys.exit(255)
@@ -616,6 +617,8 @@ class Options:
             elif opt in ['-V', '--version']:
                 self.version()
                 sys.exit(255)
+            elif opt in ['-P', '--pidfile']:
+                self.pidfile = arg
 
         ### Enable verbosity
         if self.verbose >= 2:
@@ -703,6 +706,7 @@ unoconv options:
   -T, --timeout=secs       timeout after secs if connection to listener fails
   -v, --verbose            be more and more verbose (-vvv for debugging)
       --version            display version number of unoconv, OOo/LO and platform details
+      --pidfile            store soffice.bin pid to file
 ''', file=sys.stderr)
 
 class Convertor:
@@ -731,9 +735,15 @@ class Convertor:
             try:
                 product = self.svcmgr.createInstance("com.sun.star.configuration.ConfigurationProvider").createInstanceWithArguments("com.sun.star.configuration.ConfigurationAccess", UnoProps(nodepath="/org.openoffice.Setup/Product"))
                 if product.ooName not in ('LibreOffice', 'LOdev') or LooseVersion(product.ooSetupVersion) <= LooseVersion('3.3'):
-                    ooproc = subprocess.Popen([office.binary, "-headless", "-invisible", "-nocrashreport", "-nodefault", "-nofirststartwizard", "-nologo", "-norestore", "-accept=%s" % op.connection], env=os.environ)
+                    argsList = [office.binary, "-headless", "-invisible", "-nocrashreport", "-nodefault", "-nofirststartwizard", "-nologo", "-norestore", "-accept=%s" % op.connection]
+                    if (op.pidfile):
+                        argsList.append('-pidfile=' + op.pidfile)
+                    ooproc = subprocess.Popen(argsList, env=os.environ)
                 else:
-                    ooproc = subprocess.Popen([office.binary, "--headless", "--invisible", "--nocrashreport", "--nodefault", "--nofirststartwizard", "--nologo", "--norestore", "--accept=%s" % op.connection], env=os.environ)
+                    argsList = [office.binary, "--headless", "--invisible", "--nocrashreport", "--nodefault", "--nofirststartwizard", "--nologo", "--norestore", "--accept=%s" % op.connection]
+                    if (op.pidfile):
+                        argsList.append('--pidfile=' + op.pidfile)
+                    ooproc = subprocess.Popen(argsList, env=os.environ)
                 info(2, '%s listener successfully started. (pid=%s)' % (product.ooName, ooproc.pid))
 
                 ### Try connection to it for op.timeout seconds (flakky OpenOffice)
@@ -995,9 +1005,15 @@ class Listener:
                 info(1, "Existing %s listener found, nothing to do." % product.ooName)
                 return
             if product.ooName != "LibreOffice" or LooseVersion(product.ooSetupVersion) <= LooseVersion('3.3'):
-                subprocess.call([office.binary, "-headless", "-invisible", "-nocrashreport", "-nodefault", "-nologo", "-nofirststartwizard", "-norestore", "-accept=%s" % op.connection], env=os.environ)
+                argsList = [office.binary, "-headless", "-invisible", "-nocrashreport", "-nodefault", "-nologo", "-nofirststartwizard", "-norestore", "-accept=%s" % op.connection]
+                if (op.pidfile):
+                    argsList.append('-pidfile=' + op.pidfile)
+                subprocess.call(argsList, env=os.environ)
             else:
-                subprocess.call([office.binary, "--headless", "--invisible", "--nocrashreport", "--nodefault", "--nologo", "--nofirststartwizard", "--norestore", "--accept=%s" % op.connection], env=os.environ)
+                argsList = [office.binary, "--headless", "--invisible", "--nocrashreport", "--nodefault", "--nologo", "--nofirststartwizard", "--norestore", "--accept=%s" % op.connection]
+                if (op.pidfile):
+                    argsList.append('--pidfile=' + op.pidfile)
+                subprocess.call(argsList, env=os.environ)
         except Exception as e:
             error("Launch of %s failed.\n%s" % (office.binary, e))
         else:
