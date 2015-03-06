@@ -920,7 +920,7 @@ class Convertor:
                 if not op.output:
                     outputfn = outputfn + os.extsep + outputfmt.extension
                 elif len(op.filenames) > 1:
-                    outputfn = op.output + os.extsep + outputfmt.extension
+                    outputfn = op.output + outputfn + os.extsep + outputfmt.extension
                 else:
                     outputfn = realpath(op.output, os.path.basename(outputfn) + os.extsep + outputfmt.extension)
 
