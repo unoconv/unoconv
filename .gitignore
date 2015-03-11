@@ -1,0 +1,8 @@
+.DS_Store
+.idea/
+build/
+dist/
+*.egg-info
+*.pyc
+*.pyo
+MANIFEST
