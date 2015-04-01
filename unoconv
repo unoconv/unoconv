@@ -90,6 +90,7 @@ def find_offices():
         elif os.name in ( 'mac', ) or sys.platform in ( 'darwin', ):
             extrapaths += [ '/Applications/LibreOffice.app/Contents',
                             '/Applications/NeoOffice.app/Contents',
+                            '/Applications/OpenOffice.app/Contents',
                             '/Applications/OpenOffice.org.app/Contents' ]
 
         else:
