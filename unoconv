@@ -265,7 +265,7 @@ def python_switch(office):
         ### os.execv is broken on Windows and can't properly parse command line
         ### arguments and executable name if they contain whitespaces. subprocess
         ### fixes that behavior.
-        ret = subprocess.call([office.python] + sys.argv[0:])
+        ret = subprocess.call([office.python, ] + sys.argv[0:])
         sys.exit(ret)
     else:
 

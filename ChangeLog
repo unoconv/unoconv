@@ -33,9 +33,9 @@
 * 0.4 - released 20/10/2010
 - Now properly check if there is a GUI attached and terminate() or -unaccept instance
 - Added official OpenOffice path '/opt/openoffice*/program'
-- Added support for OpenOffice on Windows (Fernando Lucas Rodriguez)
-- Added --pipe option to communicate with UNO pipe (Fernando Lucas Rodriguez)
-- Added -o/--outputpath option to modify the output path (Fernando Lucas Rodriguez)
+- Added support for OpenOffice on Windows (*redacted*)
+- Added --pipe option to communicate with UNO pipe (*redacted*)
+- Added -o/--outputpath option to modify the output path (*redacted*)
 - Added support for MediaWiki output (txt)
 - Added OpenOffice path to LD_LIBRARY_PATH env var
 - Added -nofirstwizard to ooffice invocations
@@ -57,9 +57,9 @@
 - Added docs/filters.txt with information about import and export filters
 - Added official OpenOffice path for MacOSX (Jeff Harmon)
 - First update links, then indexes (Nicolae Mihalache)
-- More improvements to OpenOffice support on Windows (Fernando Lucas Rodriguez)
-- Improve terminating OpenOffice on Windows (Fernando Lucas Rodriguez)
-- Support OpenOffice installations on Windows on drive-letters other than C: (Fernando Lucas Rodriguez)
+- More improvements to OpenOffice support on Windows (*redacted*)
+- Improve terminating OpenOffice on Windows (*redacted*)
+- Support OpenOffice installations on Windows on drive-letters other than C: (*redacted*)
 - Allow to apply a style template during conversion
 - Improvements to stdout and stderr messages consistency
 - Updated documentation

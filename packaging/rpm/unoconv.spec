@@ -1,3 +1,5 @@
+%{?el6:%define _with_libreoffice 1}
+%{?el5:%define _with_openoffice.org 1}
 %{?el4:%define _with_openoffice.org2 1}
 
 %define rpmrelease %nil
@@ -16,7 +18,8 @@ BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root
 BuildArch: noarch
 BuildRequires: python >= 2.0
 Requires: python >= 2.0
-%{!?_with_openoffice.org2:Requires:openoffice.org-pyuno >= 2.0}
+%{?_with_libreoffice:Requires:libreoffice.org-pyuno >= 1:3.4}
+%{?_with_openoffice.org:Requires:openoffice.org-pyuno >= 3.0}
 %{?_with_openoffice.org2:Requires:openoffice.org2-pyuno >= 2.0}
 
 %description
