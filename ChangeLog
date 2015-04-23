@@ -1,3 +1,6 @@
+* 0.6.1 - 9/11/2014
+- Support for passing pidfile argument to soffice.bin
+
 * 0.6 - 10/09/2012
 - Implement debugging output (-vvv)
 - Fixes to office comparison
