@@ -867,6 +867,16 @@ class Convertor:
             phase = "update-links"
             try:
                 document.updateLinks()
+                # Found that when converting HTML files with external images, OO would only load five or six of 
+                # the images in the file. In the resulting document, the rest of the images did not appear. Cycling 
+                # through all the image references in the document seems to force OO to actually load them. Found 
+                # some helpful guidance in this thread:
+                # https://forum.openoffice.org/en/forum/viewtopic.php?f=30&t=23909
+                # Ideally we would like to have the option to embed the images into the document, but I have not been
+                # able to figure out how to do this yet.
+                graphObjs = document.GraphicObjects
+                for i in range(0, graphObjs.getCount()):
+                    graphObj = graphObjs.getByIndex(i)
             except AttributeError:
                 # the document doesn't implement the XLinkUpdate interface
                 pass
