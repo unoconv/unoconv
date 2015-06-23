@@ -8,6 +8,8 @@
 
 - python3 compatibility [\#107](https://github.com/dagwieers/unoconv/issues/107)
 
+- Preserve the original timestamp, ownership and permissions [\#31](https://github.com/dagwieers/unoconv/issues/31)
+
 **Fixed bugs:**
 
 - On Mac OSX + LibreOffice 4.3 Not working [\#221](https://github.com/dagwieers/unoconv/issues/221)
@@ -20,25 +22,15 @@
 
 **Closed issues:**
 
-- unoconv Office probably died. Unsupported URL..all libreoffice packages have been installed [\#264](https://github.com/dagwieers/unoconv/issues/264)
-
-- Not able to manage/handle page breaks  [\#249](https://github.com/dagwieers/unoconv/issues/249)
-
 - unoconv: Cannot find a suitable office installation on your system. [\#236](https://github.com/dagwieers/unoconv/issues/236)
 
-- can not convert odt to ods [\#235](https://github.com/dagwieers/unoconv/issues/235)
-
 - Libreoffice GraphicImport error [\#234](https://github.com/dagwieers/unoconv/issues/234)
-
-- PDF to doc/xls/html/xhtml fails [\#226](https://github.com/dagwieers/unoconv/issues/226)
 
 - display\(\) method used by --show should not output to stderr [\#223](https://github.com/dagwieers/unoconv/issues/223)
 
 - not generating content [\#217](https://github.com/dagwieers/unoconv/issues/217)
 
 - UNO IllegalArgument during import phase: Source file cannot be read. Unsupported URL [\#215](https://github.com/dagwieers/unoconv/issues/215)
-
-- Setting page size for pdf conversion [\#208](https://github.com/dagwieers/unoconv/issues/208)
 
 - can't find libreoffice 4.2.2.1 [\#195](https://github.com/dagwieers/unoconv/issues/195)
 
@@ -50,51 +42,11 @@
 
 - Cannot Install in centos 6.5 [\#178](https://github.com/dagwieers/unoconv/issues/178)
 
-- unoconv: Cannot find a suitable office installation on your system MAC [\#163](https://github.com/dagwieers/unoconv/issues/163)
-
-- unoconv doc to txt with russian symbols: output "?????? ?????" [\#148](https://github.com/dagwieers/unoconv/issues/148)
-
-- UNO IllegalArgument during import phase: Source file cannot be read. URL seems to be an unsupported one [\#145](https://github.com/dagwieers/unoconv/issues/145)
-
 - My unoconv works perfectly in terminal using www-data, but no pdf file when executed through php [\#139](https://github.com/dagwieers/unoconv/issues/139)
-
-- Export options to PDF does not work [\#138](https://github.com/dagwieers/unoconv/issues/138)
 
 - weirdly quoted output [\#135](https://github.com/dagwieers/unoconv/issues/135)
 
-- unoconv freezes randomly [\#130](https://github.com/dagwieers/unoconv/issues/130)
-
-- Source file cannot be read. Unsupported URL [\#129](https://github.com/dagwieers/unoconv/issues/129)
-
-- SyntaxError: invalid syntax [\#114](https://github.com/dagwieers/unoconv/issues/114)
-
-- UNOCONV unable to convert pdf back to pptx. [\#110](https://github.com/dagwieers/unoconv/issues/110)
-
-- PPT/ODP Exporting hidden pages option when exporting to PDF [\#108](https://github.com/dagwieers/unoconv/issues/108)
-
-- doc/docx conversions errors [\#106](https://github.com/dagwieers/unoconv/issues/106)
-
 - please add LICENSE file [\#105](https://github.com/dagwieers/unoconv/issues/105)
-
-- PDF Export security options [\#104](https://github.com/dagwieers/unoconv/issues/104)
-
-- SyntaxError except getopt.error, exc:  [\#102](https://github.com/dagwieers/unoconv/issues/102)
-
-- creation of executable memory area failed: Permission denied on CENTOS 5 [\#99](https://github.com/dagwieers/unoconv/issues/99)
-
-- Unsupported URL [\#96](https://github.com/dagwieers/unoconv/issues/96)
-
-- Pb unoconv landscape/portrait in .xls [\#92](https://github.com/dagwieers/unoconv/issues/92)
-
-- unoconv command in debug mode to trace library path [\#89](https://github.com/dagwieers/unoconv/issues/89)
-
-- Problem converting cyrillic .doc OR .odt file to .txt [\#73](https://github.com/dagwieers/unoconv/issues/73)
-
-- unoconv: UnoException during export phase [\#66](https://github.com/dagwieers/unoconv/issues/66)
-
-- cannot find suitable pyuno library [\#62](https://github.com/dagwieers/unoconv/issues/62)
-
-- Issue using on webserver [\#58](https://github.com/dagwieers/unoconv/issues/58)
 
 **Merged pull requests:**
 
@@ -103,6 +55,8 @@
 - document --version option in help output [\#200](https://github.com/dagwieers/unoconv/pull/200) ([mmariani](https://github.com/mmariani))
 
 - Add -F|--field to update user-defined fields before exporting document [\#193](https://github.com/dagwieers/unoconv/pull/193) ([raphink](https://github.com/raphink))
+
+- Preserve timestamps and permissions [\#179](https://github.com/dagwieers/unoconv/pull/179) ([vincentbernat](https://github.com/vincentbernat))
 
 - Resolves: fdo\#70309 can't write bytes direct to stdout in python3 [\#170](https://github.com/dagwieers/unoconv/pull/170) ([caolanm](https://github.com/caolanm))
 
@@ -154,35 +108,7 @@
 
 **Closed issues:**
 
-- unoconv and MacOS [\#81](https://github.com/dagwieers/unoconv/issues/81)
-
-- Export filter problem in unoconv-0.5 PropertyValue not defined [\#78](https://github.com/dagwieers/unoconv/issues/78)
-
-- The fix for Issue \#75 causes "NameError: global name 'PropertyValue' is not defined" [\#77](https://github.com/dagwieers/unoconv/issues/77)
-
 - r [\#76](https://github.com/dagwieers/unoconv/issues/76)
-
-- word document conversion failed [\#70](https://github.com/dagwieers/unoconv/issues/70)
-
-- soffice couldn't connect at first time [\#68](https://github.com/dagwieers/unoconv/issues/68)
-
-- unoconv A New File Name [\#65](https://github.com/dagwieers/unoconv/issues/65)
-
-- Remove support for OpenOffice under MacOS X [\#64](https://github.com/dagwieers/unoconv/issues/64)
-
-- unoconv not working [\#61](https://github.com/dagwieers/unoconv/issues/61)
-
-- Trouble upgrading to CentOS 6 [\#56](https://github.com/dagwieers/unoconv/issues/56)
-
-- upgrade from unoconv 0.3-6 - ubuntu 10.10 [\#55](https://github.com/dagwieers/unoconv/issues/55)
-
-- unoconv convert doc to pdf  make error! [\#54](https://github.com/dagwieers/unoconv/issues/54)
-
-- Basic installation process [\#51](https://github.com/dagwieers/unoconv/issues/51)
-
-- unoconv: Cannot find a suitable pyuno library and python binary combination [\#49](https://github.com/dagwieers/unoconv/issues/49)
-
-- UNO IllegalArgument during import phase: Source file cannot be read. URL seems to be an unsupported one. [\#47](https://github.com/dagwieers/unoconv/issues/47)
 
 **Merged pull requests:**
 
@@ -232,27 +158,15 @@
 
 **Closed issues:**
 
-- IIS socket problem? [\#44](https://github.com/dagwieers/unoconv/issues/44)
-
-- Converting with LibreOffice 3.5.0 doesn't work every time [\#43](https://github.com/dagwieers/unoconv/issues/43)
-
 - Unable to run unoconv from PHP [\#42](https://github.com/dagwieers/unoconv/issues/42)
 
 - Change/force the document encoding during conversion \(UTF-8\) [\#33](https://github.com/dagwieers/unoconv/issues/33)
-
-- UnoException during import phase [\#25](https://github.com/dagwieers/unoconv/issues/25)
-
-- SystemError: dynamic module not initialized properly [\#24](https://github.com/dagwieers/unoconv/issues/24)
-
-- ODT use problem [\#23](https://github.com/dagwieers/unoconv/issues/23)
 
 - SElinux Problems When Running Indirectly [\#19](https://github.com/dagwieers/unoconv/issues/19)
 
 - JPEG export filter seems to have a size limit [\#13](https://github.com/dagwieers/unoconv/issues/13)
 
 - LibreOffice should use SVG natively [\#11](https://github.com/dagwieers/unoconv/issues/11)
-
-- DLL load failed on windows [\#10](https://github.com/dagwieers/unoconv/issues/10)
 
 - unoconv needs 2 times to connect to LibreOffice [\#7](https://github.com/dagwieers/unoconv/issues/7)
 
