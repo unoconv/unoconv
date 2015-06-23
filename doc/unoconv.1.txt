@@ -241,7 +241,7 @@ Here is a list of all options, however for more details please look in
  - ExportLinksRelativeFsys
  - ExportNotes
  - ExportNotesPages
- - FirstPagOnLeft
+ - FirstPageOnLeft
  - FormsType
  - HideViewerMenubar
  - HideViewerToolbar
