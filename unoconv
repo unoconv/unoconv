@@ -664,7 +664,7 @@ class Options:
             ### Check if the command is in the form odt2pdf
             l = sys.argv[0].split('2')
             if len(l) == 2:
-                self.format = l[1]A
+                self.format = l[1]
             ### Use the extension of the output file
             elif self.output and self.output.find('.') >= 0:
                 self.format = os.path.splitext(self.output)[1].lsplit('.')
