@@ -510,6 +510,7 @@ class Options:
         self.doctype = None
         self.exportfilter = []
         self.exportfilteroptions = ""
+        self.fields = {}
         self.filenames = []
         self.format = None
         self.importfilter = []
@@ -529,8 +530,8 @@ class Options:
 
         ### Get options from the commandline
         try:
-            opts, args = getopt.getopt (args, 'c:Dd:e:f:hi:Llo:np:s:T:t:vV',
-                ['connection=', 'debug', 'doctype=', 'export=', 'format=',
+            opts, args = getopt.getopt (args, 'c:Dd:e:F:f:hi:Llo:np:s:T:t:vV',
+                ['connection=', 'debug', 'doctype=', 'export=', 'field=', 'format=',
                  'help', 'import', 'listener', 'no-launch', 'output=',
                  'outputpath', 'password=', 'pipe=', 'port=', 'server=',
                  'timeout=', 'show', 'stdout', 'template', 'verbose',
@@ -568,6 +569,9 @@ class Options:
                             self.exportfilter.append( PropertyValue( name, 0, value, 0 ) )
                 else:
                     print('Warning: Option %s cannot be parsed, ignoring.' % arg, file=sys.stderr)
+            elif opt in ['-F', '--field']:
+                l = arg.split('=')
+                self.fields[l[0]] = l[1]
             elif opt in ['-f', '--format']:
                 self.format = arg
             elif opt in ['-i', '--import']:
@@ -692,6 +696,8 @@ unoconv options:
   -e, --export=name=value  set export filter options
                              eg. -e PageRange=1-2
   -f, --format=format      specify the output format
+  -F, --field=name=value   replace user-defined text field with value
+                             eg. -F Client_Name="Oracle"
   -i, --import=string      set import filter option string
                              eg. -i utf8
   -l, --listener           start a permanent listener to use by unoconv clients
@@ -875,6 +881,17 @@ class Convertor:
             except AttributeError:
                 # the document doesn't implement the XLinkUpdate interface
                 pass
+
+            ### Replace variables
+            phase = "replace-fields"
+            for f in op.fields:
+              try:
+                field = document.TextFieldMasters.getByName("com.sun.star.text.fieldmaster.SetExpression.%s" % f)
+                field.DependentTextFields[0].setPropertyValue('Content', op.fields[f])
+              except UnoException:
+                print("unoconv: failed to replace variable '%s' with value '%s' in the document." % (f, op.fields[f]))
+                pass
+                
 
             ### Update document indexes
             phase = "update-indexes"
