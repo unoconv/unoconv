@@ -654,11 +654,14 @@ class Options:
 
         ### If no format was specified, probe it or provide it
         if not self.format:
+            ### Check if the command is in the form odt2pdf
             l = sys.argv[0].split('2')
             if len(l) == 2:
-                self.format = l[1]
+                self.format = l[1]A
+            ### Use the extension of the output file
             elif self.output and self.output.find('.') >= 0:
-                self.format = os.path.splitext(self.output)[1].replace('.', '')
+                self.format = os.path.splitext(self.output)[1].lsplit('.')
+            ### Default to PDF
             else:
                 self.format = 'pdf'
 
