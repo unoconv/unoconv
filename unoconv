@@ -533,7 +533,7 @@ class Options:
         try:
             opts, args = getopt.getopt (args, 'c:Dd:e:F:f:hi:Llo:np:s:T:t:vV',
                 ['connection=', 'debug', 'doctype=', 'export=', 'field=', 'format=',
-                 'help', 'import', 'listener', 'no-launch', 'output=',
+                 'help', 'import=', 'listener', 'no-launch', 'output=',
                  'outputpath', 'password=', 'pipe=', 'port=', 'preserve',
                  'server=', 'timeout=', 'show', 'stdout', 'template',
                  'verbose', 'version'] )
