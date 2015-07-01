@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 ### This program is free software; you can redistribute it and/or modify
 ### it under the terms of the GNU General Public License as published by
@@ -960,7 +960,7 @@ class Convertor:
                 (outputfn, ext) = os.path.splitext(inputfn)
                 if not op.output:
                     outputfn = outputfn + os.extsep + outputfmt.extension
-                elif len(op.filenames) > 1:
+                elif len(op.filenames) <= 1:
                     outputfn = op.output + os.extsep + outputfmt.extension
                 else:
                     outputfn = realpath(op.output, os.path.basename(outputfn) + os.extsep + outputfmt.extension)
