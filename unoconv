@@ -716,7 +716,7 @@ unoconv options:
   -s, --server=server      specify the server address (default: 127.0.0.1)
                              to be used by client or listener
       --show               list the available output formats
-      --stdin              read from stdin (filenames ignored if provided)
+      --stdin              read from stdin (filenames are ignored if provided)
       --stdout             write output to stdout
   -t, --template=file      import the styles from template (.ott)
   -T, --timeout=secs       timeout after secs if connection to listener fails
