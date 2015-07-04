@@ -59,16 +59,13 @@ all: doc
 help:
 	@echo -e "unoconv make targets:\n\
 \n\
-  install         - Install Relax-and-Recover (may replace files)\n\
-  uninstall       - Uninstall Relax-and-Recover (may remove files)\n\
+  install         - Install unoconv (may replace files)\n\
   dist            - Create tar file\n\
-  deb             - Create DEB package\n\
   rpm             - Create RPM package\n\
-  obs             - Initiate OBS builds\n\
 \n\
 unoconv make variables (optional):\n\
 \n\
-  DESTDIR=        - Location to install/uninstall\n\
+  DESTDIR=        - Location to install to\n\
   OFFICIAL=       - Build an official release\n\
 "
 
