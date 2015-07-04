@@ -64,7 +64,7 @@ as relative to the source document location.
 to PDF.
 |ExportNotesPages          |boolean|False   |Specifies if notes pages are
 exported to PDF. (Notes pages are available in Impress documents only).
-|FirstPagOnLeft            |boolean|False   |Used with the value 3 of the
+|FirstPageOnLeft           |boolean|False   |Used with the value 3 of the
 PageLayout property when the first page (odd) should be on the left side of
 the screen.
 |FormsType                 |integer|0       |Specifies the submitted format of
