@@ -676,18 +676,16 @@ class Options:
                 self.format = 'pdf'
 
     def version(self):
-        ### Get office product information
-        product = uno.getComponentContext().ServiceManager.createInstance("com.sun.star.configuration.ConfigurationProvider").createInstanceWithArguments("com.sun.star.configuration.ConfigurationAccess", UnoProps(nodepath="/org.openoffice.Setup/Product"))
-
         print('unoconv %s' % VERSION)
         print('Written by Dag Wieers <dag@wieers.com>')
         print('Homepage at http://dag.wieers.com/home-made/unoconv/')
         print()
         print('platform %s/%s' % (os.name, sys.platform))
         print('python %s' % sys.version)
-        print(product.ooName, product.ooSetupVersion)
-#        print
-#        print 'build revision $Rev$'
+        if uno:
+            ### Get office product information
+            product = uno.getComponentContext().ServiceManager.createInstance("com.sun.star.configuration.ConfigurationProvider").createInstanceWithArguments("com.sun.star.configuration.ConfigurationAccess", UnoProps(nodepath="/org.openoffice.Setup/Product"))
+            print(product.ooName, product.ooSetupVersion)
 
     def usage(self):
         print('usage: unoconv [options] file [file2 ..]', file=sys.stderr)
