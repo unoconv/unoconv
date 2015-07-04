@@ -909,7 +909,6 @@ class Convertor:
               except UnoException:
                 print("unoconv: failed to replace variable '%s' with value '%s' in the document." % (f, op.fields[f]))
                 pass
-                
 
             ### Update document indexes
             phase = "update-indexes"
@@ -957,13 +956,15 @@ class Convertor:
                 outputprops += ( PropertyValue( "FilterData", 0, uno.Any("[]com.sun.star.beans.PropertyValue", tuple( op.exportfilter ), ), 0 ), )
 
             if not op.stdout:
-                (outputfn, ext) = os.path.splitext(inputfn)
-                if not op.output:
-                    outputfn = realpath(outputfn + os.extsep + outputfmt.extension)
-                elif len(op.filenames) > 1:
-                    outputfn = realpath(op.output, os.path.basename(outputfn) + os.extsep + outputfmt.extension)
+                (inbase, ext) = os.path.splitext(inputfn)
+                if op.output:
+                    (outbase, ext) = os.path.splitext(op.output)
+                    if len(op.filenames) > 1:
+                        outputfn = realpath(outbase, os.path.basename(inbase) + os.extsep + outputfmt.extension)
+                    else:
+                        outputfn = realpath(outbase + os.extsep + outputfmt.extension)
                 else:
-                    outputfn = realpath(outputfn + os.extsep + outputfmt.extension)
+                    outputfn = realpath(inbase + os.extsep + outputfmt.extension)
 
                 outputurl = unohelper.absolutize( self.cwd, unohelper.systemPathToFileUrl(outputfn) )
                 info(1, "Output file: %s" % outputfn)
