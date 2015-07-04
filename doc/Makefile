@@ -2,8 +2,8 @@ prefix = /usr
 datadir = $(prefix)/share
 mandir = $(datadir)/man
 
-txttargets = $(shell echo *.txt)
-htmltargets = $(patsubst %.txt, %.html, $(txttargets))
+adoctargets = $(shell echo *.adoc)
+htmltargets = $(patsubst %.adoc, %.html, $(adoctargets))
 
 all: docs
 
@@ -19,14 +19,14 @@ install: unoconv.1
 clean:
 	rm -f unconv.1 *.html *.xml
 
-%.1.html: %.1.txt
+%.1.html: %.1.adoc
 	asciidoc -d manpage $<
 
 %.1: %.1.xml
 	xmlto man $<
 
-%.html: %.txt
+%.html: %.adoc
 	asciidoc $<
 
-%.1.xml: %.1.txt
+%.1.xml: %.1.adoc
 	asciidoc -b docbook -d manpage $<
