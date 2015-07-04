@@ -736,6 +736,26 @@ class Convertor:
 
         ### Test for an existing connection
         info(3, 'Connection type: %s' % op.connection)
+        unocontext = self.connect(resolver)
+
+        if not unocontext:
+            die(251, "Unable to connect or start own listener. Aborting.")
+
+        ### And some more LibreOffice magic
+        unosvcmgr = unocontext.ServiceManager
+        self.desktop = unosvcmgr.createInstanceWithContext("com.sun.star.frame.Desktop", unocontext)
+        self.cwd = unohelper.systemPathToFileUrl( os.getcwd() )
+
+        ### List all filters
+#        self.filters = unosvcmgr.createInstanceWithContext( "com.sun.star.document.FilterFactory", unocontext)
+#        for filter in self.filters.getElementNames():
+#            print filter
+#            #print dir(filter), dir(filter.format)
+
+    def connect(self, resolver):
+        global ooproc, product, office
+        unocontext = None
+
         try:
             unocontext = resolver.resolve("uno:%s" % op.connection)
         except NoConnectException as e:
@@ -760,9 +780,15 @@ class Convertor:
                 while timeout <= op.timeout:
                     ### Is it already/still running ?
                     retcode = ooproc.poll()
-                    if retcode != None:
+                    if retcode == 81:
+                        info(3, "Caught exit code 81 (new installation). Restarting listener.")
+                        return self.connect(resolver)
+                        break
+
+                    elif retcode != None:
                         info(3, "Process %s (pid=%s) exited with %s." % (office.binary, ooproc.pid, retcode))
                         break
+
                     try:
                         unocontext = resolver.resolve("uno:%s" % op.connection)
                         break
@@ -777,19 +803,7 @@ class Convertor:
                 raise
                 error("Launch of %s failed.\n%s" % (office.binary, e))
 
-        if not unocontext:
-            die(251, "Unable to connect or start own listener. Aborting.")
-
-        ### And some more LibreOffice magic
-        unosvcmgr = unocontext.ServiceManager
-        self.desktop = unosvcmgr.createInstanceWithContext("com.sun.star.frame.Desktop", unocontext)
-        self.cwd = unohelper.systemPathToFileUrl( os.getcwd() )
-
-        ### List all filters
-#        self.filters = unosvcmgr.createInstanceWithContext( "com.sun.star.document.FilterFactory", unocontext)
-#        for filter in self.filters.getElementNames():
-#            print filter
-#            #print dir(filter), dir(filter.format)
+        return unocontext
 
     def getformat(self, inputfn):
         doctype = None
