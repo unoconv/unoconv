@@ -33,6 +33,7 @@ doctypes = ('document', 'graphics', 'presentation', 'spreadsheet')
 
 global convertor, office, ooproc, product
 ooproc = None
+uno = unohelper = None
 exitcode = 0
 
 class Office:
