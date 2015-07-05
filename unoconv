@@ -551,7 +551,7 @@ class Options:
                 self.usage()
                 print()
                 self.help()
-                sys.exit(1)
+                sys.exit(0)
             elif opt in ['-c', '--connection']:
                 self.connection = arg
             elif opt in ['--debug']:
@@ -630,7 +630,7 @@ class Options:
                 self.verbose = self.verbose + 1
             elif opt in ['-V', '--version']:
                 self.version()
-                sys.exit(255)
+                sys.exit(0)
 
         ### Enable verbosity
         if self.verbose >= 2:
