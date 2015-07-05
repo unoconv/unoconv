@@ -893,13 +893,14 @@ class Convertor:
             if op.stdin:
                 inputStream = self.svcmgr.createInstanceWithContext("com.sun.star.io.SequenceInputStream", self.context)
                 inputStream.initialize((uno.ByteSequence(inputfn),))
-                document = self.desktop.loadComponentFromURL('private:stream', "_blank", 0, UnoProps(InputStream=inputStream, ReadOnly=True, Hidden=True))
+                inputprops += UnoProps(InputStream=inputStream)
+                inputurl = 'private:stream'
             else:
                 if os.path.exists(inputfn):
                     inputurl = unohelper.absolutize(self.cwd, unohelper.systemPathToFileUrl(inputfn))
                 else:
                     inputurl = inputfn
-                document = self.desktop.loadComponentFromURL( inputurl , "_blank", 0, inputprops )
+            document = self.desktop.loadComponentFromURL( inputurl , "_blank", 0, inputprops )
 
             if not document:
                 raise UnoException("The document '%s' could not be opened." % inputurl, None)
@@ -983,7 +984,6 @@ class Convertor:
 
                 elif outputfmt.filter == 'Text - txt - csv (StarCalc)':
                     outputprops += UnoProps(FilterOptions="44,34,76")
-
 
             ### Cannot use UnoProps for FilterData property
             if op.exportfilter:
