@@ -917,6 +917,13 @@ class Convertor:
                     print('unoconv: template file `%s\' does not exist.' % op.template, file=sys.stderr)
                     exitcode = 1
 
+            ### Force all cells to recalcualte if we are able to. This will get rid of errors in cells.
+            phase = "recalculate"
+            try:
+                document.calculateAll()
+            except AttributeError:
+                pass
+
             ### Update document links
             phase = "update-links"
             try:
