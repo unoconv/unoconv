@@ -646,8 +646,7 @@ class Options:
         ### Set connection string
         if not self.connection:
             if not self.pipe:
-                self.connection = "socket,host=%s,port=%s;urp;StarOffice.ComponentContext" % (self.server, self.port)
-#               self.connection = "socket,host=%s,port=%s;urp;" % (self.server, self.port)
+                self.connection = "socket,host=%s,port=%s,tcpNoDelay=1;urp;StarOffice.ComponentContext" % (self.server, self.port)
             else:
                 self.connection = "pipe,name=%s;urp;StarOffice.ComponentContext" % (self.pipe)
 
