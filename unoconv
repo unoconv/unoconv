@@ -672,11 +672,12 @@ class Options:
             if len(l) == 2:
                 self.format = l[1]
             ### Use the extension of the output file
-            elif self.output and self.output.find('.') >= 0:
-                self.format = os.path.splitext(self.output)[1].lsplit('.')
-            ### Default to PDF
-            else:
-                self.format = 'pdf'
+            elif self.output and os.path.basename(self.output).find('.') >= 0:
+                self.format = os.path.splitext(self.output)[1].lstrip('.')
+
+        ### Default to PDF
+        if not self.format:
+            self.format = 'pdf'
 
     def version(self):
         print('unoconv %s' % VERSION)
