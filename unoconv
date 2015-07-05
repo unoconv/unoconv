@@ -973,6 +973,13 @@ class Convertor:
             info(2, "Selected office filter: %s" % outputfmt.filter)
             info(2, "Used doctype: %s" % outputfmt.doctype)
 
+            ### Document properties phase
+            phase = "disable-showchanges"
+            try:
+                document.ShowChanges = False
+            except AttributeError:
+                pass
+
             ### Export phase
             phase = "export"
 
