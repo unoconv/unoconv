@@ -689,7 +689,7 @@ class Options:
         if uno:
             ### Get office product information
             product = uno.getComponentContext().ServiceManager.createInstance("com.sun.star.configuration.ConfigurationProvider").createInstanceWithArguments("com.sun.star.configuration.ConfigurationAccess", UnoProps(nodepath="/org.openoffice.Setup/Product"))
-            print(product.ooName, product.ooSetupVersion)
+            print(product.ooName, product.ooSetupVersionAboutBox)
 
     def usage(self):
         print('usage: unoconv [options] file [file2 ..]', file=sys.stderr)
