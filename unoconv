@@ -1004,6 +1004,11 @@ class Convertor:
                 outputprops += ( PropertyValue( "FilterData", 0, uno.Any("[]com.sun.star.beans.PropertyValue", tuple( op.exportfilter ), ), 0 ), )
 
             if op.stdout:
+                ### Ensure binary data to stdout works
+                ### http://stackoverflow.com/questions/2374427/python-2-x-write-binary-output-to-stdout
+                if sys.platform == "win32":
+                    import msvcrt
+                    msvcrt.setmode(sys.stdout.fileno(), os.O_BINARY)
                 outputurl = "private:stream"
             else:
                 if os.path.exists(inputfn):
