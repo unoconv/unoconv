@@ -537,7 +537,7 @@ class Options:
                 ['connection=', 'debug', 'doctype=', 'export=', 'field=', 'format=',
                  'help', 'import=', 'listener', 'no-launch', 'output=',
                  'outputpath', 'password=', 'pipe=', 'port=', 'preserve',
-                 'server=', 'timeout=', 'show', 'stdout', 'template',
+                 'server=', 'timeout=', 'show', 'stdin', 'stdout', 'template',
                  'verbose', 'version'] )
         except getopt.error as exc:
             print('unoconv: %s, try unoconv -h for a list of all the options' % str(exc))
