@@ -984,13 +984,13 @@ class Convertor:
                 outputprops += UnoProps(FilterOptions=op.exportfilteroptions)
             else:
                 if outputfmt.filter == 'Text (encoded)':
-                    outputprops += UnoProps(FilterOptions="76,LF")
+                    outputprops += UnoProps(FilterOptions="UTF8,LF")
 
                 elif outputfmt.filter == 'Text':
-                    outputprops += UnoProps(FilterOptions="76")
+                    outputprops += UnoProps(FilterOptions="UTF8")
 
                 elif outputfmt.filter == 'Text - txt - csv (StarCalc)':
-                    outputprops += UnoProps(FilterOptions="44,34,76")
+                    outputprops += UnoProps(FilterOptions="44,34,UTF8")
 
             ### Cannot use UnoProps for FilterData property
             if op.exportfilter:
