@@ -3,7 +3,7 @@
 == Import filter options
 See also:
 
- * http://wiki.services.openoffice.org/wiki/Documentation/DevGuide/Spreadsheets/Filter_Options[Spreadhseet filter options]
+ * http://wiki.services.openoffice.org/wiki/Documentation/DevGuide/Spreadsheets/Filter_Options[Spreadsheet filter options]
 
 == Generic export filter options
 
