@@ -12,11 +12,11 @@ indication of what the cause is, although in most cases this is not conclusive.
 The authoritative source for ErrCodes are the following files:
 
 List of ErrCode classifications::
-    http://cgit.freedesktop.org/libreoffice/core/tree/tools/inc/tools/errcode.hxx
+ - http://docs.libreoffice.org/tools/html/errcode_8hxx_source.html
 
-List of SFX (?) related ErrCode classifications::
- - http://cgit.freedesktop.org/libreoffice/core/tree/svtools/inc/svtools/sfxecode.hxx
- - http://cgit.freedesktop.org/libreoffice/core/tree/svtools/inc/svtools/soerr.hxx
+List of other related ErrCode classifications::
+ - http://docs.libreoffice.org/svtools/html/sfxecode_8hxx.html
+ - http://docs.libreoffice.org/svtools/html/soerr_8hxx.html
 
 ----
 01234567012345670123456701234567
@@ -39,28 +39,35 @@ Warning           ||   ||      |
 
 == UnoException ErrCode
 
-1287::
+=== 283
+Binary: 000:00001:00011011
+
+    Area: 0 (ERRCODE_AREA_TOOLS)
+    Class: 1 (ERRCODE_CLASS_ABORT)
+    Code: 27 (ERRCODE_IO_ABORT)
+
+=== 1287
 Binary: 000:00101:00000111
 
     Area: 0 (ERRCODE_AREA_TOOLS)
     Class: 5 (ERRCODE_CLASS_ACCESS)
     Code: 7 (ERRCODE_IO_ACCESSDENIED)
 
-2074::
+=== 2074
 Binary: 000:01000:00011010
 
     Area: 0 (ERRCODE_AREA_TOOLS)
     Class: 8 (ERRCODE_CLASS_PARAMETER)
     Code: 26 (ERRCODE_IO_INVALIDPARAMETER)
 
-3088::
+=== 3088
 Binary: 000:01100:00010000
 
     Area: 0 (ERRCODE_AREA_TOOLS)
     Class: 12 (ERRCODE_CLASS_WRITE)
     Code: 16 (ERRCODE_IO_CANTWRITE)
 
-19468::
+=== 19468 -- ERRCODE_SFX_DOCUMENTREADONLY
 Binary: 010:01100:00001100
 
     Area: 2 (ERRCODE_AREA_SFX)
