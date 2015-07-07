@@ -16,11 +16,11 @@ simply by copying the unoconv python script to your system.
 If you installed unoconv by hand, make sure you have the required LibreOffice
 or OpenOffice packages installed. A hard requirement is the UNO python bindings
 which are often inside a subpackage named +libreoffice-pyuno+ or
-+libobasis3.5-pyuno+.
++libobasis4.4-pyuno+.
 
 Various sub-packages are needed for specific import or export filters, e.g.
 XML-based filters require the xsltfilter subpackage,
-e.g. +libobasis3.5-xsltfilter+.
+e.g. +libobasis4.4-xsltfilter+.
 
 IMPORTANT: Neglecting these requirements will cause unoconv to fail with
 unhelpful and confusing error messages.
@@ -74,11 +74,11 @@ one that ships with LibreOffice).
 You can influence the automatic detection by setting the +UNO_PATH+ environment
 variable to point to an alternative LibreOffice installation, e.g.:
 
-    UNO_PATH=/opt/libreoffice3.5 unoconv -f pdf some-file.odt
+    UNO_PATH=/opt/libreoffice4.4 unoconv -f pdf some-file.odt
 
 But you can also force another python by using it to execute unoconv, e.g.:
 
-    /opt/libreoffice3.5/program/python.bin unoconv -f pdf some-file.odt
+    /opt/libreoffice4.4/program/python.bin unoconv -f pdf some-file.odt
 
 or on MacOS X:
 
@@ -86,10 +86,11 @@ or on MacOS X:
 
 or on Windows:
 
-    C:\Program Files (x86)\LibreOffice 3.5\program\python.exe unoconv -f pdf some-file.odt
+    C:\Program Files (x86)\LibreOffice 4.4\program\python.exe unoconv -f pdf some-file.odt
 
-NOTE: If you plan to use unoconv extensively (or in an automated fashion) it
-is more efficient to use the correct python interpreter directly.
+TIP: If you plan to use unoconv extensively (or in an automated fashion) it
+is more efficient to use the correct python interpreter directly. Or event
+put it directly in the Shebang (the first line) of the unoconv script !
 
 
 == Using unoconv with no X display
@@ -115,14 +116,30 @@ No version of OpenOffice for MacOS X (3.4 is the current version) works because
 the necessary internal files are not included inside the application.
 
 
-== Problems running unoconv from Apache/PHP
+== Problems running unoconv from Nginx/Apache/PHP
 Some people have had difficulties using unoconv through webservices. Here
-is a list of probable causes:
+is a list of probable causes and recommendations:
 
- - X display issues (may require the headless subpackage)
- - Permission issues (unable to run or connect to LibreOffice or read/write)
- - SELinux issues (SELinux prevents you from connecting to LibreOffice)
- - Nginx/PHP-FPM issues (You can execute unoconv in terminal, but nothing happens when you use a PHP script. You may need to declare your PATH. Read https://github.com/dagwieers/unoconv/issues/87#issuecomment-18800070) 
+ - Use the latest version of unoconv (or GitHub master branch)
+
+ - Use the most recent stable release of LibreOffice (less memory, more stable, fewer crashes)
+
+ - Use the native LibreOffice python binary to run unoconv
+
+ - Hardcode this native python path in the unoconv script shebang (or ensure PATH is set)
+
+ - Ensure that the user running unoconv has access to its HOME directory (ensure HOME is set)
+
+ - Test with SELinux in permissive mode
+
+It is recomended to open the unoconv script and modify the very first line to
+point directly to your installed LibreOffice python binary, so replace this:
+
+    #!/usr/bin/env python
+
+with something like this:
+
+    #!/opt/libreoffice4.4/program/python
 
 == Conversion problems
 If you encounter problems converting files, it often helps to try again. If
@@ -190,7 +207,7 @@ It is recommended to follow all of the below steps to pinpoint the problem:
    * do this with the python executable that ships with the LibreOffice
      package/installer
 
-        # /opt/libreoffice3.5/program/python.bin -c 'import uno, unohelper'
+        # /opt/libreoffice4.4/program/python.bin -c 'import uno, unohelper'
 
    * or alternatively, run the disribution python (with the distribution
      LibreOffice)
@@ -199,7 +216,7 @@ It is recommended to follow all of the below steps to pinpoint the problem:
 
  - try unoconv with a different python interpreter manually:
 
-    # /opt/libreoffice3.5/program/python.bin unoconv -f pdf test-file.odt
+    # /opt/libreoffice4.4/program/python.bin unoconv -f pdf test-file.odt
 
 If you tried all of the above, and the issue still remains, the issue might
 still be related to import/export filters, LibreOffice or unoconv, so please
