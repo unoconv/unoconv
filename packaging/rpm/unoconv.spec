@@ -1,7 +1,3 @@
-%{?el6:%define _with_libreoffice 1}
-%{?el5:%define _with_openoffice.org 1}
-%{?el4:%define _with_openoffice.org2 1}
-
 %define rpmrelease %nil
 
 Summary: Tool to convert between any document format supported by LibreOffice
@@ -18,9 +14,6 @@ BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root
 BuildArch: noarch
 BuildRequires: python >= 2.0
 Requires: python >= 2.0
-%{?_with_libreoffice:Requires:libreoffice.org-pyuno >= 1:3.4}
-%{?_with_openoffice.org:Requires:openoffice.org-pyuno >= 3.0}
-%{?_with_openoffice.org2:Requires:openoffice.org2-pyuno >= 2.0}
 
 %description
 unoconv converts between any document format that LibreOffice understands.
@@ -39,6 +32,7 @@ and many more...
 %setup
 
 %build
+%{__make} doc
 
 %install
 %{__rm} -rf %{buildroot}
@@ -49,7 +43,7 @@ and many more...
 
 %files
 %defattr(-, root, root, 0755)
-%doc AUTHORS ChangeLog COPYING README* WISHLIST doc/ tests/
+%doc AUTHORS ChangeLog COPYING README* doc/*.adoc doc/*.html
 %doc %{_mandir}/man1/unoconv.1*
 %{_bindir}/unoconv
 
