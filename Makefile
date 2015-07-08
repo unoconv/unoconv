@@ -7,7 +7,7 @@ DESTDIR =
 OFFICIAL =
 
 name = unoconv
-version := $(shell awk "/^VERSION *= */ { gsub(/^VERSION[ ]*=[ ']*|[ ']*$$/,\"\"); print}" $(name))
+version := $(shell awk "/^__version__ *= */ { gsub(/^__version__[ ]*=[ ']*|[ ']*$$/,\"\"); print}" $(name))
 
 ### Get the branch information from git
 git_date := $(shell git log -n 1 --format="%ai")
@@ -53,7 +53,7 @@ to_other = odt2rtf odt2txt odt2xhtml odt2xml odt2bib odt2docbook odt2lt odt2sdw 
 links = $(to_doc) $(to_html) $(to_odp) $(to_ods) $(to_odt) $(to_pdf) $(to_ppt) $(to_other)
 
 all: doc
-	@echo "VERSION = $(version)"
+	@echo "__version__ = $(version)"
 	@echo "There is nothing to be build. Try install !"
 
 help:

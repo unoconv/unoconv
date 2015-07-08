@@ -24,10 +24,7 @@ import subprocess
 import sys
 import time
 
-__version__ = "$Revision$"
-# $Source$
-
-VERSION = '0.6'
+__version__ = '0.7'
 
 doctypes = ('document', 'graphics', 'presentation', 'spreadsheet')
 
@@ -680,7 +677,7 @@ class Options:
             self.format = 'pdf'
 
     def version(self):
-        print('unoconv %s' % VERSION)
+        print('unoconv %s' % __version__)
         print('Written by Dag Wieers <dag@wieers.com>')
         print('Homepage at http://dag.wieers.com/home-made/unoconv/')
         print()
