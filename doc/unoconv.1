@@ -108,6 +108,21 @@ Default document type is \'pdf\'\&.
 .\}
 .RE
 .PP
+\-F, \-\-field
+.RS 4
+Replace user\-defined text field with value
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+eg\&. \-F Client_Name="Oracle"
+.fi
+.if n \{\
+.RE
+.\}
+.RE
+.PP
 \-i, \-\-import
 .RS 4
 Set specific import filters options (related to the used LibreOffice import filter based on the input filename)\&.
@@ -138,6 +153,11 @@ By default if no listener is running, unoconv will launch its own (temporary) li
 If the argument is a directory, put the converted documents in this directory\&. If multiple input files are provided, use it as a basename (and add output extension)\&. Otherwise use it as the output filename\&.
 .RE
 .PP
+\-\-password
+.RS 4
+Provide a password to decrypt the document
+.RE
+.PP
 \-\-pipe
 .RS 4
 Use a pipe as an alternative connection mechanism to talk to LibreOffice\&.
@@ -156,6 +176,11 @@ Default port is \'2002\'\&.
 .if n \{\
 .RE
 .\}
+.RE
+.PP
+\-\-preserve
+.RS 4
+Keep timestamp and permissions of the original document
 .RE
 .PP
 \-s, \-\-server
@@ -177,6 +202,11 @@ Default server is \'localhost\'\&.
 .RS 4
 List the possible output formats to be used with
 \-f\&.
+.RE
+.PP
+\-\-stdin
+.RS 4
+Read input file from stdin (filenames are ignored if provided)
 .RE
 .PP
 \-\-stdout
