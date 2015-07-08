@@ -128,7 +128,7 @@ is a list of probable causes and recommendations:
 
  - Hardcode this native python path in the unoconv script shebang (or ensure PATH is set)
 
- - Ensure that the user running unoconv has access to its HOME directory (ensure HOME is set)
+ - Ensure that the user running unoconv has write access to its HOME directory (ensure HOME is set)
 
  - Test with SELinux in permissive mode
 
