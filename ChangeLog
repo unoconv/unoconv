@@ -1,5 +1,22 @@
 * 0.7 - released 2015-07-09
-- 
+- Ported to Python 3 (Riccardo Magliocchetti)
+- Update Indexes (eg. TOC) during conversion (Peter Demin)
+- Added XLSX support (Josias Montag)
+- Fix output to non-existing directory
+- Ensure that LibreOfficeDev release are using new long options (Chia-liang Kao)
+- Set output format based on output filename extension (Patrick McAndrew)
+- Accept 'office' as binary on MacOSX (Andreas Jung)
+- Added Microsoft WPS import filter (Josias Montag)
+- Fix --stdout output on Python 3 (Caolán McNamara)
+- Added -F/--field option to update user fields during conversion (Raphaël Pinson)
+- Added OpenOffice search path on MacOSX (Vittal Aithal)
+- Cycle through all images references before conversion
+- Added --preserve option to preserve timestamp and permissions (Vincent Bernat)
+- Added --stdin option to read from standard input
+- Accept remote URLs as input filename
+- Fix exit code 81 and recover from initial failure (Daniel Vandersluis)
+- Improve documentation related to error codes and using unoconv with Nginx/Apache/PHP
+
 
 * 0.6 - released 2012-09-10
 - Implement debugging output (-vvv)
