@@ -54,7 +54,7 @@ connections or even for remote connections.
     Default document type is 'pdf'.
 
 -F, --field::
-    Replace user-defined text field with value
+    Add or replace user-defined text field with value
 +
     eg. -F Client_Name="Oracle"
 
@@ -66,6 +66,11 @@ connections or even for remote connections.
 
 -l, --listener::
     Start unoconv as listener for unoconv clients to connect to.
+
+-M, --meta::
+    Add or replace document metadata with value
++
+    eg. -M Author="Dag Wieers"
 
 -n, --no-launch::
     By default if no listener is running, unoconv will launch its own

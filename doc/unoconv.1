@@ -110,7 +110,7 @@ Default document type is \'pdf\'\&.
 .PP
 \-F, \-\-field
 .RS 4
-Replace user\-defined text field with value
+Add or replace user\-defined text field with value
 .sp
 .if n \{\
 .RS 4
@@ -141,6 +141,21 @@ See the *IMPORT FILTERS* section\&.
 \-l, \-\-listener
 .RS 4
 Start unoconv as listener for unoconv clients to connect to\&.
+.RE
+.PP
+\-M, \-\-meta
+.RS 4
+Add or replace document metadata with value
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+eg\&. \-M Author="Dag Wieers"
+.fi
+.if n \{\
+.RE
+.\}
 .RE
 .PP
 \-n, \-\-no\-launch

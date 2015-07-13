@@ -517,6 +517,7 @@ class Options:
         self.importfilter = []
         self.importfilteroptions = ""
         self.listener = False
+        self.metadata = {}
         self.nolaunch = False
         self.output = None
         self.password = None
@@ -533,9 +534,9 @@ class Options:
 
         ### Get options from the commandline
         try:
-            opts, args = getopt.getopt (args, 'c:Dd:e:F:f:hi:Llo:np:s:T:t:vV',
+            opts, args = getopt.getopt (args, 'c:Dd:e:F:f:hi:LlM:no:p:s:T:t:vV',
                 ['connection=', 'debug', 'doctype=', 'export=', 'field=', 'format=',
-                 'help', 'import=', 'listener', 'no-launch', 'output=',
+                 'help', 'import=', 'listener', 'meta=', 'no-launch', 'output=',
                  'outputpath', 'password=', 'pipe=', 'port=', 'preserve',
                  'server=', 'timeout=', 'show', 'stdin', 'stdout', 'template',
                  'verbose', 'version'] )
@@ -574,7 +575,7 @@ class Options:
                     print('Warning: Option %s cannot be parsed, ignoring.' % arg, file=sys.stderr)
             elif opt in ['-F', '--field']:
                 l = arg.split('=')
-                self.fields[l[0]] = l[1]
+                self.fields[l[0]] = '='.join(l[1:])
             elif opt in ['-f', '--format']:
                 self.format = arg
             elif opt in ['-i', '--import']:
@@ -596,6 +597,9 @@ class Options:
                     print('Warning: Option %s cannot be parsed, ignoring.' % arg, file=sys.stderr)
             elif opt in ['-l', '--listener']:
                 self.listener = True
+            elif opt in ['-M', '--meta']:
+                l = arg.split('=')
+                self.metadata[l[0]] = '='.join(l[1:])
             elif opt in ['-n', '--no-launch']:
                 self.nolaunch = True
             elif opt in ['-o', '--output']:
@@ -837,9 +841,9 @@ class Convertor:
         ### No format found, throw error
         if not outputfmt:
             if doctype:
-                print('unoconv: format [%s/%s] is not known to unoconv.' % (op.doctype, op.format), file=sys.stderr)
+                error('unoconv: format [%s/%s] is not known to unoconv.' % (op.doctype, op.format), file=sys.stderr)
             else:
-                print('unoconv: format [%s] is not known to unoconv.' % op.format, file=sys.stderr)
+                error('unoconv: format [%s] is not known to unoconv.' % op.format, file=sys.stderr)
             die(1)
 
         return outputfmt
@@ -940,15 +944,29 @@ class Convertor:
                 # the document doesn't implement the XLinkUpdate interface
                 pass
 
-            ### Replace variables
+            ### Add/Replace variables
             phase = "replace-fields"
             for f in op.fields:
               try:
                 field = document.TextFieldMasters.getByName("com.sun.star.text.fieldmaster.SetExpression.%s" % f)
                 field.DependentTextFields[0].setPropertyValue('Content', op.fields[f])
-              except UnoException:
-                print("unoconv: failed to replace variable '%s' with value '%s' in the document." % (f, op.fields[f]))
+              except UnoException as e:
+                error("unoconv: failed to replace variable '%s' with value '%s' in the document." % (f, op.fields[f]))
                 pass
+
+            ### Add/Replace metadata
+            phase = "replace-metadata"
+            props = document.getDocumentProperties()
+            user_props = props.getUserDefinedProperties()
+            for prop, value in op.metadata.items():
+                for container in ( props, user_props ):
+                    curr = getattr(container, prop, None)
+                    if curr is not None:
+                        setattr(container, prop, value)
+                        break
+                else:
+                    user_props.addProperty(prop, 0, '')
+                    user_props.setPropertyValue(prop, value)
 
             ### Update document indexes
             phase = "update-indexes"

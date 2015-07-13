@@ -1,3 +1,6 @@
+* 0.8 - unreleased
+- Add option -M/--meta to add or update document metadata during conversion
+
 * 0.7 - released 2015-07-09
 - Ported to Python 3 (Riccardo Magliocchetti)
 - Update Indexes (eg. TOC) during conversion (Peter Demin)
@@ -16,7 +19,6 @@
 - Accept remote URLs as input filename
 - Fix exit code 81 and recover from initial failure (Daniel Vandersluis)
 - Improve documentation related to error codes and using unoconv with Nginx/Apache/PHP
-
 
 * 0.6 - released 2012-09-10
 - Implement debugging output (-vvv)
