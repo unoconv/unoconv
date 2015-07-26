@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 ### This program is free software; you can redistribute it and/or modify
 ### it under the terms of the GNU General Public License as published by
@@ -23,15 +23,37 @@ import os
 import subprocess
 import sys
 import time
+import re
 
 __version__ = '0.7'
 
 doctypes = ('document', 'graphics', 'presentation', 'spreadsheet')
 
-global convertor, office, ooproc, product
+global convertor, office, ooproc, product, soughtVersion
 ooproc = None
 uno = unohelper = None
 exitcode = 0
+soughtVersion = ''
+
+def parseEarlyOptions(args):
+        global soughtVersion
+    
+        try:
+            opts, args = getopt.getopt (args, 'c:Dd:e:F:f:hi:LlM:no:p:s:T:t:vV',
+                ['connection=', 'debug', 'doctype=', 'export=', 'field=', 'format=',
+                 'help', 'import=', 'listener', 'meta=', 'no-launch', 'output=', 'office-version=',
+                 'outputpath', 'password=', 'pipe=', 'port=', 'preserve',
+                 'server=', 'timeout=', 'show', 'stdin', 'stdout', 'template',
+                 'verbose', 'version'] )
+        except getopt.error as exc:
+            print('unoconv: %s, try unoconv -h for a list of all the options' % str(exc))
+            sys.exit(255)
+
+        for opt, arg in opts:
+            print("opt:", opt)
+            if opt in ['--office-version']:
+                soughtVersion = arg
+
 
 class Office:
     def __init__(self, basepath, urepath, unopath, pyuno, binary, python, pythonhome):
@@ -67,6 +89,7 @@ def realpath(*args):
 def find_offices():
     ret = []
     extrapaths = []
+    global soughtVersion
 
     ### Try using UNO_PATH first (in many incarnations, we'll see what sticks)
     if 'UNO_PATH' in os.environ:
@@ -147,8 +170,14 @@ def find_offices():
                     unopath = realpath(basepath, basis, 'program')
                     officebinary = realpath(unopath, bin)
                     info(3, "Found %s in %s" % (bin, unopath))
-                    # Break the inner loop...
-                    break
+                    # Maybe break the inner loop...
+                    # which means we have succeeded
+                    if soughtVersion == "":
+                        break
+                    ver = subprocess.check_output([officebinary, "--version"], stderr=subprocess.STDOUT )
+                    ver = ver.decode()
+                    if re.search( soughtVersion, ver ):
+                        break
             # Continue if the inner loop wasn't broken.
             else:
                 continue
@@ -195,6 +224,7 @@ def find_offices():
             info(3, "Considering %s" % basepath)
             ret.append(Office(basepath, urepath, unopath, officelibrary, officebinary,
                               sys.executable, None))
+       
     return ret
 
 def office_environ(office):
@@ -536,7 +566,7 @@ class Options:
         try:
             opts, args = getopt.getopt (args, 'c:Dd:e:F:f:hi:LlM:no:p:s:T:t:vV',
                 ['connection=', 'debug', 'doctype=', 'export=', 'field=', 'format=',
-                 'help', 'import=', 'listener', 'meta=', 'no-launch', 'output=',
+                 'help', 'import=', 'listener', 'meta=', 'no-launch', 'output=',  'office-version=',
                  'outputpath', 'password=', 'pipe=', 'port=', 'preserve',
                  'server=', 'timeout=', 'show', 'stdin', 'stdout', 'template',
                  'verbose', 'version'] )
@@ -607,6 +637,8 @@ class Options:
             elif opt in ['--outputpath']:
                 print('Warning: This option is deprecated by --output.', file=sys.stderr)
                 self.output = arg
+            elif opt in ['--office-version']:
+                self.soughtVersion = arg
             elif opt in ['--password']:
                 self.password = arg
             elif opt in ['--pipe']:
@@ -712,6 +744,7 @@ unoconv options:
   -l, --listener           start a permanent listener to use by unoconv clients
   -n, --no-launch          fail if no listener is found (default: launch one)
   -o, --output=name        output basename, filename or directory
+      --office-version=regex Select a specific version of LibreOffice by mathcing regex against --version
       --pipe=name          alternative method of connection using a pipe
   -p, --port=port          specify the port (default: 2002)
                              to be used by client or listener
@@ -1227,6 +1260,8 @@ if __name__ == '__main__':
 
     info(3, 'sysname=%s, platform=%s, python=%s, python-version=%s' % (os.name, sys.platform, sys.executable, sys.version))
 
+    parseEarlyOptions(sys.argv[1:])
+               
     for of in find_offices():
         if of.python != sys.executable and not sys.executable.startswith(of.basepath):
             python_switch(of)
