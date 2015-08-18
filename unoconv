@@ -532,6 +532,10 @@ class Options:
         self.timeout = 6
         self.verbose = 0
 
+        self.paperformat = "A4"
+        self.paperorientation = "LANDSCAPE"
+        self.papersize = ""
+
         ### Get options from the commandline
         try:
             opts, args = getopt.getopt (args, 'c:Dd:e:F:f:hi:LlM:no:p:s:T:t:vV',
@@ -539,7 +543,7 @@ class Options:
                  'help', 'import=', 'listener', 'meta=', 'no-launch', 'output=',
                  'outputpath', 'password=', 'pipe=', 'port=', 'preserve',
                  'server=', 'timeout=', 'show', 'stdin', 'stdout', 'template',
-                 'verbose', 'version'] )
+                 'verbose', 'version', 'paper-format=', 'paper-orientation=', 'paper-size='] )
         except getopt.error as exc:
             print('unoconv: %s, try unoconv -h for a list of all the options' % str(exc))
             sys.exit(255)
@@ -632,6 +636,14 @@ class Options:
             elif opt in ['-V', '--version']:
                 self.version()
                 sys.exit(0)
+            elif opt in ['--paper-format']:
+                self.paperformat = arg
+            elif opt in ['--paper-orientation']:
+                self.paperorientation = arg
+            elif opt in ['--paper-size']:
+                size = map(lambda s: long(s), arg.split(','))
+                if (len(size) == 2):
+                    self.papersize = size
 
         ### Enable verbosity
         if self.verbose >= 2:
@@ -699,33 +711,39 @@ class Options:
         print('''Convert from and to any format supported by LibreOffice
 
 unoconv options:
-  -c, --connection=string  use a custom connection string
-  -d, --doctype=type       specify document type
-                             (document, graphics, presentation, spreadsheet)
-  -e, --export=name=value  set export filter options
-                             eg. -e PageRange=1-2
-  -f, --format=format      specify the output format
-  -F, --field=name=value   replace user-defined text field with value
-                             eg. -F Client_Name="Oracle"
-  -i, --import=string      set import filter option string
-                             eg. -i utf8
-  -l, --listener           start a permanent listener to use by unoconv clients
-  -n, --no-launch          fail if no listener is found (default: launch one)
-  -o, --output=name        output basename, filename or directory
-      --pipe=name          alternative method of connection using a pipe
-  -p, --port=port          specify the port (default: 2002)
-                             to be used by client or listener
-      --password=string    provide a password to decrypt the document
-      --preserve           keep timestamp and permissions of the original document
-  -s, --server=server      specify the server address (default: 127.0.0.1)
-                             to be used by client or listener
-      --show               list the available output formats
-      --stdin              read from stdin (filenames are ignored if provided)
-      --stdout             write output to stdout
-  -t, --template=file      import the styles from template (.ott)
-  -T, --timeout=secs       timeout after secs if connection to listener fails
-  -v, --verbose            be more and more verbose (-vvv for debugging)
-      --version            display version number of unoconv, OOo/LO and platform details
+  -c, --connection=string             use a custom connection string
+  -d, --doctype=type                  specify document type
+                                        (document, graphics, presentation, spreadsheet)
+  -e, --export=name=value             set export filter options
+                                        eg. -e PageRange=1-2
+  -f, --format=format                 specify the output format
+  -F, --field=name=value              replace user-defined text field with value
+                                        eg. -F Client_Name="Oracle"
+  -i, --import=string                 set import filter option string
+                                        eg. -i utf8
+  -l, --listener                      start a permanent listener to use by unoconv clients
+  -n, --no-launch                     fail if no listener is found (default: launch one)
+  -o, --output=name                   output basename, filename or directory
+      --pipe=name                     alternative method of connection using a pipe
+  -p, --port=port                     specify the port (default: 2002)
+                                        to be used by client or listener
+      --password=string               provide a password to decrypt the document
+      --preserve                      keep timestamp and permissions of the original document
+  -s, --server=server                 specify the server address (default: 127.0.0.1)
+                                        to be used by client or listener
+      --show                          list the available output formats
+      --stdin                         read from stdin (filenames are ignored if provided)
+      --stdout                        write output to stdout
+  -t, --template=file                 import the styles from template (.ott)
+  -T, --timeout=secs                  timeout after secs if connection to listener fails
+  -v, --verbose                       be more and more verbose (-vvv for debugging)
+      --version                       display version number of unoconv, OOo/LO and platform details
+      --paper-orientation=orientation specify printer paper orientation
+                                        eg. --paper-orientation=LANDSCAPE
+      --paper-format=format           specify printer paper format
+                                        eg. --paper-format=A3
+      --paper-size=size               specify printer paper size, paper format should set to USER, size=width,height
+                                        eg. --paper-size=130,200 means width=130, height=200
 ''', file=sys.stderr)
 
 class Convertor:
@@ -1014,6 +1032,18 @@ class Convertor:
 
                 elif outputfmt.filter == 'Text - txt - csv (StarCalc)':
                     outputprops += UnoProps(FilterOptions="44,34,UTF8")
+
+            ### Set printer options
+            printer = document.getPrinter()
+            for i in range(len(printer)):
+                if (printer[i].Name == 'PaperOrientation'):
+                    printer[i].Value = uno.Enum('com.sun.star.view.PaperOrientation', op.paperorientation)
+                elif (printer[i].Name == 'PaperFormat'):
+                    printer[i].Value = uno.Enum('com.sun.star.view.PaperFormat', op.paperformat)
+                elif (printer[i].Name == 'PaperSize' and len(op.papersize) == 2):
+                    printer[i].Value.Width = op.papersize[0]
+                    printer[i].Value.Height = op.papersize[1]
+            document.setPrinter(printer)
 
             ### Cannot use UnoProps for FilterData property
             if op.exportfilter:
