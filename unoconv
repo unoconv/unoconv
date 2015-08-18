@@ -1219,6 +1219,19 @@ def die(ret, msg=None):
             info(3, 'Waiting for %s with pid %s to disappear.' % (ooproc.pid, product.ooName))
             ooproc.wait()
 
+        ### force remove if existed
+        if ooproc.poll() == None:
+            info(1, '%s instance still running, please investigate...' % product.ooName)
+            ooproc.wait()
+            info(2, '%s instance unsuccessfully terminated, sending KILL signal.' % product.ooName)
+            try:
+                os.kill(ooproc.pid, 9)
+            except AttributeError:
+                os.kill(ooproc.pid, 9)
+            info(3, 'Waiting for %s with pid %s to disappear.' % (ooproc.pid, product.ooName))
+            ooproc.wait()
+
+
     # allow Python GC to garbage collect pyuno object *before* exit call
     # which avoids random segmentation faults --vpa
     convertor = None
