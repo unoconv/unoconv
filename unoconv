@@ -536,6 +536,9 @@ class Options:
         self.paperorientation = "PORTRAIT"
         self.papersize = ""
 
+        self.splitspreadsheet = False
+        self.spreadsheetidx = None
+
         ### Get options from the commandline
         try:
             opts, args = getopt.getopt (args, 'c:Dd:e:F:f:hi:LlM:no:p:s:T:t:P:vV',
@@ -543,7 +546,8 @@ class Options:
                  'help', 'import=', 'listener', 'meta=', 'no-launch', 'output=',
                  'outputpath', 'password=', 'pipe=', 'port=', 'preserve',
                  'server=', 'timeout=', 'show', 'stdin', 'stdout', 'template', 'printer=',
-                 'verbose', 'version'] )
+                 'verbose', 'version',
+                 'split-spreadsheet', 'spreadsheet-idx='] )
         except getopt.error as exc:
             print('unoconv: %s, try unoconv -h for a list of all the options' % str(exc))
             sys.exit(255)
@@ -647,6 +651,10 @@ class Options:
                     size =  list(map(lambda s: intFunc(s), optValue.split('x')))
                     if (2 == len(size)):
                         self.papersize = size
+            elif opt in ['--split-spreadsheet']:
+                self.splitspreadsheet = True
+            elif opt in ['--spreadsheet-idx']:
+                self.spreadsheetidx = int(arg)
 
         ### Enable verbosity
         if self.verbose >= 2:
@@ -748,6 +756,8 @@ unoconv options:
                                           eg. -P PaperOrientation=landscape
                                         PapserSize: specify printer paper size, paper format should set to USER, size=widthxheight
                                           eg. -P PaperSize=130x200 means width=130, height=200
+      --split-spreadsheet             split worksheets in spreadsheet
+      --spreadsheet-idx=idx           specify spreadsheet idx
 ''', file=sys.stderr)
 
 class Convertor:
@@ -771,6 +781,9 @@ class Convertor:
         unosvcmgr = unocontext.ServiceManager
         self.desktop = unosvcmgr.createInstanceWithContext("com.sun.star.frame.Desktop", unocontext)
         self.cwd = unohelper.systemPathToFileUrl( os.getcwd() )
+
+        ### Note current spreadsheet idx
+        self.spreadsheet = None
 
         ### List all filters
 #        self.filters = unosvcmgr.createInstanceWithContext( "com.sun.star.document.FilterFactory", unocontext)
@@ -928,6 +941,36 @@ class Convertor:
             if not document:
                 raise UnoException("The document '%s' could not be opened." % inputurl, None)
 
+            ### SpreadSheet options
+            if hasattr(document, 'getSheets'):
+                controller = document.getCurrentController()
+                sheets = document.getSheets()
+                if op.spreadsheetidx != None:
+                    sheet = sheets.getByIndex(op.spreadsheetidx)
+                    for name in sheets.getElementNames():
+                        if name == sheet.getName():
+                            continue
+                        sheets.removeByName(name)
+                elif op.splitspreadsheet:
+                    if self.spreadsheet == None:
+                        #print('found %d sheets' % sheets.getCount())
+                        for i in range(0, sheets.getCount()):
+                            self.spreadsheet = i
+                            self.convert(inputfn)
+                        phase = "dispose"
+                        document.dispose()
+                        document.close(True)
+                        if not op.stdout and op.preserve:
+                            self.preserve(inputfn, outputfn)
+                        return
+                    else:
+                        sheet = sheets.getByIndex(self.spreadsheet)
+                        for name in sheets.getElementNames():
+                            if name == sheet.getName():
+                                continue
+                            sheets.removeByName(name)
+
+
             ### Import style template
             phase = "import-style"
             if op.template:
@@ -1075,6 +1118,8 @@ class Convertor:
                     outputfn = realpath(inbase + os.extsep + outputfmt.extension)
 
                 outputurl = unohelper.absolutize( self.cwd, unohelper.systemPathToFileUrl(outputfn) )
+                if self.spreadsheet != None:
+                    outputurl = outputurl.replace('.', '_' + str(self.spreadsheet) + '.')
 
             info(1, "Output file: %s" % outputurl)
 
