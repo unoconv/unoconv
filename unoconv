@@ -23,6 +23,7 @@ import os
 import subprocess
 import sys
 import time
+import signal
 
 __version__ = '0.7'
 
@@ -1283,10 +1284,15 @@ def die(ret, msg=None):
 
     sys.exit(ret)
 
+def term_signal_handler(signal, frame):
+    raise KeyboardInterrupt
+
 def main():
     global convertor, exitcode
     convertor = None
 
+    signal.signal(signal.SIGINT, term_signal_handler)
+    signal.signal(signal.SIGTERM, term_signal_handler)
     try:
         if op.listener:
             listener = Listener()
