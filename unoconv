@@ -533,7 +533,7 @@ class Options:
         self.verbose = 0
 
         self.paperformat = "A4"
-        self.paperorientation = "LANDSCAPE"
+        self.paperorientation = "PORTRAIT"
         self.papersize = ""
 
         ### Get options from the commandline
