@@ -538,12 +538,12 @@ class Options:
 
         ### Get options from the commandline
         try:
-            opts, args = getopt.getopt (args, 'c:Dd:e:F:f:hi:LlM:no:p:s:T:t:vV',
+            opts, args = getopt.getopt (args, 'c:Dd:e:F:f:hi:LlM:no:p:s:T:t:P:vV',
                 ['connection=', 'debug', 'doctype=', 'export=', 'field=', 'format=',
                  'help', 'import=', 'listener', 'meta=', 'no-launch', 'output=',
                  'outputpath', 'password=', 'pipe=', 'port=', 'preserve',
-                 'server=', 'timeout=', 'show', 'stdin', 'stdout', 'template',
-                 'verbose', 'version', 'paper-format=', 'paper-orientation=', 'paper-size='] )
+                 'server=', 'timeout=', 'show', 'stdin', 'stdout', 'template', 'printer=',
+                 'verbose', 'version'] )
         except getopt.error as exc:
             print('unoconv: %s, try unoconv -h for a list of all the options' % str(exc))
             sys.exit(255)
@@ -636,14 +636,17 @@ class Options:
             elif opt in ['-V', '--version']:
                 self.version()
                 sys.exit(0)
-            elif opt in ['--paper-format']:
-                self.paperformat = arg
-            elif opt in ['--paper-orientation']:
-                self.paperorientation = arg
-            elif opt in ['--paper-size']:
-                size = map(lambda s: long(s), arg.split(','))
-                if (len(size) == 2):
-                    self.papersize = size
+            elif opt in ['-P', '--printer']:
+                optKey, optValue = arg.split('=')
+                if optKey in ['PaperFormat']:
+                    self.paperformat = optValue
+                elif optKey in ['PaperOrientation']:
+                    self.paperorientation = optValue.upper()
+                elif optKey in ['PaperSize']:
+                    intFunc = int if sys.version_info.major > 2 else long
+                    size =  list(map(lambda s: intFunc(s), optValue.split('x')))
+                    if (2 == len(size)):
+                        self.papersize = size
 
         ### Enable verbosity
         if self.verbose >= 2:
@@ -738,12 +741,13 @@ unoconv options:
   -T, --timeout=secs                  timeout after secs if connection to listener fails
   -v, --verbose                       be more and more verbose (-vvv for debugging)
       --version                       display version number of unoconv, OOo/LO and platform details
-      --paper-orientation=orientation specify printer paper orientation
-                                        eg. --paper-orientation=LANDSCAPE
-      --paper-format=format           specify printer paper format
-                                        eg. --paper-format=A3
-      --paper-size=size               specify printer paper size, paper format should set to USER, size=width,height
-                                        eg. --paper-size=130,200 means width=130, height=200
+  -P, --printer                       printer options
+                                        PaperFormat: specify printer paper format
+                                          eg. -P PaperFormat=A3
+                                        PaperOrientation: specify printer paper orientation
+                                          eg. -P PaperOrientation=landscape
+                                        PapserSize: specify printer paper size, paper format should set to USER, size=widthxheight
+                                          eg. -P PaperSize=130x200 means width=130, height=200
 ''', file=sys.stderr)
 
 class Convertor:
