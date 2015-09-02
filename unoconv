@@ -538,6 +538,7 @@ class Options:
         self.papersize = ""
 
         self.splitspreadsheet = False
+        self.splitspreadsheetqueue = None
         self.spreadsheetidx = None
 
         ### Get options from the commandline
@@ -783,9 +784,6 @@ class Convertor:
         self.desktop = unosvcmgr.createInstanceWithContext("com.sun.star.frame.Desktop", unocontext)
         self.cwd = unohelper.systemPathToFileUrl( os.getcwd() )
 
-        ### Note current spreadsheet idx
-        self.spreadsheet = None
-
         ### List all filters
 #        self.filters = unosvcmgr.createInstanceWithContext( "com.sun.star.document.FilterFactory", unocontext)
 #        for filter in self.filters.getElementNames():
@@ -944,34 +942,50 @@ class Convertor:
 
             ### SpreadSheet options
             if hasattr(document, 'getSheets'):
-                controller = document.getCurrentController()
                 sheets = document.getSheets()
+                #sys.exit(0)
                 if op.spreadsheetidx != None:
                     sheet = sheets.getByIndex(op.spreadsheetidx)
+                    document2 = self.desktop.loadComponentFromURL("private:factory/scalc", "_blank", 0, ())
+                    sheets2 = document2.getSheets()
+                    sheets2.importSheet(document, sheet.getName(), 0)
+                    document.dispose()
+                    document.close(True)
+                    document = document2
+                    '''
+                    print('names', sheets.getElementNames())
+                    print('target: %s' % sheet.getName())
                     for name in sheets.getElementNames():
                         if name == sheet.getName():
                             continue
+                        print('remove: %s' % name)
                         sheets.removeByName(name)
+                        print('remove: %s done' % name)
+                    '''
                 elif op.splitspreadsheet:
-                    if self.spreadsheet == None:
-                        #print('found %d sheets' % sheets.getCount())
-                        for i in range(0, sheets.getCount()):
-                            self.spreadsheet = i
-                            self.convert(inputfn)
-                        phase = "dispose"
+                    if None == op.splitspreadsheetqueue:
+                        op.splitspreadsheetqueue = [i for i in range(0, sheets.getCount())]
                         document.dispose()
                         document.close(True)
-                        if not op.stdout and op.preserve:
-                            self.preserve(inputfn, outputfn)
                         return
                     else:
-                        sheet = sheets.getByIndex(self.spreadsheet)
+                        sheet = sheets.getByIndex(op.splitspreadsheetqueue[0])
+                        sheet = sheets.getByIndex(op.splitspreadsheetqueue[0])
+                        document2 = self.desktop.loadComponentFromURL("private:factory/scalc", "_blank", 0, ())
+                        sheets2 = document2.getSheets()
+                        sheets2.importSheet(document, sheet.getName(), 0)
+                        document.dispose()
+                        document.close(True)
+                        document = document2
+                        '''
+                        print('names', sheets.getElementNames())
+                        print('target: %d %s' % (op.splitspreadsheetqueue[0], sheet.getName()))
                         for name in sheets.getElementNames():
                             if name == sheet.getName():
                                 continue
+                            print('remove: %s' % name)
                             sheets.removeByName(name)
-
-
+                        '''
             ### Import style template
             phase = "import-style"
             if op.template:
@@ -1119,14 +1133,15 @@ class Convertor:
                     outputfn = realpath(inbase + os.extsep + outputfmt.extension)
 
                 outputurl = unohelper.absolutize( self.cwd, unohelper.systemPathToFileUrl(outputfn) )
-                if self.spreadsheet != None:
-                    outputurl = outputurl.replace('.', '_' + str(self.spreadsheet) + '.')
+                if op.splitspreadsheet and op.splitspreadsheetqueue != None:
+                    outputurl = outputurl.replace('.', '_' + str(op.splitspreadsheetqueue[0]) + '.')
 
             info(1, "Output file: %s" % outputurl)
 
             try:
                 document.storeToURL(outputurl, tuple(outputprops) )
             except IOException as e:
+                print(e)
                 raise UnoException("Unable to store document to %s (ErrCode %d)\n\nProperties: %s" % (outputurl, e.ErrCode, outputprops), None)
 
             phase = "dispose"
@@ -1200,31 +1215,11 @@ class Listener:
         else:
             info(1, "Existing %s listener found, nothing to do." % product.ooName)
 
-def error(msg):
-    "Output error message"
-    print(msg, file=sys.stderr)
-
-def info(level, msg):
-    "Output info message"
-    if 'op' not in globals():
-        pass
-    elif op.verbose >= 3 and level >= 3:
-        print("DEBUG:", msg, file=sys.stderr)
-    elif not op.stdout and level <= op.verbose:
-        print(msg, file=sys.stdout)
-    elif level <= op.verbose:
-        print(msg, file=sys.stderr)
-
-def die(ret, msg=None):
-    "Print optional error and exit with errorcode"
-    global convertor, ooproc, office
-
-    if msg:
-        error('Error: %s' % msg)
-
+def clean_convertor():
+    "clean convertor"
+    global convertor, ooproc
     ### Did we start our own listener instance ?
     if not op.listener and ooproc and convertor:
-
         ### If there is a GUI now attached to the instance, disable listener
         if convertor.desktop.getCurrentFrame():
             info(2, 'Trying to stop %s GUI listener.' % product.ooName)
@@ -1281,6 +1276,29 @@ def die(ret, msg=None):
     # allow Python GC to garbage collect pyuno object *before* exit call
     # which avoids random segmentation faults --vpa
     convertor = None
+    ooproc = None
+
+def error(msg):
+    "Output error message"
+    print(msg, file=sys.stderr)
+
+def info(level, msg):
+    "Output info message"
+    if 'op' not in globals():
+        pass
+    elif op.verbose >= 3 and level >= 3:
+        print("DEBUG:", msg, file=sys.stderr)
+    elif not op.stdout and level <= op.verbose:
+        print(msg, file=sys.stdout)
+    elif level <= op.verbose:
+        print(msg, file=sys.stderr)
+
+def die(ret, msg=None):
+    "Print optional error and exit with errorcode"
+    if msg:
+        error('Error: %s' % msg)
+
+    clean_convertor()
 
     sys.exit(ret)
 
@@ -1302,9 +1320,17 @@ def main():
             convertor = Convertor()
             convertor.convert(inputfn)
         elif op.filenames:
-            convertor = Convertor()
             for inputfn in op.filenames:
+                convertor = Convertor()
                 convertor.convert(inputfn)
+                clean_convertor()
+                while None != op.splitspreadsheetqueue:
+                    convertor = Convertor()
+                    convertor.convert(inputfn)
+                    clean_convertor()
+                    op.splitspreadsheetqueue = op.splitspreadsheetqueue[1:]
+                    if (len(op.splitspreadsheetqueue) == 0):
+                        op.splitspreadsheetqueue = None
 
     except NoConnectException as e:
         error("unoconv: could not find an existing connection to LibreOffice at %s:%s." % (op.server, op.port))
