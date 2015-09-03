@@ -540,6 +540,7 @@ class Options:
         self.splitspreadsheet = False
         self.splitspreadsheetqueue = None
         self.spreadsheetidx = None
+        self.spreadsheetfitpage = False
 
         ### Get options from the commandline
         try:
@@ -549,7 +550,7 @@ class Options:
                  'outputpath', 'password=', 'pipe=', 'port=', 'preserve',
                  'server=', 'timeout=', 'show', 'stdin', 'stdout', 'template', 'printer=',
                  'verbose', 'version',
-                 'split-spreadsheet', 'spreadsheet-idx='] )
+                 'spreadsheet-split', 'spreadsheet-idx=', 'spreadsheet-fitpage'] )
         except getopt.error as exc:
             print('unoconv: %s, try unoconv -h for a list of all the options' % str(exc))
             sys.exit(255)
@@ -653,8 +654,10 @@ class Options:
                     size =  list(map(lambda s: intFunc(s), optValue.split('x')))
                     if (2 == len(size)):
                         self.papersize = size
-            elif opt in ['--split-spreadsheet']:
+            elif opt in ['--spreadsheet-split']:
                 self.splitspreadsheet = True
+            elif opt in ['--spreadsheet-fitpage']:
+                self.spreadsheetfitpage = True
             elif opt in ['--spreadsheet-idx']:
                 self.spreadsheetidx = int(arg)
 
@@ -758,8 +761,9 @@ unoconv options:
                                           eg. -P PaperOrientation=landscape
                                         PapserSize: specify printer paper size, paper format should set to USER, size=widthxheight
                                           eg. -P PaperSize=130x200 means width=130, height=200
-      --split-spreadsheet             split worksheets in spreadsheet
+      --spreadsheet-split             split worksheets in spreadsheet
       --spreadsheet-idx=idx           specify spreadsheet idx
+      --spreadsheet-fitpage           worksheet fit page
 ''', file=sys.stderr)
 
 class Convertor:
@@ -941,51 +945,23 @@ class Convertor:
                 raise UnoException("The document '%s' could not be opened." % inputurl, None)
 
             ### SpreadSheet options
-            if hasattr(document, 'getSheets'):
+            if 'com.sun.star.sheet.SpreadsheetDocument' in document.getSupportedServiceNames():
                 sheets = document.getSheets()
-                #sys.exit(0)
+
                 if op.spreadsheetidx != None:
-                    sheet = sheets.getByIndex(op.spreadsheetidx)
-                    document2 = self.desktop.loadComponentFromURL("private:factory/scalc", "_blank", 0, ())
-                    sheets2 = document2.getSheets()
-                    sheets2.importSheet(document, sheet.getName(), 0)
-                    document.dispose()
-                    document.close(True)
-                    document = document2
-                    '''
-                    print('names', sheets.getElementNames())
-                    print('target: %s' % sheet.getName())
-                    for name in sheets.getElementNames():
-                        if name == sheet.getName():
-                            continue
-                        print('remove: %s' % name)
-                        sheets.removeByName(name)
-                        print('remove: %s done' % name)
-                    '''
+                    document = self.split_spreadsheet(document, op.spreadsheetidx)
+                    self.set_pagestyle(document, 'FooterIsOn', False)
+
                 elif op.splitspreadsheet:
                     if None == op.splitspreadsheetqueue:
                         op.splitspreadsheetqueue = [i for i in range(0, sheets.getCount())]
-                        document.dispose()
-                        document.close(True)
-                        return
-                    else:
-                        sheet = sheets.getByIndex(op.splitspreadsheetqueue[0])
-                        sheet = sheets.getByIndex(op.splitspreadsheetqueue[0])
-                        document2 = self.desktop.loadComponentFromURL("private:factory/scalc", "_blank", 0, ())
-                        sheets2 = document2.getSheets()
-                        sheets2.importSheet(document, sheet.getName(), 0)
-                        document.dispose()
-                        document.close(True)
-                        document = document2
-                        '''
-                        print('names', sheets.getElementNames())
-                        print('target: %d %s' % (op.splitspreadsheetqueue[0], sheet.getName()))
-                        for name in sheets.getElementNames():
-                            if name == sheet.getName():
-                                continue
-                            print('remove: %s' % name)
-                            sheets.removeByName(name)
-                        '''
+
+                    document = self.split_spreadsheet(document, op.splitspreadsheetqueue[0])
+                    self.set_pagestyle(document, 'FooterIsOn', False)
+
+                if op.spreadsheetfitpage:
+                    self.set_pagestyle(document, 'ScaleToPages', 1)
+
             ### Import style template
             phase = "import-style"
             if op.template:
@@ -1188,6 +1164,22 @@ class Convertor:
                 error("unoconv: UnoException during %s phase in %s" % (phase, repr(e.__class__)))
                 exitcode = 2
                 pass
+    def split_spreadsheet(self, document, idx):
+        sheets = document.getSheets()
+        sheet = sheets.getByIndex(idx)
+        document2 = self.desktop.loadComponentFromURL("private:factory/scalc", "_blank", 0, ())
+        sheets2 = document2.getSheets()
+        sheets2.importSheet(document, sheet.getName(), 0)
+        document.dispose()
+        document.close(True)
+        return document2
+
+    def set_pagestyle(self, document, key, value):
+        style = document.getStyleFamilies()
+        pageStyles = style.getByName('PageStyles')
+        for name in pageStyles.getElementNames():
+            pageStyle = pageStyles.getByName(name)
+            pageStyle.setPropertyValue(key, value)
 
 class Listener:
     def __init__(self):
@@ -1325,12 +1317,13 @@ def main():
                 convertor.convert(inputfn)
                 clean_convertor()
                 while None != op.splitspreadsheetqueue:
-                    convertor = Convertor()
-                    convertor.convert(inputfn)
-                    clean_convertor()
                     op.splitspreadsheetqueue = op.splitspreadsheetqueue[1:]
                     if (len(op.splitspreadsheetqueue) == 0):
                         op.splitspreadsheetqueue = None
+                        break
+                    convertor = Convertor()
+                    convertor.convert(inputfn)
+                    clean_convertor()
 
     except NoConnectException as e:
         error("unoconv: could not find an existing connection to LibreOffice at %s:%s." % (op.server, op.port))
