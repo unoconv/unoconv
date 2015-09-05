@@ -1,0 +1,20 @@
+language: python
+
+python:
+  - "3.4"
+
+env:
+  - VERSION=4.4.5
+  - VERSION=5.0.1
+
+before_install:
+  - pushd /tmp
+  - wget http://download.documentfoundation.org/libreoffice/stable/${VERSION}/deb/x86_64/LibreOffice_${VERSION}_Linux_x86-64_deb.tar.gz
+  - tar xvf LibreOffice_${VERSION}_Linux_x86-64_deb.tar.gz
+  - cd LibreOffice_${VERSION}.?_Linux_x86-64_deb/DEBS
+  - sudo dpkg -i *.deb
+  - popd
+
+script:
+  - cd tests
+  - make
