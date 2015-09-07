@@ -542,7 +542,7 @@ class Options:
         self.splitspreadsheet = False
         self.splitspreadsheetqueue = None
         self.spreadsheetidx = None
-        self.spreadsheetfitpage = False
+        self.spreadsheetfitpage = None
 
         ### Get options from the commandline
         try:
@@ -553,7 +553,7 @@ class Options:
                  'server=', 'timeout=', 'show', 'stdin', 'stdout', 'template', 'printer=',
                  'verbose', 'version',
                  'autoreset',
-                 'spreadsheet-split', 'spreadsheet-idx=', 'spreadsheet-fitpage'] )
+                 'spreadsheet-split', 'spreadsheet-idx=', 'spreadsheet-fitpage='] )
         except getopt.error as exc:
             print('unoconv: %s, try unoconv -h for a list of all the options' % str(exc))
             sys.exit(255)
@@ -662,7 +662,8 @@ class Options:
             elif opt in ['--spreadsheet-split']:
                 self.splitspreadsheet = True
             elif opt in ['--spreadsheet-fitpage']:
-                self.spreadsheetfitpage = True
+                if arg in ['x', 'y', 'all']:
+                    self.spreadsheetfitpage = arg
             elif opt in ['--spreadsheet-idx']:
                 self.spreadsheetidx = int(arg)
 
@@ -769,7 +770,8 @@ unoconv options:
       --autoreset                     reset libreoffice for each file
       --spreadsheet-split             split worksheets in spreadsheet
       --spreadsheet-idx=idx           specify spreadsheet idx
-      --spreadsheet-fitpage           worksheet fit page
+      --spreadsheet-fitpage=type      worksheet fit page (x, y, all)
+                                        eg. --spreadsheet-fitpage=all
 ''', file=sys.stderr)
 
 class Convertor:
@@ -965,8 +967,13 @@ class Convertor:
                     document = self.split_spreadsheet(document, op.splitspreadsheetqueue[0])
                     self.set_pagestyle(document, 'FooterIsOn', False)
 
-                if op.spreadsheetfitpage:
-                    self.set_pagestyle(document, 'ScaleToPages', 1)
+                if op.spreadsheetfitpage != None:
+                    if op.spreadsheetfitpage == 'x':
+                        self.set_pagestyle(document, 'ScaleToPagesX', 1)
+                    elif op.spreadsheetfitpage == 'y':
+                        self.set_pagestyle(document, 'ScaleToPagesY', 1)
+                    elif op.spreadsheetfitpage == 'all':
+                        self.set_pagestyle(document, 'ScaleToPages', 1)
 
             ### Import style template
             phase = "import-style"
