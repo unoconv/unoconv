@@ -532,9 +532,10 @@ class Options:
         self.timeout = 6
         self.verbose = 0
 
-        self.paperformat = "A4"
-        self.paperorientation = "PORTRAIT"
-        self.papersize = ""
+        self.setprinter = False
+        self.paperformat = None
+        self.paperorientation = None
+        self.papersize = None
 
         ### Get options from the commandline
         try:
@@ -640,13 +641,16 @@ class Options:
                 optKey, optValue = arg.split('=')
                 if optKey in ['PaperFormat']:
                     self.paperformat = optValue
+                    self.setprinter = True
                 elif optKey in ['PaperOrientation']:
                     self.paperorientation = optValue.upper()
+                    self.setprinter = True
                 elif optKey in ['PaperSize']:
                     intFunc = int if sys.version_info.major > 2 else long
                     size =  list(map(lambda s: intFunc(s), optValue.split('x')))
                     if (2 == len(size)):
                         self.papersize = size
+                        self.setprinter = True
 
         ### Enable verbosity
         if self.verbose >= 2:
@@ -1038,16 +1042,17 @@ class Convertor:
                     outputprops += UnoProps(FilterOptions="44,34,UTF8")
 
             ### Set printer options
-            printer = document.getPrinter()
-            for i in range(len(printer)):
-                if (printer[i].Name == 'PaperOrientation'):
-                    printer[i].Value = uno.Enum('com.sun.star.view.PaperOrientation', op.paperorientation)
-                elif (printer[i].Name == 'PaperFormat'):
-                    printer[i].Value = uno.Enum('com.sun.star.view.PaperFormat', op.paperformat)
-                elif (printer[i].Name == 'PaperSize' and len(op.papersize) == 2):
-                    printer[i].Value.Width = op.papersize[0]
-                    printer[i].Value.Height = op.papersize[1]
-            document.setPrinter(printer)
+            if op.setprinter:
+                printer = document.getPrinter()
+                for i in range(len(printer)):
+                    if printer[i].Name == 'PaperOrientation' and op.paperorientation != None:
+                        printer[i].Value = uno.Enum('com.sun.star.view.PaperOrientation', op.paperorientation)
+                    elif printer[i].Name == 'PaperFormat' and op.paperformat != None:
+                        printer[i].Value = uno.Enum('com.sun.star.view.PaperFormat', op.paperformat)
+                    elif (printer[i].Name == 'PaperSize' and op.papersize != None and len(op.papersize) == 2):
+                        printer[i].Value.Width = op.papersize[0]
+                        printer[i].Value.Height = op.papersize[1]
+                document.setPrinter(printer)
 
             ### Cannot use UnoProps for FilterData property
             if op.exportfilter:
