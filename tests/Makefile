@@ -1,9 +1,11 @@
 ### Please modify and send me improvements
 
-python=/opt/libreoffice4.4/program/python
+twodigitsversion=$(shell echo $$VERSION | cut -c 1-3)
+python=/opt/libreoffice$(twodigitsversion)/program/python
 unoconv=../unoconv
 
-all: clean doc6 doc95 doc docbook fodt html mediawiki ooxml pdf rtf sdw3 sdw4 sdw sxw text txt uot xhtml
+# failing filters doc6 doc95 sdw3 sdw4 sdw sxw
+all: clean doc docbook fodt html mediawiki ooxml pdf rtf text txt uot xhtml
 	@echo "== Tests finished."
 
 #xml: curriculum-vitae-dag-wieers.txt
@@ -16,7 +18,7 @@ all: clean doc6 doc95 doc docbook fodt html mediawiki ooxml pdf rtf sdw3 sdw4 sd
 %:
 #	-killall ooffice soffice.bin
 	@echo "- Convert document-example.odt to $@..."
-	-$(python) $(unoconv) -vvv -p 2002 -f $@ document-example.odt
+	$(python) $(unoconv) -vvv -p 2002 -f $@ document-example.odt
 	@echo
 #	@ps aux | grep office
 #	-unoconv -f $@ dag.gif
