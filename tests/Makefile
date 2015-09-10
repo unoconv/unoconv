@@ -1,7 +1,6 @@
 ### Please modify and send me improvements
 
-twodigitsversion=$(shell echo $$VERSION | cut -c 1-3)
-python=/opt/libreoffice$(twodigitsversion)/program/python
+python=/tmp/python
 unoconv=../unoconv
 
 # failing filters doc6 doc95 sdw3 sdw4 sdw sxw
