@@ -1,0 +1,36 @@
+os:
+  - linux
+  - osx
+
+env:
+  - VERSION=3.3.4.1
+  - VERSION=3.4.6.2
+  - VERSION=3.5.7.2
+  - VERSION=3.6.7.2
+  - VERSION=4.0.6.2
+  - VERSION=4.1.6.1
+  - VERSION=4.2.8.2
+  - VERSION=4.3.7.2
+  - VERSION=4.4.5
+  - VERSION=5.0.1
+
+matrix:
+  allow_failures:
+    - os: osx
+    - os: linux
+      env: VERSION=3.3.4.1
+  exclude:
+    - os: osx
+      env: VERSION=3.3.4.1
+    - os: osx
+      env: VERSION=3.4.6.2
+    - os: osx
+      env: VERSION=3.5.7.2
+
+before_install:
+  - sudo VERSION=$VERSION bash ci/linux.bash
+  - sudo VERSION=$VERSION bash ci/osx.bash
+
+script:
+  - cd tests
+  - make
