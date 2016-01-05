@@ -957,9 +957,9 @@ class Convertor:
             phase = "update-links"
             try:
                 document.updateLinks()
-                # Found that when converting HTML files with external images, OO would only load five or six of 
-                # the images in the file. In the resulting document, the rest of the images did not appear. Cycling 
-                # through all the image references in the document seems to force OO to actually load them. Found 
+                # Found that when converting HTML files with external images, OO would only load five or six of
+                # the images in the file. In the resulting document, the rest of the images did not appear. Cycling
+                # through all the image references in the document seems to force OO to actually load them. Found
                 # some helpful guidance in this thread:
                 # https://forum.openoffice.org/en/forum/viewtopic.php?f=30&t=23909
                 # Ideally we would like to have the option to embed the images into the document, but I have not been
@@ -1256,7 +1256,9 @@ def main():
             listener = Listener()
 
         if op.stdin:
-            inputfn = sys.stdin.read()
+        	### Read stdin buffer in Python 3 in order to correctly handle binary streams
+        	### ref: https://docs.python.org/3.1/library/sys.html#sys.stdin
+            inputfn = sys.stdin.buffer.read() if sys.version_info.major > 2 else sys.stdin.read()
             convertor = Convertor()
             convertor.convert(inputfn)
         elif op.filenames:
