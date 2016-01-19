@@ -12,12 +12,10 @@ if [[ "$VERSION" =~ ^3.6.* ]]; then
 elif [[ "$VERSION" =~ ^4.[0-1].* ]]; then
     urldir=https://downloadarchive.documentfoundation.org/libreoffice/old/$VERSION/mac/x86
     filename=LibreOffice_${VERSION}_MacOS_x86.dmg
-elif [[ "$VERSION" =~ ^4.[2-3].* ]]; then
+else
     urldir=https://downloadarchive.documentfoundation.org/libreoffice/old/$VERSION/mac/x86_64
     filename=LibreOffice_${VERSION}_MacOS_x86-64.dmg
 else
-    urldir=https://download.documentfoundation.org/libreoffice/stable/$VERSION/mac/x86_64
-    filename=LibreOffice_${VERSION}_MacOS_x86-64.dmg
 fi
 
 wget $urldir/$filename
