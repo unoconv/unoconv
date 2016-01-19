@@ -17,11 +17,8 @@ elif [[ "$VERSION" =~ ^3.[4-5].* ]]; then
 elif [[ "$VERSION" =~ ^3.* ]]; then
     urldir=https://downloadarchive.documentfoundation.org/libreoffice/old/$VERSION/deb/x86_64
     filename=LibO_${VERSION}_Linux_x86-64_install-deb_en-US
-elif [[ "$VERSION" =~ ^4.[0-3].* ]]; then
-    urldir=https://downloadarchive.documentfoundation.org/libreoffice/old/$VERSION/deb/x86_64
-    filename=LibreOffice_${VERSION}_Linux_x86-64_deb
 else
-    urldir=http://download.documentfoundation.org/libreoffice/stable/$VERSION/deb/x86_64/
+    urldir=https://downloadarchive.documentfoundation.org/libreoffice/old/$VERSION/deb/x86_64
     filename=LibreOffice_${VERSION}_Linux_x86-64_deb
 fi
 
