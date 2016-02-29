@@ -13,6 +13,7 @@ BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root
 
 BuildArch: noarch
 BuildRequires: python >= 2.0
+BuildRequires: asciidoc
 Requires: python >= 2.0
 
 %description
