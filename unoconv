@@ -1162,9 +1162,9 @@ class Listener:
                 info(1, "Existing %s listener found, nothing to do." % product.ooName)
                 return
             if product.ooName != "LibreOffice" or LooseVersion(product.ooSetupVersion) <= LooseVersion('3.3'):
-                office_process = subprocess.Popen([office.binary, "-headless", "-invisible", "-nocrashreport", "-nodefault", "-nologo", "-nofirststartwizard", "-norestore", "-accept=%s" % op.connection], env=os.environ)
+                cmd = [office.binary, "-headless", "-invisible", "-nocrashreport", "-nodefault", "-nologo", "-nofirststartwizard", "-norestore", "-accept=%s" % op.connection]
             else:
-                office_process = subprocess.Popen([office.binary, "--headless", "--invisible", "--nocrashreport", "--nodefault", "--nologo", "--nofirststartwizard", "--norestore", "--accept=%s" % op.connection], env=os.environ)
+                cmd = [office.binary, "--headless", "--invisible", "--nocrashreport", "--nodefault", "--nologo", "--nofirststartwizard", "--norestore", "--accept=%s" % op.connection]
 
             # The rationale for using subprocess.Popen is to be able to handle
             # a SIGTERM signal below and properly terminate the started office
@@ -1173,6 +1173,7 @@ class Listener:
             # via sending SIGTERM and sending SIGTERM to a running unoconv -l
             # without the handler below will not terminate the office process
             # together with it leaving the office process running.
+            office_process = subprocess.Popen(cmd, env=os.environ)
 
             def sigterm_handler(signum, frame):
                 office_process.terminate()
@@ -1180,7 +1181,11 @@ class Listener:
 
             signal.signal(signal.SIGTERM, sigterm_handler)
 
-            office_process.wait()
+            ret = office_process.wait()
+            if ret == 81:
+                info(1, "Restarting %s (first start - 81 exit code)" % product.ooName)
+                office_process = subprocess.Popen(cmd, env=os.environ)
+                office_process.wait()
         except Exception as e:
             error("Launch of %s failed.\n%s" % (office.binary, e))
         else:
