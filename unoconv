@@ -1186,10 +1186,10 @@ class Listener:
                 info(1, "Restarting %s (first start - 81 exit code)" % product.ooName)
                 office_process = subprocess.Popen(cmd, env=os.environ)
                 office_process.wait()
+            else:
+                raise Exception("%s crashed - exit code: %s" % (product.ooName, ret))
         except Exception as e:
             error("Launch of %s failed.\n%s" % (office.binary, e))
-        else:
-            info(1, "Existing %s listener found, nothing to do." % product.ooName)
 
 def error(msg):
     "Output error message"
