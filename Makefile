@@ -44,7 +44,7 @@ endif
 
 to_doc = odt2doc ooxml2doc
 to_html = odt2html
-to_odp = ppt2odp 
+to_odp = ppt2odp
 to_ods = xls2ods
 to_odt = doc2odt sdw2odt sxw2odt ooxml2odt
 to_pdf = doc2pdf odp2pdf ods2pdf odt2pdf ooxml2pdf
