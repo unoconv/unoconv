@@ -1271,7 +1271,12 @@ def main():
             listener = Listener()
 
         if op.stdin:
-            inputfn = sys.stdin.read()
+        	### Read stdin buffer in Python 3 in order to correctly handle binary streams
+        	### ref: https://docs.python.org/3.1/library/sys.html#sys.stdin
+            if sys.version_info.major > 2:
+                inputfn = sys.stdin.buffer.read()
+            else:
+            	inputfn = sys.stdin.read()
             convertor = Convertor()
             convertor.convert(inputfn)
         elif op.filenames:
