@@ -976,7 +976,7 @@ class Convertor:
                 # able to figure out how to do this yet.
                 graphObjs = document.GraphicObjects
                 for i in range(0, graphObjs.getCount()):
-                    graphObj = graphObjs.getByIndex(i)
+                    graphObjs.getByIndex(i)
             except AttributeError:
                 # the document doesn't implement the XLinkUpdate interface
                 pass
@@ -1155,7 +1155,7 @@ class Listener:
             resolver = self.svcmgr.createInstanceWithContext("com.sun.star.bridge.UnoUrlResolver", self.context)
             product = self.svcmgr.createInstance("com.sun.star.configuration.ConfigurationProvider").createInstanceWithArguments("com.sun.star.configuration.ConfigurationAccess", UnoProps(nodepath="/org.openoffice.Setup/Product"))
             try:
-                unocontext = resolver.resolve("uno:%s" % op.connection)
+                resolver.resolve("uno:%s" % op.connection)
             except NoConnectException as e:
                 pass
             else:
@@ -1245,7 +1245,7 @@ def die(ret, msg=None):
 
         ### LibreOffice processes may get stuck and we have to kill them
         ### Is it still running ?
-        if ooproc.poll() == None:
+        if ooproc.poll() is None:
             info(1, '%s instance still running, please investigate...' % product.ooName)
             ooproc.wait()
             info(2, '%s instance unsuccessfully terminated, sending KILL signal.' % product.ooName)
