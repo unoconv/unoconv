@@ -527,6 +527,7 @@ class Options:
         self.format = None
         self.importfilter = []
         self.importfilteroptions = ""
+        self.importfiltername = None
         self.listener = False
         self.metadata = {}
         self.nolaunch = False
@@ -550,10 +551,10 @@ class Options:
 
         ### Get options from the commandline
         try:
-            opts, args = getopt.getopt (args, 'c:Dd:e:F:f:hi:LlM:no:p:s:T:t:P:vV',
+            opts, args = getopt.getopt (args, 'c:Dd:e:F:f:hi:I:LlM:no:p:s:T:t:P:vV',
                 ['connection=', 'debug', 'doctype=', 'export=', 'field=', 'format=',
-                 'help', 'import=', 'listener', 'meta=', 'no-launch', 'output=',
-                 'outputpath', 'password=', 'pipe=', 'port=', 'preserve',
+                 'help', 'import=', 'import-filter-name=', 'listener', 'meta=', 'no-launch',
+                 'output=', 'outputpath', 'password=', 'pipe=', 'port=', 'preserve',
                  'server=', 'timeout=', 'show', 'stdin', 'stdout', 'template', 'printer=',
                  'verbose', 'version'] )
         except getopt.error as exc:
@@ -611,6 +612,8 @@ class Options:
                             self.importfilter.append( PropertyValue( name, 0, value, 0 ) )
                 else:
                     print('Warning: Option %s cannot be parsed, ignoring.' % arg, file=sys.stderr)
+            elif opt in ['-I', '--import-filter-name']:
+                self.importfiltername = arg
             elif opt in ['-l', '--listener']:
                 self.listener = True
             elif opt in ['-M', '--meta']:
@@ -739,6 +742,9 @@ unoconv options:
                                         eg. -F Client_Name="Oracle"
   -i, --import=string                 set import filter option string
                                         eg. -i utf8
+  -I, --import-filter-name=string     set import filter name, useful when converting stdin
+                                      or files without an extension)
+                                        eg. -I ooxml
   -l, --listener                      start a permanent listener to use by unoconv clients
   -n, --no-launch                     fail if no listener is found (default: launch one)
   -o, --output=name                   output basename, filename or directory
@@ -846,6 +852,17 @@ class Convertor:
 
         return unocontext
 
+    def getimportformat(self):
+        if op.doctype:
+            importformat = fmts.bydoctype(op.doctype, op.importfiltername)
+        else:
+            importformat = fmts.byname(op.importfiltername)
+
+        if not importformat:
+            error('unoconv: import format [%s] is not known to unoconv.' % formatname)
+
+        return importformat[0]
+
     def getformat(self, inputfn):
         doctype = None
 
@@ -927,6 +944,10 @@ class Convertor:
             ### Cannot use UnoProps for FilterData property
             if op.importfilter:
                 inputprops += ( PropertyValue( "FilterData", 0, uno.Any("[]com.sun.star.beans.PropertyValue", tuple( op.importfilter ), ), 0 ), )
+
+            if op.importfiltername:
+                importformat = self.getimportformat()
+                inputprops += UnoProps(FilterName=importformat.filter)
 
             if op.stdin:
                 inputStream = self.svcmgr.createInstanceWithContext("com.sun.star.io.SequenceInputStream", self.context)
