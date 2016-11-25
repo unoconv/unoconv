@@ -528,6 +528,7 @@ class Options:
         self.importfilter = []
         self.importfilteroptions = ""
         self.listener = False
+        self.userid = None
         self.metadata = {}
         self.nolaunch = False
         self.output = None
@@ -550,12 +551,12 @@ class Options:
 
         ### Get options from the commandline
         try:
-            opts, args = getopt.getopt (args, 'c:Dd:e:F:f:hi:LlM:no:p:s:T:t:P:vV',
+            opts, args = getopt.getopt (args, 'c:Dd:e:F:f:hi:LlM:no:p:s:T:t:P:u:vV',
                 ['connection=', 'debug', 'doctype=', 'export=', 'field=', 'format=',
                  'help', 'import=', 'listener', 'meta=', 'no-launch', 'output=',
                  'outputpath', 'password=', 'pipe=', 'port=', 'preserve',
                  'server=', 'timeout=', 'show', 'stdin', 'stdout', 'template', 'printer=',
-                 'verbose', 'version'] )
+                 'userid=', 'verbose', 'version'] )
         except getopt.error as exc:
             print('unoconv: %s, try unoconv -h for a list of all the options' % str(exc))
             sys.exit(255)
@@ -643,6 +644,8 @@ class Options:
                 self.template = arg
             elif opt in ['-T', '--timeout']:
                 self.timeout = int(arg)
+            elif opt in ['-u', '--userid']:
+                self.userid = arg
             elif opt in ['-v', '--verbose']:
                 self.verbose = self.verbose + 1
             elif opt in ['-V', '--version']:
@@ -754,6 +757,7 @@ unoconv options:
       --stdout                        write output to stdout
   -t, --template=file                 import the styles from template (.ott)
   -T, --timeout=secs                  timeout after secs if connection to listener fails
+  -u, --userid=string                 specify user profile path for multi instance unoconv
   -v, --verbose                       be more and more verbose (-vvv for debugging)
       --version                       display version number of unoconv, OOo/LO and platform details
   -P, --printer                       printer options
@@ -811,9 +815,13 @@ class Convertor:
             try:
                 product = self.svcmgr.createInstance("com.sun.star.configuration.ConfigurationProvider").createInstanceWithArguments("com.sun.star.configuration.ConfigurationAccess", UnoProps(nodepath="/org.openoffice.Setup/Product"))
                 if product.ooName not in ('LibreOffice', 'LOdev') or LooseVersion(product.ooSetupVersion) <= LooseVersion('3.3'):
-                    ooproc = subprocess.Popen([office.binary, "-headless", "-invisible", "-nocrashreport", "-nodefault", "-nofirststartwizard", "-nologo", "-norestore", "-accept=%s" % op.connection], env=os.environ)
+                    cmd = [office.binary, "-headless", "-invisible", "-nocrashreport", "-nodefault", "-nofirststartwizard", "-nologo", "-norestore", "-accept=%s" % op.connection]
+                    (multi_user_cmd, shell_env) = get_multi_user_cmd(op, cmd)
+                    ooproc = subprocess.Popen(multi_user_cmd, env=shell_env)
                 else:
-                    ooproc = subprocess.Popen([office.binary, "--headless", "--invisible", "--nocrashreport", "--nodefault", "--nofirststartwizard", "--nologo", "--norestore", "--accept=%s" % op.connection], env=os.environ)
+                    cmd = [office.binary, "--headless", "--invisible", "--nocrashreport", "--nodefault", "--nofirststartwizard", "--nologo", "--norestore", "--accept=%s" % op.connection]
+                    (multi_user_cmd, shell_env) = get_multi_user_cmd(op, cmd, userid='--userid')
+                    ooproc = subprocess.Popen(multi_user_cmd, env=shell_env)
                 info(2, '%s listener successfully started. (pid=%s)' % (product.ooName, ooproc.pid))
 
                 ### Try connection to it for op.timeout seconds (flakky OpenOffice)
@@ -1144,6 +1152,14 @@ class Convertor:
                 exitcode = 2
                 pass
 
+def get_multi_user_cmd(op, cmd, userid='-userid'):
+    shell_env = os.environ.copy()
+    if op.userid != None:
+        cmd.append("%s=%s" %(userid, op.userid))
+        shell_env['HOME'] = op.userid
+    info(3, "cmd is %s" %(cmd))
+    return (cmd, shell_env)
+        
 class Listener:
     def __init__(self):
         global product
@@ -1165,7 +1181,7 @@ class Listener:
                 cmd = [office.binary, "-headless", "-invisible", "-nocrashreport", "-nodefault", "-nologo", "-nofirststartwizard", "-norestore", "-accept=%s" % op.connection]
             else:
                 cmd = [office.binary, "--headless", "--invisible", "--nocrashreport", "--nodefault", "--nologo", "--nofirststartwizard", "--norestore", "--accept=%s" % op.connection]
-
+            (multi_user_cmd, shell_env) = get_multi_user_cmd(op, cmd)
             # The rationale for using subprocess.Popen is to be able to handle
             # a SIGTERM signal below and properly terminate the started office
             # process then. This makes it possible to put the command unoconv -l
@@ -1173,7 +1189,7 @@ class Listener:
             # via sending SIGTERM and sending SIGTERM to a running unoconv -l
             # without the handler below will not terminate the office process
             # together with it leaving the office process running.
-            office_process = subprocess.Popen(cmd, env=os.environ)
+            office_process = subprocess.Popen(multi_user_cmd, env=shell_env)
 
             def sigterm_handler(signum, frame):
                 office_process.terminate()
