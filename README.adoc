@@ -80,7 +80,7 @@ But you can also force another python by using it to execute unoconv, e.g.:
 
     /opt/libreoffice4.4/program/python.bin unoconv -f pdf some-file.odt
 
-or on MacOS X:
+or on Mac OS X:
 
     /Applications/LibreOffice.app/Contents/MacOS/python unoconv -f pdf some-file.odt
 
@@ -109,10 +109,10 @@ to create a headless X display for ooffice.
  - http://www.artofsolving.com/node/10
 
 
-== Using unoconv with MacOS X
-LibreOffice 3.6.0.1 or later is required to use unoconv under MacOS X.  This
+== Using unoconv with Mac OS X
+LibreOffice 3.6.0.1 or later is required to use unoconv under Mac OS X.  This
 is the first version distributed with an internal python script that works.
-No version of OpenOffice for MacOS X (3.4 is the current version) works because
+No version of OpenOffice for Mac OS X (3.4 is the current version) works because
 the necessary internal files are not included inside the application.
 
 
