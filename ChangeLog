@@ -8,11 +8,11 @@
 - Fix output to non-existing directory
 - Ensure that LibreOfficeDev release are using new long options (Chia-liang Kao)
 - Set output format based on output filename extension (Patrick McAndrew)
-- Accept 'office' as binary on MacOSX (Andreas Jung)
+- Accept 'office' as binary on Mac OS X (Andreas Jung)
 - Added Microsoft WPS import filter (Josias Montag)
 - Fix --stdout output on Python 3 (Caolán McNamara)
 - Added -F/--field option to update user fields during conversion (Raphaël Pinson)
-- Added OpenOffice search path on MacOSX (Vittal Aithal)
+- Added OpenOffice search path on Mac OS X (Vittal Aithal)
 - Cycle through all images references before conversion
 - Added --preserve option to preserve timestamp and permissions (Vincent Bernat)
 - Added --stdin option to read from standard input
@@ -25,7 +25,7 @@
 - Fixes to office comparison
 - Documentation improvements
 - Improvements to Windows support (Volker Paulsen)
-- Improvements to MacOSX support (Scott Prahl)
+- Improvements to Mac OS X support (Scott Prahl)
 - Improvements to FreeBSD support (Peter)
 - Fix for random segfaults with OpenOffice/LibreOffice (Volker Paulsen)
 - Reliability check for unoconv listener (Volker Paulsen)
@@ -45,7 +45,7 @@
 - Show Office location when using -v -v
 - Fix a problem when not using UNO_PATH and LibreOffice (Daniel Díaz)
 - Improvements to Windows support (Miklos Vajna)
-- Improvements to MacOS X support (Troels Knak-Nielsen)
+- Improvements to Mac OS X support (Troels Knak-Nielsen)
 - Improvements to OpenBSD support
 - Improvements to Gentoo support (David E. Narváez)
 - Added -n/--no-launch option to prevent lanuching new office instance (Alexander Oryol)
