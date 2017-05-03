@@ -214,6 +214,8 @@ def office_environ(office):
         os.environ['PATH'] = realpath(office.basepath, 'program') + os.pathsep + os.environ['PATH']
     else:
         os.environ['PATH'] = realpath(office.basepath, 'program')
+    # python3-uno installs uno and unohelper modules to this path
+    sys.path.insert(0, "/usr/lib/python3/dist-packages")
 
     ### Set UNO_PATH so that "officehelper.bootstrap()" can find soffice executable:
     os.environ['UNO_PATH'] = office.unopath
