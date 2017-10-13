@@ -15,7 +15,6 @@ elif [[ "$VERSION" =~ ^4.[0-1].* ]]; then
 else
     urldir=https://downloadarchive.documentfoundation.org/libreoffice/old/$VERSION/mac/x86_64
     filename=LibreOffice_${VERSION}_MacOS_x86-64.dmg
-else
 fi
 
 wget $urldir/$filename
