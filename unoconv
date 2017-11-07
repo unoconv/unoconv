@@ -547,6 +547,7 @@ class Options:
         self.paperformat = None
         self.paperorientation = None
         self.papersize = None
+        self.scale = None
 
         ### Get options from the commandline
         try:
@@ -555,7 +556,7 @@ class Options:
                  'help', 'import=', 'listener', 'meta=', 'no-launch', 'output=',
                  'outputpath', 'password=', 'pipe=', 'port=', 'preserve',
                  'server=', 'timeout=', 'show', 'stdin', 'stdout', 'template', 'printer=',
-                 'verbose', 'version'] )
+                 'verbose', 'version', 'scale='] )
         except getopt.error as exc:
             print('unoconv: %s, try unoconv -h for a list of all the options' % str(exc))
             sys.exit(255)
@@ -662,6 +663,8 @@ class Options:
                     if (2 == len(size)):
                         self.papersize = size
                         self.setprinter = True
+            elif opt in ['--scale']:
+                self.scale = int(arg)
 
         ### Enable verbosity
         if self.verbose >= 2:
@@ -763,6 +766,7 @@ unoconv options:
                                           eg. -P PaperOrientation=landscape
                                         PapserSize: specify printer paper size, paper format should set to USER, size=widthxheight
                                           eg. -P PaperSize=130x200 means width=130, height=200
+  --scale=percent
 ''', file=sys.stderr)
 
 class Convertor:
@@ -954,6 +958,12 @@ class Convertor:
                 else:
                     print('unoconv: template file `%s\' does not exist.' % op.template, file=sys.stderr)
                     exitcode = 1
+
+            if op.scale:
+                for style in document.StyleFamilies.getByName("PageStyles").getElementNames():
+                    info(1, "Change style: %s" % style)
+                    document.StyleFamilies.getByName("PageStyles").getByName(style).PageScale = op.scale
+
 
             ### Force all cells to recalculate if we are able to. This will get rid of errors in cells.
             ### FIXME: We cannot recalculate the cells because it breaks issue #97 (cells get #VALUE)
