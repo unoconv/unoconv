@@ -27,7 +27,7 @@ import time
 
 __version__ = '0.7'
 
-doctypes = ('document', 'graphics', 'presentation', 'spreadsheet')
+doctypes = ('document', 'graphics', 'presentation', 'spreadsheet', 'web')
 
 global convertor, office, ooproc, product
 ooproc = None
@@ -406,6 +406,7 @@ fmts.add('web', 'text10', 'txt', 'OpenOffice.org 1.0 Text Document (OpenOffice.o
 fmts.add('web', 'text', 'txt', 'Text (OpenOffice.org Writer/Web)', 'Text (StarWriter/Web)') ### 8
 fmts.add('web', 'vor4', 'vor', 'StarWriter/Web 4.0 Template', 'StarWriter/Web 4.0 Vorlage/Template') ### 6
 fmts.add('web', 'vor', 'vor', 'StarWriter/Web 5.0 Template', 'StarWriter/Web 5.0 Vorlage/Template') ### 7
+fmts.add('web', 'docx7', 'docx', 'Microsoft Office Open XML', 'MS Word 2007 XML')
 
 ### Spreadsheet
 fmts.add('spreadsheet', 'csv', 'csv', 'Text CSV', 'Text - txt - csv (StarCalc)') ### 16
