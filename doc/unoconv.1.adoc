@@ -64,6 +64,12 @@ connections or even for remote connections.
 +
     See the *IMPORT FILTERS* section.
 
+-I, --input-filter-name::
+    Specify the input filter name, used when the file ending doesn't match the
+    file type.
++
+    eg -I odt
+
 -l, --listener::
     Start unoconv as listener for unoconv clients to connect to.
 
@@ -80,7 +86,7 @@ connections or even for remote connections.
 
 -o, --output::
     If the argument is a directory, put the converted documents in this
-    directory. If multiple input files are provided, use it as a 
+    directory. If multiple input files are provided, use it as a
     basename (and add output extension). Otherwise use it as the
     output filename.
 
