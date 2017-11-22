@@ -935,6 +935,9 @@ class Convertor:
 #            if op.password:
 #                info = UnoProps(algorithm-name="PBKDF2", salt="salt", iteration-count=1024, hash="hash")
 #                inputprops += UnoProps(ModifyPasswordInfo=info)
+            if op.password:
+                print("decrypting file with password: " + op.password)
+                inputprops += UnoProps(Password=op.password)
 
             ### Cannot use UnoProps for FilterData property
             if op.importfilteroptions:
