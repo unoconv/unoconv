@@ -1317,8 +1317,7 @@ def main():
     except OSError:
         error("Warning: failed to launch Office suite. Aborting.")
 
-### Main entrance
-if __name__ == '__main__':
+def run_unoconv():
     exitcode = 0
 
     info(3, 'sysname=%s, platform=%s, python=%s, python-version=%s' % (os.name, sys.platform, sys.executable, sys.version))
@@ -1390,3 +1389,8 @@ if __name__ == '__main__':
     except KeyboardInterrupt as e:
         die(6, 'Exiting on user request')
     die(exitcode)
+
+
+### Main entrance
+if __name__ == '__main__':
+    run_unoconv()
