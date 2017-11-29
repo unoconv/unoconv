@@ -3,25 +3,30 @@ os:
   - osx
 
 env:
-  - VERSION=3.5.7.2
-  - VERSION=3.6.7.2
-  - VERSION=4.0.6.2
-  - VERSION=4.1.6.1
   - VERSION=4.2.8.2
   - VERSION=4.3.7.2
   - VERSION=4.4.7.2
-  - VERSION=5.0.5.2
-  - VERSION=5.1.1.3
-  - VERSION=5.1.2.1
+  - VERSION=5.0.6.3
+  - VERSION=5.1.6.2
+  - VERSION=5.2.7.2
+  - VERSION=5.3.7.2
+  - VERSION=5.4.3.2
 
+language: generic
+
+# On macOS, only test the oldest and newest version. If they work, reasonably
+# everything else does as well. We do this because Travis macOS testing is
+# painfully slow.
 matrix:
   allow_failures:
     - os: osx
-    - os: linux
-    - env: VERSION=5.1.2.1
+  include:
+    - os: osx
+      env: VERSION=4.2.8.2
+    - os: osx
+      env: VERSION=5.4.3.2
   exclude:
     - os: osx
-      env: VERSION=3.5.7.2
 
 before_install:
   - sudo VERSION=$VERSION bash ci/linux.bash
