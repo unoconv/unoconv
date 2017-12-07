@@ -28,7 +28,7 @@ with open('README.adoc', 'rt', encoding='UTF-8') as f:
 
 
 setup(name = "unoconv",
-      version = "0.7",
+      version = "0.8",
       author = "Dag Wieers",
       author_email = "dag.wieers@gmail.com",
       url = "https://github.com/dagwieers/unoconv",

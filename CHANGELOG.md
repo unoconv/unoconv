@@ -1,8 +1,7 @@
 # Change Log
 
-## [Unreleased](https://github.com/dagwieers/unoconv/tree/HEAD)
-
-[Full Changelog](https://github.com/dagwieers/unoconv/compare/0.7...HEAD)
+## [0.8](https://github.com/dagwieers/unoconv/tree/0.8) (2017-12-07)
+[Full Changelog](https://github.com/dagwieers/unoconv/compare/0.7...0.8)
 
 **Implemented enhancements:**
 
@@ -58,6 +57,7 @@
 **Merged pull requests:**
 
 - \* make -F switch working for user-defined fields [\#426](https://github.com/dagwieers/unoconv/pull/426) ([belegnar](https://github.com/belegnar))
+- Updated Changelog and docs [\#422](https://github.com/dagwieers/unoconv/pull/422) ([regebro](https://github.com/regebro))
 - Added setup.py [\#421](https://github.com/dagwieers/unoconv/pull/421) ([regebro](https://github.com/regebro))
 - Drop support for v3.3 and v3.4 [\#413](https://github.com/dagwieers/unoconv/pull/413) ([regebro](https://github.com/regebro))
 - pass the password as openoffice expects it, so it will work for docum… [\#358](https://github.com/dagwieers/unoconv/pull/358) ([monomelodies](https://github.com/monomelodies))

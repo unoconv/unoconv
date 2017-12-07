@@ -1,0 +1,15 @@
+include *.adoc
+include *.md
+include AUTHORS
+include COPYING
+include ChangeLog
+include Makefile
+recursive-include ci *.bash
+recursive-include doc *.1
+recursive-include doc *.adoc
+recursive-include doc Makefile
+recursive-include packaging *.spec
+recursive-include tests *.csv
+recursive-include tests *.gif
+recursive-include tests *.odt
+recursive-include tests Makefile
