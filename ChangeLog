@@ -1,5 +1,6 @@
 * 0.8 - unreleased
 - Add option -M/--meta to add or update document metadata during conversion
+- Added setup.py to support standard Python installs, like pip, etc.
 
 * 0.7 - released 2015-07-09
 - Ported to Python 3 (Riccardo Magliocchetti)
