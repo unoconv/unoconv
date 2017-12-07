@@ -1,6 +1,11 @@
 * 0.8 - unreleased
 - Add option -M/--meta to add or update document metadata during conversion
+- Add option -I/--input-filter-name to specify input format (Martijn van de Streek)
 - Added setup.py to support standard Python installs, like pip, etc.
+- Dropped support for OpenOffice 3.3 and 3.4
+- Fix for Python 3 to read binary data from stdin (Carlos Noguera)
+- Fix for password protected files (Marijn Ophorst)
+- Make -F switch working for user-defined fields (Belegnar)
 
 * 0.7 - released 2015-07-09
 - Ported to Python 3 (Riccardo Magliocchetti)
