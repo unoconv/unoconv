@@ -1,4 +1,7 @@
-* 0.8 - unreleased
+* 0.8.2 - released 2017-12-07
+- Fixed PyPI upload
+
+* 0.8 - released 2017-12-07
 - Add option -M/--meta to add or update document metadata during conversion
 - Add option -I/--input-filter-name to specify input format (Martijn van de Streek)
 - Added setup.py to support standard Python installs, like pip, etc.
