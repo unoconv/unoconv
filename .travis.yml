@@ -18,8 +18,6 @@ language: generic
 # everything else does as well. We do this because Travis macOS testing is
 # painfully slow.
 matrix:
-  allow_failures:
-    - os: osx
   include:
     - os: osx
       env: VERSION=4.2.8.2
