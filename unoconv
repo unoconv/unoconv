@@ -149,10 +149,10 @@ def find_offices():
         unopath = 'error'
         for basis in ( 'basis-link', 'basis', '' ):
             for bin in officebinaries:
-                for bindir in ( 'program', 'MacOS' ):
+                for bindir in ( 'program', '', 'MacOS' ):
                     if os.path.isfile(realpath(basepath, basis, bindir, bin)):
-                        unopath = '/Applications/LibreOffice.app/Contents'
-                        officebinary = realpath(basepath, basis, bindir, bin)
+                        unopath = realpath(basepath, basis, bindir)
+                        officebinary = realpath(unopath, bin)
                         info(3, "Found %s in %s" % (bin, unopath))
                         # Break the inner loop...
                         break
@@ -213,7 +213,7 @@ def office_environ(office):
     if 'PATH' in os.environ:
         os.environ['PATH'] = realpath(office.basepath, 'program') + os.pathsep + os.environ['PATH']
     else:
-        os.environ['PATH'] = realpath(office.basepath, 'resources')
+        os.environ['PATH'] = realpath(office.basepath, 'program') + os.pathsep + realpath(office.basepath, 'resources')
 
     ### Set UNO_PATH so that "officehelper.bootstrap()" can find soffice executable:
     os.environ['UNO_PATH'] = office.unopath
@@ -223,8 +223,10 @@ def office_environ(office):
     if os.name in ( 'nt', 'os2' ):
         os.environ['URE_BOOTSTRAP'] = 'vnd.sun.star.pathname:' + realpath(office.basepath, 'program', 'fundamental.ini')
     else:
-        os.environ['URE_BOOTSTRAP'] = 'vnd.sun.star.pathname:' + realpath(office.basepath, 'resources', 'fundamentalrc')
-        # os.environ['URE_BOOTSTRAP'] = 'vnd.sun.star.pathname:' + realpath(office.basepath, 'program', 'fundamentalrc')
+        if os.path.isfile(realpath(office.basepath, 'program', 'fundamentalrc')):
+            os.environ['URE_BOOTSTRAP'] = 'vnd.sun.star.pathname:' + realpath(office.basepath, 'program', 'fundamentalrc')
+        else:
+            os.environ['URE_BOOTSTRAP'] = 'vnd.sun.star.pathname:' + realpath(office.basepath, 'resources', 'fundamentalrc')
 
         ### Set LD_LIBRARY_PATH so that "import pyuno" finds libpyuno.so:
         if 'LD_LIBRARY_PATH' in os.environ:
@@ -245,7 +247,7 @@ def office_environ(office):
     else:
         ### Still needed for system python using LibreOffice UNO bindings
         ### Although we prefer to use a system UNO binding in this case
-        sys.path.append('/Applications/LibreOffice.app/Contents')
+        sys.path.append(office.unopath)
 
 def debug_office():
     if 'URE_BOOTSTRAP' in os.environ:
