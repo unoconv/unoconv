@@ -1330,7 +1330,7 @@ if __name__ == '__main__':
         if of.python != sys.executable and not sys.executable.startswith(of.basepath):
             python_switch(of)
         office_environ(of)
-        # debug_office()
+#       debug_office()
         try:
             import uno, unohelper
             office = of
