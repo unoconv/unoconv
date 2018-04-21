@@ -11,18 +11,21 @@ env:
   - VERSION=5.2.7.2
   - VERSION=5.3.7.2
   - VERSION=5.4.3.2
+  - VERSION=5.4.6.2
 
 language: generic
 
-# On macOS, only test the oldest and newest version. If they work, reasonably
-# everything else does as well. We do this because Travis macOS testing is
-# painfully slow.
+# On Mac OS X, only test selected versions (the oldest and a few recent versions).
+# If they work, reasonably everything else does as well.
+# We do this because testing Mac OS X on Travis is painfully slow.
 matrix:
   include:
     - os: osx
       env: VERSION=4.2.8.2
     - os: osx
       env: VERSION=5.4.3.2
+    - os: osx
+      env: VERSION=5.4.6.2
   exclude:
     - os: osx
 
