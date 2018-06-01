@@ -546,6 +546,7 @@ class Options:
         self.template = None
         self.timeout = 6
         self.verbose = 0
+        self.userProfile = None
 
         self.setprinter = False
         self.paperformat = None
@@ -558,8 +559,8 @@ class Options:
                 ['connection=', 'debug', 'doctype=', 'export=', 'field=', 'format=',
                  'help', 'import=', 'import-filter-name=', 'listener', 'meta=', 'no-launch',
                  'output=', 'outputpath', 'password=', 'pipe=', 'port=', 'preserve',
-                 'server=', 'timeout=', 'show', 'stdin', 'stdout', 'template', 'printer=',
-                 'verbose', 'version'] )
+                 'server=', 'timeout=', 'user-profile=', 'show', 'stdin',
+                 'stdout', 'template', 'printer=', 'verbose', 'version'] )
         except getopt.error as exc:
             print('unoconv: %s, try unoconv -h for a list of all the options' % str(exc))
             sys.exit(255)
@@ -668,6 +669,8 @@ class Options:
                     if (2 == len(size)):
                         self.papersize = size
                         self.setprinter = True
+            elif opt in ['--user-profile']:
+                self.userProfile = arg
 
         ### Enable verbosity
         if self.verbose >= 2:
@@ -772,6 +775,7 @@ unoconv options:
                                           eg. -P PaperOrientation=landscape
                                         PapserSize: specify printer paper size, paper format should set to USER, size=widthxheight
                                           eg. -P PaperSize=130x200 means width=130, height=200
+  --user-profile=path                 use a custom user profile path
 ''', file=sys.stderr)
 
 class Convertor:
@@ -820,9 +824,13 @@ class Convertor:
             try:
                 product = self.svcmgr.createInstance("com.sun.star.configuration.ConfigurationProvider").createInstanceWithArguments("com.sun.star.configuration.ConfigurationAccess", UnoProps(nodepath="/org.openoffice.Setup/Product"))
                 if product.ooName not in ('LibreOffice', 'LOdev') or LooseVersion(product.ooSetupVersion) <= LooseVersion('3.3'):
-                    ooproc = subprocess.Popen([office.binary, "-headless", "-invisible", "-nocrashreport", "-nodefault", "-nofirststartwizard", "-nologo", "-norestore", "-accept=%s" % op.connection], env=os.environ)
+                    args = [office.binary, "-headless", "-invisible", "-nocrashreport", "-nodefault", "-nofirststartwizard", "-nologo", "-norestore", "-accept=%s" % op.connection]
                 else:
-                    ooproc = subprocess.Popen([office.binary, "--headless", "--invisible", "--nocrashreport", "--nodefault", "--nofirststartwizard", "--nologo", "--norestore", "--accept=%s" % op.connection], env=os.environ)
+                    args = [office.binary, "--headless", "--invisible", "--nocrashreport", "--nodefault", "--nofirststartwizard", "--nologo", "--norestore", "--accept=%s" % op.connection]
+                if op.userProfile:
+                    args.append("-env:UserInstallation=file://" + realpath(op.userProfile))
+                info(2, '%s listener arguments are %s.' % (product.ooName, args))
+                ooproc = subprocess.Popen(args, env=os.environ)
                 info(2, '%s listener successfully started. (pid=%s)' % (product.ooName, ooproc.pid))
 
                 ### Try connection to it for op.timeout seconds (flakky OpenOffice)
