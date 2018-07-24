@@ -552,6 +552,8 @@ class Options:
         self.paperorientation = None
         self.papersize = None
 
+        self.remove_original = False
+
         ### Get options from the commandline
         try:
             opts, args = getopt.getopt (args, 'c:Dd:e:F:f:hi:I:LlM:no:p:s:T:t:P:vV',
@@ -559,7 +561,7 @@ class Options:
                  'help', 'import=', 'import-filter-name=', 'listener', 'meta=', 'no-launch',
                  'output=', 'outputpath', 'password=', 'pipe=', 'port=', 'preserve',
                  'server=', 'timeout=', 'show', 'stdin', 'stdout', 'template', 'printer=',
-                 'verbose', 'version'] )
+                 'verbose', 'remove-original', 'version'] )
         except getopt.error as exc:
             print('unoconv: %s, try unoconv -h for a list of all the options' % str(exc))
             sys.exit(255)
@@ -668,6 +670,8 @@ class Options:
                     if (2 == len(size)):
                         self.papersize = size
                         self.setprinter = True
+            elif opt in ['--remove-original']:
+                self.remove_original = True
 
         ### Enable verbosity
         if self.verbose >= 2:
@@ -772,6 +776,7 @@ unoconv options:
                                           eg. -P PaperOrientation=landscape
                                         PapserSize: specify printer paper size, paper format should set to USER, size=widthxheight
                                           eg. -P PaperSize=130x200 means width=130, height=200
+      --remove-original               remove original document(s), default disable (use carefully)
 ''', file=sys.stderr)
 
 class Convertor:
@@ -1128,6 +1133,12 @@ class Convertor:
             if not op.stdout and op.preserve:
                 self.preserve(inputfn, outputfn)
 
+            phase = "remove original"
+            if op.remove_original:
+                if op.verbose > 0:
+                    print('Remove original document: ', inputfn)
+                os.remove(inputfn)
+
         except SystemError as e:
             error("unoconv: SystemError during %s phase:\n%s" % (phase, e))
             exitcode = 1
@@ -1288,7 +1299,7 @@ def die(ret, msg=None):
 def main():
     global convertor, exitcode
     convertor = None
-
+    
     try:
         if op.listener:
             listener = Listener()
@@ -1306,6 +1317,7 @@ def main():
             convertor = Convertor()
             for inputfn in op.filenames:
                 convertor.convert(inputfn)
+
 
     except NoConnectException as e:
         error("unoconv: could not find an existing connection to LibreOffice at %s:%s." % (op.server, op.port))
