@@ -50,6 +50,18 @@ class Office:
     def __repr__(self):
         return self.basepath
 
+def files_from_dir(start_dir, mask="*.*"):
+    ''' Build list of files from start dir and all subdirs'''
+
+    from fnmatch import fnmatch
+
+    find_files = []
+    for root, dirs, files in os.walk(start_dir):
+        for name in files:
+            if fnmatch(name, mask):
+                find_files.append(os.path.join(root, name))
+    return find_files            
+
 ### Implement a path normalizer in order to make unoconv work on MacOS X
 ### (on which 'program' is a symlink to 'MacOSX' which seems to break unoconv)
 def realpath(*args):
@@ -553,6 +565,8 @@ class Options:
         self.papersize = None
 
         self.remove_original = False
+        self.mask = ""
+        self.recursive = False
 
         ### Get options from the commandline
         try:
@@ -561,7 +575,7 @@ class Options:
                  'help', 'import=', 'import-filter-name=', 'listener', 'meta=', 'no-launch',
                  'output=', 'outputpath', 'password=', 'pipe=', 'port=', 'preserve',
                  'server=', 'timeout=', 'show', 'stdin', 'stdout', 'template', 'printer=',
-                 'verbose', 'remove-original', 'version'] )
+                 'verbose', 'remove-original', 'mask=', 'recursive', 'version'] )
         except getopt.error as exc:
             print('unoconv: %s, try unoconv -h for a list of all the options' % str(exc))
             sys.exit(255)
@@ -672,6 +686,11 @@ class Options:
                         self.setprinter = True
             elif opt in ['--remove-original']:
                 self.remove_original = True
+            elif opt in ['--mask']:
+                self.mask = arg
+                self.stdin = False
+            elif opt in ['--recursive']:
+                self.recursive = True
 
         ### Enable verbosity
         if self.verbose >= 2:
@@ -777,6 +796,8 @@ unoconv options:
                                         PapserSize: specify printer paper size, paper format should set to USER, size=widthxheight
                                           eg. -P PaperSize=130x200 means width=130, height=200
       --remove-original               remove original document(s), default disable (use carefully)
+      --mask=string                   files converted by mask, in the directory specified as input file
+      --recursive                     file(s) are processed recursively, use together with --mask
 ''', file=sys.stderr)
 
 class Convertor:
@@ -1314,9 +1335,19 @@ def main():
             convertor = Convertor()
             convertor.convert(inputfn)
         elif op.filenames:
-            convertor = Convertor()
-            for inputfn in op.filenames:
-                convertor.convert(inputfn)
+            if len(op.mask) > 0:
+                convertor = Convertor()
+                print('Use mask!')
+                for f in op.filenames:
+                    if os.path.isfile(f):  # if single file
+                        convertor.convert(f)
+                    elif os.path.isdir(f):  # if filename is dir, collect all files with mask
+                        for ff in files_from_dir(f, op.mask):
+                            convertor.convert(ff)
+            else:
+                convertor = Convertor()
+                for inputfn in op.filenames:
+                    convertor.convert(inputfn)
 
 
     except NoConnectException as e:
