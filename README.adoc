@@ -114,6 +114,7 @@ LibreOffice 3.6.0.1 or later is required to use unoconv under macOS.  This
 is the first version distributed with an internal python script that works.
 No version of OpenOffice for macOS (3.4 is the current version) works because
 the necessary internal files are not included inside the application.
+The latest supported version of Libreoffice is 4.3.7.2.
 
 
 == Problems running unoconv from Nginx/Apache/PHP
