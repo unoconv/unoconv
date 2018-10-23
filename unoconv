@@ -543,6 +543,7 @@ class Options:
         self.showlist = False
         self.stdin = False
         self.stdout = False
+        self.updatehtmllinks = True
         self.template = None
         self.timeout = 6
         self.verbose = 0
@@ -556,7 +557,7 @@ class Options:
         ### Get options from the commandline
         try:
             opts, args = getopt.getopt (args, 'c:Dd:e:F:f:hi:I:LlM:no:p:s:T:t:P:vV',
-                ['connection=', 'debug', 'doctype=', 'export=', 'field=', 'format=',
+                ['disable-html-update-links','connection=', 'debug', 'doctype=', 'export=', 'field=', 'format=',
                  'help', 'import=', 'import-filter-name=', 'listener', 'meta=', 'no-launch',
                  'output=', 'outputpath', 'password=', 'pipe=', 'port=', 'preserve',
                  'server=', 'timeout=', 'user-profile=', 'show', 'stdin',
@@ -648,6 +649,8 @@ class Options:
                 self.stdout = True
             elif opt in ['-t', '--template']:
                 self.template = arg
+            elif opt in ['--disable-html-update-links']:
+                self.updatehtmllinks = False
             elif opt in ['-T', '--timeout']:
                 self.timeout = int(arg)
             elif opt in ['-v', '--verbose']:
@@ -775,6 +778,7 @@ unoconv options:
                                           eg. -P PaperOrientation=landscape
                                         PapserSize: specify printer paper size, paper format should set to USER, size=widthxheight
                                           eg. -P PaperSize=130x200 means width=130, height=200
+  --disable-html-update-links   disables the recheck for updating links missed by libreoffice
   --user-profile=path                 use a custom user profile path
 ''', file=sys.stderr)
 
@@ -1005,9 +1009,10 @@ class Convertor:
                 # https://forum.openoffice.org/en/forum/viewtopic.php?f=30&t=23909
                 # Ideally we would like to have the option to embed the images into the document, but I have not been
                 # able to figure out how to do this yet.
-                graphObjs = document.GraphicObjects
-                for i in range(0, graphObjs.getCount()):
-                    graphObj = graphObjs.getByIndex(i)
+                if op.updatehtmllinks:
+                    graphObjs = document.GraphicObjects
+                    for i in range(0, graphObjs.getCount()):
+                        graphObj = graphObjs.getByIndex(i)
             except AttributeError:
                 # the document doesn't implement the XLinkUpdate interface
                 pass
