@@ -1258,9 +1258,9 @@ class Listener:
         except Exception as e:
             error("Launch of %s failed.\n%s" % (office.binary, e))
 
-def error(msg):
+def error(msg, file=sys.stderr):
     "Output error message"
-    print(msg, file=sys.stderr)
+    print(msg, file=file)
 
 def info(level, msg):
     "Output info message"
