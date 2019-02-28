@@ -3,15 +3,11 @@ os:
   - osx
 
 env:
-  - VERSION=4.2.8.2
-  - VERSION=4.3.7.2
-  - VERSION=4.4.7.2
-  - VERSION=5.0.6.3
-  - VERSION=5.1.6.2
   - VERSION=5.2.7.2
   - VERSION=5.3.7.2
-  - VERSION=5.4.3.2
-  - VERSION=5.4.6.2
+  - VERSION=5.4.7.2
+  - VERSION=6.0.7.3
+  - VERSION=6.1.5.2
 
 language: generic
 
@@ -21,11 +17,9 @@ language: generic
 matrix:
   include:
     - os: osx
-      env: VERSION=4.2.8.2
+      env: VERSION=6.1.5.2
     - os: osx
-      env: VERSION=5.4.3.2
-    - os: osx
-      env: VERSION=5.4.6.2
+      env: VERSION=5.4.7.2
   exclude:
     - os: osx
 

@@ -569,7 +569,7 @@ class Options:
         self.stdout = False
         self.updatehtmllinks = True
         self.template = None
-        self.timeout = 6
+        self.timeout = 60
         self.verbose = 0
         self.userProfile = None
 
@@ -795,7 +795,7 @@ unoconv options:
   -T, --timeout=secs                  timeout after secs if connection to listener fails
   -v, --verbose                       be more and more verbose (-vvv for debugging)
       --version                       display version number of unoconv, OOo/LO and platform details
-  -P, --printer                       printer options
+  -P, --printer=name=value            printer options
                                         PaperFormat: specify printer paper format
                                           eg. -P PaperFormat=A3
                                         PaperOrientation: specify printer paper orientation
@@ -934,9 +934,9 @@ class Convertor:
         ### No format found, throw error
         if not outputfmt:
             if doctype:
-                error('unoconv: format [%s/%s] is not known to unoconv.' % (op.doctype, op.format), file=sys.stderr)
+                error('unoconv: format [%s/%s] is not known to unoconv.' % (op.doctype, op.format))
             else:
-                error('unoconv: format [%s] is not known to unoconv.' % op.format, file=sys.stderr)
+                error('unoconv: format [%s] is not known to unoconv.' % op.format)
             die(1)
 
         return outputfmt
@@ -1157,7 +1157,7 @@ class Convertor:
             try:
                 document.storeToURL(outputurl, tuple(outputprops) )
             except IOException as e:
-                raise UnoException("Unable to store document to %s (ErrCode %d)\n\nProperties: %s" % (outputurl, e.ErrCode, outputprops), None)
+                raise UnoException("Unable to store document to %s (Error %s)\n\nProperties: %s" % (outputurl, e.value, outputprops), None)
 
             phase = "dispose"
             document.dispose()
