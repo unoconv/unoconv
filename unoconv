@@ -772,7 +772,7 @@ unoconv options:
   -T, --timeout=secs                  timeout after secs if connection to listener fails
   -v, --verbose                       be more and more verbose (-vvv for debugging)
       --version                       display version number of unoconv, OOo/LO and platform details
-  -P, --printer                       printer options
+  -P, --printer=name=value            printer options
                                         PaperFormat: specify printer paper format
                                           eg. -P PaperFormat=A3
                                         PaperOrientation: specify printer paper orientation
