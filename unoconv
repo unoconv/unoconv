@@ -1134,7 +1134,7 @@ class Convertor:
             try:
                 document.storeToURL(outputurl, tuple(outputprops) )
             except IOException as e:
-                raise UnoException("Unable to store document to %s (ErrCode %d)\n\nProperties: %s" % (outputurl, e.ErrCode, outputprops), None)
+                raise UnoException("Unable to store document to %s (Error %s)\n\nProperties: %s" % (outputurl, e.value, outputprops), None)
 
             phase = "dispose"
             document.dispose()
