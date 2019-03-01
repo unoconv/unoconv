@@ -11,9 +11,9 @@ env:
 
 language: generic
 
-# On macOS, only test the oldest and newest version. If they work, reasonably
-# everything else does as well. We do this because Travis macOS testing is
-# painfully slow.
+# On Mac OS X, only test selected versions (the oldest and a few recent versions).
+# If they work, reasonably everything else does as well.
+# We do this because testing Mac OS X on Travis is painfully slow.
 matrix:
   include:
     - os: osx

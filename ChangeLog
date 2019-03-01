@@ -1,3 +1,6 @@
+* in progress
+- Support LibreOffice 5.x.x.x on recent Mac OS X systems with case-sensitive filesystem
+
 * 0.8.2 - released 2017-12-07
 - Fixed PyPI upload
 

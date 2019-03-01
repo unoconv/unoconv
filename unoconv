@@ -197,23 +197,44 @@ def find_offices():
 #        if not glob.glob(realpath(basepath, basis, program, 'python-core-*')):
 #            continue
 
-        for pythonbinary in pythonbinaries:
-            if os.path.isfile(realpath(unopath, pythonbinary)):
-                info(3, "Found %s in %s" % (pythonbinary, unopath))
-                ret.append(Office(basepath, urepath, unopath, officelibrary, officebinary,
-                                  realpath(unopath, pythonbinary), pythonhome))
+        ### Find suitable Python executable
+        pythonpath_candidates = [
+            # Regular unopath
+            unopath,
+            # LibreOffice 5.4.6.2 on Mac OS X 10.13.3 ships
+            # the "python" executable in the "Resources" folder.
+            realpath(basepath, 'Resources'),
+        ]
+
+        python_effective = find_executable(pythonpath_candidates, pythonbinaries)
+
+        if python_effective:
+            info(3, "Found Python at %s" % python_effective)
+            office = Office(basepath, urepath, unopath, officelibrary, officebinary,
+                            python_effective, pythonhome)
         else:
             info(3, "Considering %s" % basepath)
-            ret.append(Office(basepath, urepath, unopath, officelibrary, officebinary,
-                              sys.executable, None))
+            office = Office(basepath, urepath, unopath, officelibrary, officebinary,
+                            sys.executable, None)
+
+        ret.append(office)
+
     return ret
+
+def find_executable(folders, filenames):
+    for folder in folders:
+        for filename in filenames:
+            candidate = realpath(folder, filename)
+            if os.path.isfile(candidate):
+                return candidate
 
 def office_environ(office):
     ### Set PATH so that crash_report is found
+    path_prefix = realpath(office.basepath, 'program') + os.pathsep + realpath(office.basepath, 'Resources')
     if 'PATH' in os.environ:
-        os.environ['PATH'] = realpath(office.basepath, 'program') + os.pathsep + os.environ['PATH']
+        os.environ['PATH'] = path_prefix + os.pathsep + os.environ['PATH']
     else:
-        os.environ['PATH'] = realpath(office.basepath, 'program') + os.pathsep + realpath(office.basepath, 'resources')
+        os.environ['PATH'] = path_prefix
 
     ### Set UNO_PATH so that "officehelper.bootstrap()" can find soffice executable:
     os.environ['UNO_PATH'] = office.unopath
@@ -226,7 +247,7 @@ def office_environ(office):
         if os.path.isfile(realpath(office.basepath, 'program', 'fundamentalrc')):
             os.environ['URE_BOOTSTRAP'] = 'vnd.sun.star.pathname:' + realpath(office.basepath, 'program', 'fundamentalrc')
         else:
-            os.environ['URE_BOOTSTRAP'] = 'vnd.sun.star.pathname:' + realpath(office.basepath, 'resources', 'fundamentalrc')
+            os.environ['URE_BOOTSTRAP'] = 'vnd.sun.star.pathname:' + realpath(office.basepath, 'Resources', 'fundamentalrc')
 
         ### Set LD_LIBRARY_PATH so that "import pyuno" finds libpyuno.so:
         if 'LD_LIBRARY_PATH' in os.environ:
@@ -308,6 +329,8 @@ def python_switch(office):
             ### appear to be consistent, so we can't easily check for
             ### this error specifically.
             ret = os.spawnvpe(os.P_WAIT, office.python, [office.python, ] + sys.argv[0:], os.environ)
+            if ret != 0:
+                error("Switching Python to %s failed." % (office.python))
             sys.exit(ret)
 
 class Fmt:
