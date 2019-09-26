@@ -1,5 +1,15 @@
-* in progress
-- Support LibreOffice 5.x.x.x on recent Mac OS X systems with case-sensitive filesystem
+* 0.9 - released 2019-09-26
+- Change default updateDocMode behavior to NOT update, to close some
+    security holes.  Use the new parameter --unsafe-quiet-update to update
+    fields before conversion.
+- Support better Mac OS X support
+- Support more modern LibreOffice versions
+- Add support for Writer EPUB export
+- The new attribute --disable-html-update-links skips an
+    update for HTML links that is very slow.
+- Allow using a custom user profile with --user-profile
+- Longer default timeout
+- Fixed a bug in error()
 
 * 0.8.2 - released 2017-12-07
 - Fixed PyPI upload
