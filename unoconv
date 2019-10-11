@@ -1072,6 +1072,12 @@ class Convertor:
                     user_props.addProperty(prop, 0, '')
                     user_props.setPropertyValue(prop, value)
 
+            ### Update page numberings, cross reference, and so on.
+            try:
+                document.TextFields.refresh()
+            except Exception as e:
+                error("unoconv: refresh text fields error.\n%s" % e)
+
             ### Update document indexes
             phase = "update-indexes"
             for ii in range(2):
