@@ -90,7 +90,7 @@ with open('README.adoc', 'rt', encoding='UTF-8') as f:
 
 
 setup(name = "unoconv",
-      version = "0.8.2",
+      version = "0.9.0",
       author = "Dag Wieers",
       author_email = "dag.wieers@gmail.com",
       url = "https://github.com/dagwieers/unoconv",
