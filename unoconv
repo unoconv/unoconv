@@ -1232,6 +1232,8 @@ class Listener:
                 cmd = [office.binary, "-headless", "-invisible", "-nocrashreport", "-nodefault", "-nologo", "-nofirststartwizard", "-norestore", "-accept=%s" % op.connection]
             else:
                 cmd = [office.binary, "--headless", "--invisible", "--nocrashreport", "--nodefault", "--nologo", "--nofirststartwizard", "--norestore", "--accept=%s" % op.connection]
+            if op.userProfile:
+                cmd.append("-env:UserInstallation=file://" + realpath(op.userProfile))
 
             # The rationale for using subprocess.Popen is to be able to handle
             # a SIGTERM signal below and properly terminate the started office
