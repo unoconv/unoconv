@@ -86,6 +86,10 @@ def find_offices():
                 extrapaths += glob.glob(os.environ['PROGRAMFILES(X86)']+'\\LibreOffice*') + \
                               glob.glob(os.environ['PROGRAMFILES(X86)']+'\\OpenOffice.org*')
 
+            if 'PROGRAMW6432' in list(os.environ.keys()):
+                extrapaths += glob.glob(os.environ['PROGRAMW6432']+'\\LibreOffice*') + \
+                              glob.glob(os.environ['PROGRAMW6432']+'\\OpenOffice.org*')
+
         elif os.name in ( 'mac', ) or sys.platform in ( 'darwin', ):
             extrapaths += [ '/Applications/LibreOffice.app/Contents',
                             '/Applications/NeoOffice.app/Contents',
