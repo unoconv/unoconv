@@ -1368,6 +1368,13 @@ def main():
     except OSError:
         error("Warning: failed to launch Office suite. Aborting.")
 
+def is_virtualenv():
+    try:
+        sys.real_prefix
+    except AttributeError:
+        return False
+    return True
+
 ### Main entrance
 if __name__ == '__main__':
     exitcode = 0
@@ -1383,11 +1390,19 @@ if __name__ == '__main__':
             import uno, unohelper
             office = of
             break
-        except:
+        except Exception as e:
 #            debug_office()
             print("unoconv: Cannot find a suitable pyuno library and python binary combination in %s" % of, file=sys.stderr)
             print("ERROR:", sys.exc_info()[1], file=sys.stderr)
             print(file=sys.stderr)
+
+            if isinstance(e, ImportError) and is_virtualenv():
+                print("-"*80, file=sys.stderr)
+                print("unoconv: It looks like unoconv is run in a virtualenv.", file=sys.stderr)
+                print("         Make sure uno.py and unohelper.py files are available in this \n"
+                      "         virtualenv site-packages directory.", file=sys.stderr)
+                print("-"*80, file=sys.stderr)
+
     else:
 #        debug_office()
         print("unoconv: Cannot find a suitable office installation on your system.", file=sys.stderr)
