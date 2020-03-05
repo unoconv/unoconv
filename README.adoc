@@ -132,7 +132,7 @@ is a list of probable causes and recommendations:
 
  - Test with SELinux in permissive mode
 
-It is recomended to open the unoconv script and modify the very first line to
+It is recommended to open the unoconv script and modify the very first line to
 point directly to your installed LibreOffice python binary, so replace this:
 
     #!/usr/bin/env python
@@ -209,7 +209,7 @@ It is recommended to follow all of the below steps to pinpoint the problem:
 
         # /opt/libreoffice4.4/program/python.bin -c 'import uno, unohelper'
 
-   * or alternatively, run the disribution python (with the distribution
+   * or alternatively, run the distribution python (with the distribution
      LibreOffice)
 
         # python -c 'import uno, unohelper'
