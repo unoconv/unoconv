@@ -423,6 +423,7 @@ fmts.add('document', 'vor3', 'vor', 'StarWriter 3.0 Template', 'StarWriter 3.0 V
 fmts.add('document', 'wps', 'wps', 'Microsoft Works', 'MS_Works')
 fmts.add('document', 'xhtml', 'html', 'XHTML Document', 'XHTML Writer File')  # 33
 fmts.add('document', 'epub', 'epub', 'Electronic Publication', 'EPUB')
+fmts.add('document', 'png', 'png', 'Portable Network Graphic', 'writer_png_Export') ### 2
 
 # WebDocument
 fmts.add('web', 'etext', 'txt', 'Text Encoded (OpenOffice.org Writer/Web)', 'Text (encoded) (StarWriter/Web)')  # 14
