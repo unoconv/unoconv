@@ -21,8 +21,10 @@ import getopt
 import glob
 import os
 import signal
+import shutil
 import subprocess
 import sys
+import tempfile
 import time
 
 __version__ = '0.8.2'
@@ -717,6 +719,12 @@ class Options:
 
         self.filenames = args
 
+        # Check usability of invoking user's home directory
+        # (`os.path.expanduser()` takes into account the `HOME` environment value, if set.)
+        if not os.access(os.path.expanduser('~'), os.R_OK | os.W_OK):
+            print('unoconv: Home directory not usable (read/write). Using a temporary folder.', file=sys.stderr)
+            os.environ['HOME'] = tempfile.mkdtemp(prefix='unoconv.')
+
         if not self.listener and not self.showlist and not self.stdin and self.doctype != 'list' and not self.filenames:
             print('unoconv: you have to provide a filename or url as argument', file=sys.stderr)
             print('Try `unoconv -h\' for more information.', file=sys.stderr)
@@ -1331,6 +1339,10 @@ def die(ret, msg=None):
                 os.kill(ooproc.pid, 9)
             info(3, 'Waiting for %s with pid %s to disappear.' % (ooproc.pid, product.ooName))
             ooproc.wait()
+
+    # Check for and remove temporary HOME
+    if 'HOME' in os.environ and os.path.basename(os.environ['HOME']).startswith('unoconv.'):
+        shutil.rmtree(os.environ['HOME'])
 
     # Allow Python GC to garbage collect pyuno object *before* exit call
     # which avoids random segmentation faults --vpa
