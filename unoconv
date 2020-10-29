@@ -62,6 +62,17 @@ def realpath(*args):
         ret = os.path.join(ret, arg)
     return os.path.realpath(os.path.abspath(ret))
 
+# Formats a path into a file:// URL with support for Windows    
+def filepathURL(path):
+    # Linux style absolute path
+    if path.startswith("/"):
+        return "file://" + realpath(path)
+    # Windows style absolute path
+    else:
+        return "file:///" + realpath(path).replace("\\","/")
+    
+
+
 
 # The first thing we should do is find a suitable Office installation
 # with a compatible pyuno library that we can import.
@@ -871,7 +882,7 @@ class Convertor:
                 else:
                     args = [office.binary, "--headless", "--invisible", "--nocrashreport", "--nodefault", "--nofirststartwizard", "--nologo", "--norestore", "--accept=%s" % op.connection]
                 if op.userProfile:
-                    args.append("-env:UserInstallation=file://" + realpath(op.userProfile))
+                    args.append("-env:UserInstallation="+filepathURL(op.userProfile))
                 info(2, '%s listener arguments are %s.' % (product.ooName, args))
                 ooproc = subprocess.Popen(args, env=os.environ)
                 info(2, '%s listener successfully started. (pid=%s)' % (product.ooName, ooproc.pid))
@@ -1238,6 +1249,10 @@ class Listener:
                 cmd = [office.binary, "-headless", "-invisible", "-nocrashreport", "-nodefault", "-nologo", "-nofirststartwizard", "-norestore", "-accept=%s" % op.connection]
             else:
                 cmd = [office.binary, "--headless", "--invisible", "--nocrashreport", "--nodefault", "--nologo", "--nofirststartwizard", "--norestore", "--accept=%s" % op.connection]
+            
+            if op.userProfile:
+                args.append("-env:UserInstallation="+filepathURL(op.userProfile))
+            
 
             # The rationale for using subprocess.Popen is to be able to handle
             # a SIGTERM signal below and properly terminate the started office
