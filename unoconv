@@ -479,6 +479,7 @@ fmts.add('graphics', 'fodg', 'fodg', 'OpenDocument Drawing (Flat XML)', 'OpenDoc
 fmts.add('graphics', 'gif', 'gif', 'Graphics Interchange Format', 'draw_gif_Export')  # 30
 fmts.add('graphics', 'html', 'html', 'HTML Document (OpenOffice.org Draw)', 'draw_html_Export')  # 37
 fmts.add('graphics', 'jpg', 'jpg', 'Joint Photographic Experts Group', 'draw_jpg_Export')  # 3
+fmts.add('graphics', 'jpeg', 'jpeg', 'Joint Photographic Experts Group', 'draw_jpg_Export')  # 3
 fmts.add('graphics', 'met', 'met', 'OS/2 Metafile', 'draw_met_Export')  # 43
 fmts.add('graphics', 'odd', 'odd', 'OpenDocument Drawing', 'draw8')  # 6
 fmts.add('graphics', 'otg', 'otg', 'OpenDocument Drawing Template', 'draw8_template')  # 20
