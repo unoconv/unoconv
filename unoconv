@@ -814,7 +814,7 @@ unoconv options:
                                           eg. -P PaperFormat=A3
                                         PaperOrientation: specify printer paper orientation
                                           eg. -P PaperOrientation=landscape
-                                        PapserSize: specify printer paper size, paper format should set to USER, size=widthxheight
+                                        PaperSize: specify printer paper size, paper format should set to USER, size=widthxheight
                                           eg. -P PaperSize=130x200 means width=130, height=200
   --disable-html-update-links   disables the recheck for updating links missed by libreoffice
   --user-profile=path                 use a custom user profile path
