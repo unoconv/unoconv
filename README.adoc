@@ -25,6 +25,18 @@ e.g. +libobasis4.4-xsltfilter+.
 IMPORTANT: Neglecting these requirements will cause unoconv to fail with
 unhelpful and confusing error messages.
 
+To find a good Python installation to use to run unoconv, do the following:
+
+To find which Python to use to run unoconv, you can try a script I made.
+
+----
+cd /tmp
+wget -l https://gist.githubusercontent.com/regebro/036da022dc7d5241a0ee97efdf1458eb/raw/1bc0655423d196acd79a5d9fa60d2baada8dd534/find_uno.py
+python3 find_uno.py
+----
+
+It should list all Pythons that have Libreoffice libraries installed.
+
 
 == How does unoconv work ?
 unoconv starts its own office instance (if it cannot find an existing
