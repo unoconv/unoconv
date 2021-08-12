@@ -9,6 +9,9 @@ non-interactive conversion of documents.
 _For practical reasons we mention LibreOffice, but OpenOffice is supported by
 unoconv as well._
 
+Please note that there is a rewrite of Unoconv called "Unoserver", that you might want to try out:
+https://github.com/unoconv/unoserver/
+
 == Installing unoconv
 unoconv can be installed using packages coming from your distribution, or
 simply by copying the unoconv python script to your system.
@@ -266,6 +269,10 @@ interesting sources:
 
 == Other implementations
 Other implementations using python and UNO:
+
+ - unoserver
+   https://github.com/unoconv/unoserver/
+   
 
  - convwatch
    http://cgit.freedesktop.org/libreoffice/core/tree/bin/convwatch.py
