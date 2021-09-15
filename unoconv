@@ -24,8 +24,12 @@ import signal
 import subprocess
 import sys
 import time
+import threading
+from threading import Thread, Event
 
 __version__ = '0.8.2'
+
+os.environ["PYTHONUNBUFFERED"] = "x"
 
 doctypes = ('document', 'graphics', 'presentation', 'spreadsheet')
 
@@ -912,7 +916,8 @@ class Options:
 unoconv options:
   -c, --connection=string             use a custom connection string
   -d, --doctype=type                  specify document type
-                                        (document, graphics, presentation, spreadsheet)
+                                        (document, graphics,
+                                         presentation, spreadsheet)
   -e, --export=name=value             set export filter options
                                         eg. -e PageRange=1-2
   -f, --format=format                 specify the output format
@@ -957,6 +962,8 @@ class Convertor:
     def __init__(self):
         global exitcode, ooproc, office, product
         unocontext = None
+
+        self.is_normalized = False
 
         # Do the LibreOffice component dance
         self.context = uno.getComponentContext()
@@ -1329,18 +1336,53 @@ class Convertor:
 
             info(1, "Output file: %s" % outputurl)
 
-            try:
-                document.storeToURL(outputurl, tuple(outputprops))
-            except IOException as e:
-                raise UnoException("Unable to store document to %s (Error %s)\n\nProperties: %s" % (
-                    outputurl, e.value, outputprops), None)
+            # ----
+            print('----store to url')
 
-            phase = "dispose"
-            document.dispose()
-            document.close(True)
-            if not op.stdout and op.preserve:
-                self.preserve(inputfn, outputfn)
+            event = Event()
 
+            pid = -1
+            with open('/tmp/office.pid') as f:
+                pid = int(f.read())
+
+            def store_to_url(url):
+                try:
+                    document.storeToURL(url, tuple(outputprops))
+                except IOException as e:
+                    raise UnoException("Unable to store document to %s (Error %s)\n\nProperties: %s" % (
+                        outputurl, e.value, outputprops), None)
+                finally:
+                    self.is_normalized = True
+                    event.set()
+
+            def close_document():
+                event.wait(60)  # 60s
+                if self.is_normalized:
+                    print('normalized exit...%d' % pid)
+                    phase = "dispose"
+                    document.dispose()
+                    document.close(True)
+                    if not op.stdout and op.preserve:
+                        self.preserve(inputfn, outputfn)
+                else:
+                    phase = "force dispose"
+                    print('force kill...%d' % pid)
+                    # os.kill(pid, signal.SIGTERM)
+                    # listener = Listener()  # restart listener
+                    os.system('supervisorctl restart unoconv')
+
+            t1 = threading.Thread(target=store_to_url, args=(outputurl,))
+            t2 = threading.Thread(target=close_document, args=())
+
+            t1.start()
+            t2.start()
+            t1.join()
+            t2.join()
+            # try:
+            #     document.storeToURL(outputurl, tuple(outputprops))
+            # except IOException as e:
+            #     raise UnoException("Unable to store document to %s (Error %s)\n\nProperties: %s" % (
+            #         outputurl, e.value, outputprops), None)
         except SystemError as e:
             error("unoconv: SystemError during %s phase:\n%s" % (phase, e))
             exitcode = 1
@@ -1430,6 +1472,9 @@ class Listener:
                 die(6, 'Exiting on SIGTERM')
 
             signal.signal(signal.SIGTERM, sigterm_handler)
+
+            with open("/tmp/office.pid", "w+") as f:
+                f.write(str(office_process.pid))
 
             ret = office_process.wait()
             if ret == 81:
