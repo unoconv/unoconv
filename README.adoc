@@ -1,6 +1,17 @@
 = Automated conversion and styling using LibreOffice
 Dag Wieers <dag@wieers.com>
 
+== Unoconv is deprecated
+
+Please note that there is a rewrite of Unoconv called "Unoserver":
+https://github.com/unoconv/unoserver/
+
+We are running Unoserver successfully in production, and it's now the
+recommended solution. For the time being Unoconv is in bugfix mode only,
+there will be no new features. Please switch to Unoserver.
+
+== Unoconv
+
 Universal Office Converter (unoconv) is a command line tool to convert any
 document format that LibreOffice can import to any document format that
 LibreOffice can export. It makes use of the LibreOffice's UNO bindings for
@@ -9,8 +20,6 @@ non-interactive conversion of documents.
 _For practical reasons we mention LibreOffice, but OpenOffice is supported by
 unoconv as well._
 
-Please note that there is a rewrite of Unoconv called "Unoserver", that you might want to try out:
-https://github.com/unoconv/unoserver/
 
 == Installing unoconv
 unoconv can be installed using packages coming from your distribution, or
