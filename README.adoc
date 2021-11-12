@@ -7,8 +7,15 @@ Please note that there is a rewrite of Unoconv called "Unoserver":
 https://github.com/unoconv/unoserver/
 
 We are running Unoserver successfully in production, and it's now the
-recommended solution. For the time being Unoconv is in bugfix mode only,
-there will be no new features. Please switch to Unoserver.
+recommended solution.
+
+Unoserver does not have all the features of Unoconv, which features it
+will get depends on a combination of what people want, and if someone
+wants to implement it. 
+
+Until Unoserver has all the major features people need, Unoconv is in 
+bugfix mode, there will be no major changes. Once Unoserver has the major
+features of Unoconv, Unoconv will become unsupported.
 
 == Unoconv
 
