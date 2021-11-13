@@ -1156,7 +1156,7 @@ class Convertor:
                     (inbase, ext) = os.path.splitext(os.path.basename(inputfn))
                 if op.output:
                     (outbase, ext) = os.path.splitext(op.output)
-                    if len(op.filenames) > 1:
+                    if os.path.isdir(op.output) or len(op.filenames) > 1:
                         outputfn = realpath(outbase, os.path.basename(inbase) + os.extsep + outputfmt.extension)
                     else:
                         outputfn = realpath(outbase + os.extsep + outputfmt.extension)
