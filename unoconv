@@ -423,7 +423,7 @@ fmts.add('document', 'vor3', 'vor', 'StarWriter 3.0 Template', 'StarWriter 3.0 V
 fmts.add('document', 'wps', 'wps', 'Microsoft Works', 'MS_Works')
 fmts.add('document', 'xhtml', 'html', 'XHTML Document', 'XHTML Writer File')  # 33
 fmts.add('document', 'epub', 'epub', 'Electronic Publication', 'EPUB')
-fmts.add('document', 'png', 'png', 'Portable Network Graphic', 'writer_png_Export') ### 2
+fmts.add('document', 'png', 'png', 'Portable Network Graphic', 'writer_png_Export')  # 2
 
 # WebDocument
 fmts.add('web', 'etext', 'txt', 'Text Encoded (OpenOffice.org Writer/Web)', 'Text (encoded) (StarWriter/Web)')  # 14
@@ -1399,9 +1399,11 @@ if __name__ == '__main__':
             print(file=sys.stderr)
     else:
         # debug_office()
-        print("unoconv: Cannot find a suitable office installation on your system.", file=sys.stderr)
-        print("ERROR: Please locate your office installation and send your feedback to:", file=sys.stderr)
-        print("       http://github.com/dagwieers/unoconv/issues", file=sys.stderr)
+        print("Error: unoconv can't find a suitable office installation on your system.", file=sys.stderr)
+        print("Please review the README on the unoconv GitHub page to troubleshoot.", file=sys.stderr)
+        print("Can't resolve the error with the README?", file=sys.stderr)
+        print("Locate your office installation and open an issue on GitHub.", file=sys.stderr)
+        print("GitHub: https://github.com/unoconv/unoconv", file=sys.stderr)
         sys.exit(1)
 
     # Working pyuno library found. Import classes.
