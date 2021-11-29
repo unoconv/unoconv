@@ -571,12 +571,17 @@ class Options:
         self.paperformat = None
         self.paperorientation = None
         self.papersize = None
+        self.pagescale = None
+        self.scaletopages = None
+        self.scaletopagesx = None
+        self.scaletopagesy = None
         self.password = None
         self.pipe = None
         self.port = '2002'
         self.preserve = False
         self.server = '127.0.0.1'
         self.setprinter = False
+        self.setpagestype = False
         self.showlist = False
         self.stdin = False
         self.stdout = False
@@ -589,12 +594,12 @@ class Options:
 
         # Get options from the commandline
         try:
-            opts, args = getopt.getopt(args, 'c:Dd:e:F:f:hi:I:LlM:no:p:s:T:t:P:vV',
+            opts, args = getopt.getopt(args, 'c:Dd:e:F:f:hi:I:LlM:no:p:s:T:t:S:P:vV',
                 ['disable-html-update-links', 'connection=', 'debug', 'doctype=', 'export=', 'field=', 'format=',
                  'help', 'import=', 'import-filter-name=', 'listener', 'meta=', 'no-launch',
                  'output=', 'outputpath', 'password=', 'pipe=', 'port=', 'preserve',
                  'server=', 'timeout=', 'user-profile=', 'show', 'stdin',
-                 'stdout', 'template', 'printer=', 'unsafe-quiet-update', 'verbose', 'version'])
+                 'stdout', 'template', 'printer=', 'unsafe-quiet-update', 'verbose', 'version', 'pagestype='])
         except getopt.error as exc:
             print('unoconv: %s, try unoconv -h for a list of all the options' % str(exc))
             sys.exit(255)
@@ -709,6 +714,21 @@ class Options:
                     if (2 == len(size)):
                         self.papersize = size
                         self.setprinter = True
+            elif opt in ['-S', '--pagestype']:
+                # TAG: https://gist.github.com/psd/268550/2f01aee6c5ecf54d8375fb97bde8664c4a62f09c
+                optKey, optValue = arg.split('=')
+                if optKey in ['PageScale']:
+                    self.pagescale = int(optValue)
+                    self.setpagestype = True
+                elif optKey in ['ScaleToPages']:
+                    self.scaletopages = int(optValue)
+                    self.setpagestype = True
+                elif optKey in ['ScaleToPagesX']:
+                    self.scaletopagesx = int(optValue)
+                    self.setpagestype = True
+                elif optKey in ['ScaleToPagesY']:
+                    self.scaletopagesy = int(optValue)
+                    self.setpagestype = True
             elif opt in ['--user-profile']:
                 self.userProfile = arg
 
@@ -817,6 +837,22 @@ unoconv options:
                                           eg. -P PaperOrientation=landscape
                                         PaperSize: specify printer paper size, paper format should set to USER, size=widthxheight
                                           eg. -P PaperSize=130x200 means width=130, height=200
+  -S, --pagestype=name=value           Page Stype options - Only Use for SpreadsheetDocument
+                                        PageScale: contains the scaling factor (in percent) for printing the sheet.
+                                          eg. -S PageScale=90
+                                        ScaleToPages: contains the number of pages the sheet will printed.
+                                          eg. -S ScaleToPages=1
+                                        ScaleToPagesX: contains the number of horizontal pages the sheet will printed on.
+                                          eg. -S ScaleToPagesX=1
+                                        ScaleToPagesY: contains the number of vertical pages the sheet will printed on.
+                                          eg. -S ScaleToPagesY=1000
+                                      Scale options: uncomment 1 of the 3
+                                        a) 'Reduce / enlarge printout': 'Scaling factor'
+                                            PageScale: 100,
+                                        b) 'Fit print range(s) to width / height': 'Width in pages' and 'Height in pages'
+                                            ScaleToPagesX: 1, ScaleToPagesY: 1000,
+                                        c) 'Fit print range(s) on number of pages': 'Fit print range(s) on number of pages'
+                                            ScaleToPages: 1,
   --disable-html-update-links   disables the recheck for updating links missed by libreoffice
   --user-profile=path                 use a custom user profile path
 ''', file=sys.stderr)
@@ -1137,6 +1173,26 @@ class Convertor:
                         printer[i].Value.Width = op.papersize[0]
                         printer[i].Value.Height = op.papersize[1]
                 document.setPrinter(printer)
+
+            # Set Page Style options
+            is_spreadsheet = document.supportsService("com.sun.star.sheet.SpreadsheetDocument")
+            if op.setpagestype and is_spreadsheet:                
+                pagestyles = document.getStyleFamilies().getByName('PageStyles')
+                for stylename in pagestyles.getElementNames():
+                    pagestyle = pagestyles.getByName(stylename)
+                    if op.pagescale is not None:
+                        pagestyle.setPropertyValue('PageScale', op.pagescale)
+                    if op.scaletopages is not None:
+                        pagestyle.setPropertyValue('ScaleToPages', op.scaletopages)
+                    if op.scaletopagesx is not None:
+                        pagestyle.setPropertyValue('ScaleToPagesX', op.scaletopagesx)
+                    if op.scaletopagesy is not None:
+                        pagestyle.setPropertyValue('ScaleToPagesY', op.scaletopagesy)
+                    
+                    info(2, '%s Used PageScale: %s' % (stylename, pagestyle.PageScale))
+                    info(2, '%s Used ScaleToPages: %s' % (stylename, pagestyle.ScaleToPages))
+                    info(2, '%s Used ScaleToPagesX: %s' % (stylename, pagestyle.ScaleToPagesX))
+                    info(2, '%s Used ScaleToPagesY: %s' % (stylename, pagestyle.ScaleToPagesY))
 
             # Cannot use UnoProps for FilterData property
             if op.exportfilter:
