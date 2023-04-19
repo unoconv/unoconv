@@ -1240,6 +1240,11 @@ class Listener:
             else:
                 cmd = [office.binary, "--headless", "--invisible", "--nocrashreport", "--nodefault", "--nologo", "--nofirststartwizard", "--norestore", "--accept=%s" % op.connection]
 
+            if op.userProfile:
+                cmd.append("-env:UserInstallation=file://" + realpath(op.userProfile))
+
+            info(2, '%s listener arguments are %s.' % (product.ooName, cmd))
+
             # The rationale for using subprocess.Popen is to be able to handle
             # a SIGTERM signal below and properly terminate the started office
             # process then. This makes it possible to put the command unoconv -l
@@ -1248,6 +1253,8 @@ class Listener:
             # without the handler below will not terminate the office process
             # together with it leaving the office process running.
             office_process = subprocess.Popen(cmd, env=os.environ)
+
+            info(2, '%s listener successfully started. (pid=%s)' % (product.ooName, office_process.pid))
 
             def sigterm_handler(signum, frame):
                 office_process.terminate()
